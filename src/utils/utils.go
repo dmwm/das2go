@@ -1,0 +1,52 @@
+/*
+ *
+ * Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
+ * Description: DAS utils module
+ * Created    : Fri Jun 26 14:25:01 EDT 2015
+ */
+package utils
+
+func FindInList(a string, arr []string) bool {
+	for _, e := range arr {
+		if e == a {
+			return true
+		}
+	}
+	return false
+}
+
+func InList(a string, list []string) bool {
+	check := 0
+	for _, b := range list {
+		if b == a {
+			check += 1
+		}
+	}
+	if check != 0 {
+		return true
+	}
+	return false
+}
+
+func MapKeys(rec map[string]interface{}) []string {
+	keys := make([]string, 0, len(rec))
+	for k := range rec {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func EqualLists(list1, list2 []string) bool {
+	count := 0
+	for _, k := range list1 {
+		if InList(k, list2) {
+			count += 1
+		} else {
+			return false
+		}
+	}
+	if len(list2) == count {
+		return true
+	}
+	return false
+}
