@@ -9,9 +9,9 @@ package dasql
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"fmt"
 	"labix.org/v2/mgo/bson"
 	"log"
-	//     "sort"
 	"strconv"
 	"strings"
 	"utils"
@@ -22,6 +22,13 @@ type DASQuery struct {
 	Spec                        bson.M
 	Fields                      []string
 	pipe                        string
+}
+
+// implement own formatter using DASQuery rather then *DASQuery, since
+// former will be invoked on both pointer and values and therefore used by fmt/log
+// http://stackoverflow.com/questions/16976523/in-go-why-isnt-my-stringer-interface-method-getting-invoked-when-using-fmt-pr
+func (q DASQuery) String() string {
+	return fmt.Sprintf("<DASQuery=%s, hash=%s>", q.Query, q.Qhash)
 }
 
 func operators() []string {

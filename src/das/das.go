@@ -13,6 +13,7 @@ import (
 	"mongo"
 	"net/url"
 	"regexp"
+	"time"
 	"utils"
 )
 
@@ -71,7 +72,6 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 				log.Fatal("Unable to get value for daskey=", dkey, ", reckey=", rkey, " from record=", dmap)
 			}
 			matched, _ := regexp.MatchString(pat, val)
-			log.Println("Matching String", pat, val, matched)
 			if matched {
 				vals.Add(arg, val)
 			}
@@ -84,22 +84,69 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	return base
 }
 
-// Process DAS query
-func Process(query string, dasmaps dasmaps.DASMaps) (bool, string) {
-	status := true
-	// parse input query and convert it into DASQuery format
-	dasquery := dasql.Parse(query)
-	// find out list of APIs/CMS services which can process this query request
-	maps := dasmaps.FindServices(dasquery.Fields, dasquery.Spec)
-	// loop over services and fetch data
-	for _, dmap := range maps {
-		url := formUrlCall(dasquery, dmap)
-		log.Println("Call", url)
+func processURLs(urls []string) {
+	out := make(chan utils.ResponseType)
+	umap := map[string]int{}
+	rmax := 3 // maximum number of retries
+	for _, furl := range urls {
+		log.Println("Call", furl)
+		umap[furl] = 0 // number of retries per url
+		go utils.Fetch(furl, out)
 		// transform data into JSON
 		log.Println("Transform record")
 		// insert record into MongoDB
 		log.Println("Insert record into MongoDB")
 	}
+
+	// collect all results from out channel
+	exit := false
+	for {
+		select {
+		case r := <-out:
+			if r.Error != nil {
+				retry := umap[r.Url]
+				if retry < rmax {
+					retry += 1
+					// incremenet sleep duration with every retry
+					sleep := time.Duration(retry) * time.Second
+					time.Sleep(sleep)
+					umap[r.Url] = retry
+				} else {
+					delete(umap, r.Url) // remove Url from map
+				}
+			} else {
+				data := string(r.Data[:])
+				log.Println("Response", r.Url, data) // TODO: replace with parsing and writing to mongo
+				delete(umap, r.Url)                  // remove Url from map
+			}
+		default:
+			if len(umap) == 0 { // no more requests
+				exit = true
+			}
+			time.Sleep(time.Duration(10) * time.Millisecond) // wait for response
+		}
+		if exit {
+			break
+		}
+	}
+}
+
+// Process DAS query
+func Process(query string, dasmaps dasmaps.DASMaps) (bool, string) {
+	status := true
+	// parse input query and convert it into DASQuery format
+	dasquery := dasql.Parse(query)
+	log.Printf("Process %s\n", dasquery)
+	// find out list of APIs/CMS services which can process this query request
+	maps := dasmaps.FindServices(dasquery.Fields, dasquery.Spec)
+	var urls []string
+	// loop over services and fetch data
+	for _, dmap := range maps {
+		furl := formUrlCall(dasquery, dmap)
+		urls = append(urls, furl)
+	}
+	// TODO: this should be sent as goroutine
+	go processURLs(urls)
 	// perform merge step
 	log.Println("Merge DAS data records from DAS cache into DAS merge collection")
 	return status, dasquery.Qhash

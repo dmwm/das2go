@@ -1,15 +1,15 @@
 /*
  *
  * Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
- * Description: URL fetch proxy server concurrently fetches data from
- *              provided URL list. It provides a POST HTTP interface
- *              "/fetch" which accepts urls as newline separated encoded
- *              string
- * Created    : Wed Mar 20 13:29:48 EDT 2013
- * License    : MIT
+ * Description: DAS web server, it handles all DAS reuqests
+ * Created    : Fri Jun 26 14:25:01 EDT 2015
  *
+ * Some links: http://www.alexedwards.net/blog/golang-response-snippets
+ * http://blog.golang.org/json-and-go
+ * http://golang.org/pkg/html/template/
+ * https://labix.org/mgo
  */
-package urlfetch
+package utils
 
 import (
 	"bytes"
@@ -20,7 +20,6 @@ import (
 	"net/http"
 	"os"
 	"regexp"
-	"strings"
 	"time"
 	"x509proxy"
 )
@@ -158,7 +157,7 @@ func validate_url(url string) bool {
 
 // represent final response in a form of JSON structure
 // we use custorm representation
-func response(url string, data []byte) []byte {
+func Response(url string, data []byte) []byte {
 	b := []byte(`{"url":`)
 	u := []byte(url)
 	c := []byte(",")
@@ -169,101 +168,4 @@ func response(url string, data []byte) []byte {
 	r := bytes.Join(a, s)
 	return r
 
-}
-
-/*
- * RequestHandler is used by web server to handle incoming requests
- */
-func RequestHandler(w http.ResponseWriter, r *http.Request) {
-	// we only accept POST requests with urls (this is by design)
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
-	// parse input request parameter, in this case we should pass urls
-	r.ParseForm()
-	urls := []string{}
-	for k, v := range r.Form {
-		if k == "urls" {
-			urls = strings.Split(v[0], "\n")
-		}
-	}
-	num := len(urls)
-	if num > 0 {
-		first := urls[0]
-		last := urls[num-1]
-		log.Println("Fetch", num, "URLs:", first, "...", last)
-	} else {
-		w.Write([]byte("No URLs provided\n"))
-		return
-	}
-	// Process url list
-	quit := make(chan bool)
-	in := make(chan string)
-	out := make(chan ResponseType)
-	umap := map[string]int{}
-	rmax := 3 // maximum number of retries
-	// start worker
-	go Worker(in, out, quit)
-	// fill in-channel with request urls, keep url/retries in umap
-	for _, url := range urls {
-		in <- url
-		umap[url] = 0 // attemps per url
-	}
-	// Start inf. loop to catch our response channel (out)
-	// we check every response for errors and either discard it from umap or
-	// retry several times until we reach a threshold rmax
-	exit := false
-	for {
-		select {
-		case r := <-out:
-			if r.Error != nil {
-				retry := umap[r.Url]
-				//                log.Println("ERROR", r.Url, r.Error.Error(), "retry", retry)
-				if retry < rmax {
-					retry += 1
-					// incremenet sleep duration with every retry
-					sleep := time.Duration(retry) * time.Second
-					time.Sleep(sleep)
-					in <- r.Url
-					umap[r.Url] = retry
-				} else {
-					//                    log.Println("ERROR", r.Url, r.Error.Error(), "exceed retries")
-					delete(umap, r.Url) // remove Url from map
-				}
-			} else {
-				w.Write(response(r.Url, r.Data))
-				w.Write([]byte("\n"))
-				delete(umap, r.Url) // remove Url from map
-			}
-		default:
-			if len(umap) == 0 {
-				//                log.Println("No more requests")
-				exit = true
-			}
-			time.Sleep(time.Duration(100) * time.Millisecond)
-			//            log.Println("Waiting for response", len(umap))
-		}
-		if exit {
-			break
-		}
-	}
-	//    log.Println("out of loop")
-	quit <- true
-}
-
-// proxy server. It defines /fetch public interface
-func Server(port string) {
-	log.Printf("Start server localhost:%s/fetch", port)
-	http.HandleFunc("/fetch", RequestHandler)
-	err := http.ListenAndServe(":"+port, nil)
-	// NOTE: later this can be replaced with secure connection
-	// replace ListenAndServe(addr string, handler Handler)
-	// with TLS function
-	// ListenAndServeTLS(addr string, certFile string, keyFile string, handler
-	// Handler)
-	if err != nil {
-		log.Fatal("ListenAndServe: ", err)
-	}
 }
