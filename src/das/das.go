@@ -13,6 +13,7 @@ import (
 	"mongo"
 	"net/url"
 	"regexp"
+	"strings"
 	"time"
 	"utils"
 )
@@ -84,7 +85,7 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	return base
 }
 
-func processURLs(urls []string) {
+func processURLs(urls []string, maps []mongo.DASRecord) {
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
 	rmax := 3 // maximum number of retries
@@ -116,8 +117,22 @@ func processURLs(urls []string) {
 				}
 			} else {
 				data := string(r.Data[:])
-				log.Println("Response", r.Url, data) // TODO: replace with parsing and writing to mongo
-				delete(umap, r.Url)                  // remove Url from map
+				system := ""
+				format := ""
+				expire := 0
+				for _, dmap := range maps {
+					surl := dasmaps.GetString(dmap, "url")
+					if strings.Split(r.Url, "?")[0] == surl {
+						system = dasmaps.GetString(dmap, "system")
+						expire = dasmaps.GetInt(dmap, "expire")
+						format = dasmaps.GetString(dmap, "format")
+						break
+					}
+				}
+				// TODO: replace with parsing and writing to mongo
+				log.Println("Response", system, format, expire, r.Url, data)
+				// remove from umap, indicate that we processed it
+				delete(umap, r.Url) // remove Url from map
 			}
 		default:
 			if len(umap) == 0 { // no more requests
@@ -132,13 +147,13 @@ func processURLs(urls []string) {
 }
 
 // Process DAS query
-func Process(query string, dasmaps dasmaps.DASMaps) (bool, string) {
+func Process(query string, dmaps dasmaps.DASMaps) (bool, string) {
 	status := true
 	// parse input query and convert it into DASQuery format
 	dasquery := dasql.Parse(query)
 	log.Printf("Process %s\n", dasquery)
 	// find out list of APIs/CMS services which can process this query request
-	maps := dasmaps.FindServices(dasquery.Fields, dasquery.Spec)
+	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
 	var urls []string
 	// loop over services and fetch data
 	for _, dmap := range maps {
@@ -146,7 +161,7 @@ func Process(query string, dasmaps dasmaps.DASMaps) (bool, string) {
 		urls = append(urls, furl)
 	}
 	// TODO: this should be sent as goroutine
-	go processURLs(urls)
+	go processURLs(urls, maps)
 	// perform merge step
 	log.Println("Merge DAS data records from DAS cache into DAS merge collection")
 	return status, dasquery.Qhash

@@ -20,6 +20,10 @@ type DASMaps struct {
 	services []string
 }
 
+func (m *DASMaps) Maps() []mongo.DASRecord {
+	return m.records
+}
+
 func (m *DASMaps) Services() []string {
 	if len(m.services) != 0 {
 		return m.services
@@ -80,4 +84,26 @@ func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 
 func (m *DASMaps) LoadMaps(uri, dbname, dbcoll string) {
 	m.records = mongo.Get(uri, dbname, dbcoll, bson.M{})
+}
+
+func GetString(dmap mongo.DASRecord, key string) string {
+	val, ok := dmap[key].(string)
+	if !ok {
+		log.Fatal("Unable to extract key ", key, " from DAS map", dmap)
+	}
+	return val
+}
+func GetInt(dmap mongo.DASRecord, key string) int {
+	val, ok := dmap[key].(int)
+	if !ok {
+		log.Fatal("Unable to extract key ", key, " from DAS map", dmap)
+	}
+	return val
+}
+func GetFloat(dmap mongo.DASRecord, key string) float64 {
+	val, ok := dmap[key].(float64)
+	if !ok {
+		log.Fatal("Unable to extract key ", key, " from DAS map", dmap)
+	}
+	return val
 }
