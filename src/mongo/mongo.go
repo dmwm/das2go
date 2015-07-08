@@ -9,6 +9,7 @@
 package mongo
 
 import (
+	"encoding/json"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"log"
@@ -62,4 +63,13 @@ func Get(uri, dbname, collname string, spec bson.M) []DASRecord {
 		panic(err)
 	}
 	return out
+}
+
+func LoadJsonData(data []byte) DASRecord {
+	r := make(DASRecord)
+	err := json.Unmarshal(data, &r)
+	if err != nil {
+		panic(err)
+	}
+	return r
 }

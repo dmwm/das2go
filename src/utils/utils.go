@@ -50,3 +50,17 @@ func EqualLists(list1, list2 []string) bool {
 	}
 	return false
 }
+
+// check that entries from list1 are all appear in list2
+func CheckEntries(list1, list2 []string) bool {
+	count := 0
+	for _, k := range list1 {
+		if InList(k, list2) {
+			count += 1
+		}
+	}
+	if len(list2) <= count {
+		return true
+	}
+	return false
+}

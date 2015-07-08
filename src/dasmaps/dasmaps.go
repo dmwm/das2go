@@ -72,11 +72,29 @@ func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 
 		}
 	}
+	var values []string
+	for _, key := range keys {
+		val, _ := spec[key].(string)
+		values = append(values, val)
+	}
 	for _, rec := range cond_records {
 		lkeys := strings.Split(rec["lookup"].(string), ",")
-		if utils.EqualLists(lkeys, fields) {
-			log.Println("Match", rec["system"], rec["urn"], rec["url"])
+		rkeys := getRequiredArgs(rec)
+		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(keys, rkeys) {
+			log.Println("Match", rec["system"], rec["urn"], rec["url"], keys, rkeys)
 			out = append(out, rec)
+		}
+	}
+	return out
+}
+
+// TODO: extract all required arguments for given dasmap record
+func getRequiredArgs(rec mongo.DASRecord) []string {
+	var out []string
+	params := rec["params"].(mongo.DASRecord)
+	for k, v := range params {
+		if v == "required" {
+			out = append(out, k)
 		}
 	}
 	return out

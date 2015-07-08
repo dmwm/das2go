@@ -13,6 +13,7 @@ import (
 	"mongo"
 	"net/url"
 	"regexp"
+	"services"
 	"strings"
 	"time"
 	"utils"
@@ -60,6 +61,10 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
+	// TMP, until we change phedex maps to use JSON
+	if strings.Contains(base, "phedex") {
+		base = strings.Replace(base, "xml", "json", -1)
+	}
 	if !ok {
 		log.Fatal("Unable to extract url from DAS map", dasmap)
 	}
@@ -120,17 +125,24 @@ func processURLs(urls []string, maps []mongo.DASRecord) {
 				system := ""
 				format := ""
 				expire := 0
+				urn := ""
 				for _, dmap := range maps {
 					surl := dasmaps.GetString(dmap, "url")
+					// TMP fix, until we fix Phedex data to use JSON
+					if strings.Contains(surl, "phedex") {
+						surl = strings.Replace(surl, "xml", "json", -1)
+					}
 					if strings.Split(r.Url, "?")[0] == surl {
+						urn = dasmaps.GetString(dmap, "urn")
 						system = dasmaps.GetString(dmap, "system")
 						expire = dasmaps.GetInt(dmap, "expire")
 						format = dasmaps.GetString(dmap, "format")
-						break
 					}
 				}
 				// TODO: replace with parsing and writing to mongo
-				log.Println("Response", system, format, expire, r.Url, data)
+				log.Println("Response", system, urn, format, expire, r.Url, data)
+				rec := services.Unmarshal(system, urn, r.Data)
+				log.Println("#### Unmarshalled data", system, urn, rec)
 				// remove from umap, indicate that we processed it
 				delete(umap, r.Url) // remove Url from map
 			}
