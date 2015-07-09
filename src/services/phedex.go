@@ -47,6 +47,23 @@ func loadPhedexData(data []byte) []mongo.DASRecord {
 
 // Unmarshal Phedex data stream and return DAS records based on api
 func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
-	rec := loadPhedexData(data)
-	return rec
+	var out []mongo.DASRecord
+	records := loadPhedexData(data)
+	for _, rec := range records {
+		if api == "fileReplicas4dataset" {
+			val := rec["phedex"].(map[string]interface{})
+			blocks := val["block"].([]interface{})
+			for _, item := range blocks {
+				brec := item.(map[string]interface{})
+				files := brec["file"].([]interface{})
+				for _, elem := range files {
+					frec := elem.(map[string]interface{})
+					out = append(out, frec)
+				}
+			}
+		} else {
+			out = append(out, rec)
+		}
+	}
+	return out
 }

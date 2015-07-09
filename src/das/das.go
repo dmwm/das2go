@@ -90,7 +90,7 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	return base
 }
 
-func processURLs(urls []string, maps []mongo.DASRecord) {
+func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps) {
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
 	rmax := 3 // maximum number of retries
@@ -141,8 +141,10 @@ func processURLs(urls []string, maps []mongo.DASRecord) {
 				}
 				// TODO: replace with parsing and writing to mongo
 				log.Println("Response", system, urn, format, expire, r.Url, data)
-				rec := services.Unmarshal(system, urn, r.Data)
-				log.Println("#### Unmarshalled data", system, urn, rec)
+				notations := dmaps.FindNotations(system)
+				records := services.Unmarshal(system, urn, r.Data, notations)
+				records = services.AdjustRecords(dasquery, records)
+				log.Println("#### Unmarshalled data", system, urn, records)
 				// remove from umap, indicate that we processed it
 				delete(umap, r.Url) // remove Url from map
 			}
@@ -173,7 +175,7 @@ func Process(query string, dmaps dasmaps.DASMaps) (bool, string) {
 		urls = append(urls, furl)
 	}
 	// TODO: this should be sent as goroutine
-	go processURLs(urls, maps)
+	go processURLs(dasquery, urls, maps, dmaps)
 	// perform merge step
 	log.Println("Merge DAS data records from DAS cache into DAS merge collection")
 	return status, dasquery.Qhash

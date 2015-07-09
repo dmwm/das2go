@@ -24,6 +24,6 @@ func loadDBSData(data []byte) []mongo.DASRecord {
 
 // Unmarshal Phedex data stream and return DAS records based on api
 func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
-	rec := loadDBSData(data)
-	return rec
+	records := loadDBSData(data)
+	return records
 }

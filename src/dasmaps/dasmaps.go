@@ -16,14 +16,16 @@ import (
 )
 
 type DASMaps struct {
-	records  []mongo.DASRecord
-	services []string
+	records   []mongo.DASRecord
+	services  []string
+	notations []mongo.DASRecord
 }
 
 func (m *DASMaps) Maps() []mongo.DASRecord {
 	return m.records
 }
 
+// DASMaps interface method to get list of services
 func (m *DASMaps) Services() []string {
 	if len(m.services) != 0 {
 		return m.services
@@ -48,6 +50,42 @@ func (m *DASMaps) Services() []string {
 	return m.services
 }
 
+// DASMaps interface method to get notation maps
+func (m *DASMaps) NotationMaps() []mongo.DASRecord {
+	if len(m.notations) != 0 {
+		return m.notations
+	}
+	var value string
+	for _, rec := range m.records {
+		rtype := rec["type"]
+		if val, ok := rtype.(string); ok {
+			value = val
+		} else {
+			continue
+		}
+		if value == "notation" {
+			m.notations = append(m.notations, rec)
+		}
+	}
+	return m.notations
+}
+
+// Find notation maps for given system
+func (m *DASMaps) FindNotations(system string) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	for _, rec := range m.NotationMaps() {
+		val, _ := rec["system"].(string)
+		if val == system {
+			nmaps := GetDASMaps(rec["notations"])
+			for _, nmap := range nmaps {
+				out = append(out, nmap)
+			}
+		}
+	}
+	return out
+}
+
+// get DAS map from given record
 func GetDASMaps(entry interface{}) []mongo.DASRecord {
 	var maps []mongo.DASRecord
 	if val, ok := entry.([]interface{}); ok {
@@ -59,6 +97,7 @@ func GetDASMaps(entry interface{}) []mongo.DASRecord {
 	return maps
 }
 
+// Find services for given set fields and spec pair, return DAS maps associated with found services
 func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 	keys := utils.MapKeys(spec)
 	var cond_records, out []mongo.DASRecord
@@ -124,4 +163,12 @@ func GetFloat(dmap mongo.DASRecord, key string) float64 {
 		log.Fatal("Unable to extract key ", key, " from DAS map", dmap)
 	}
 	return val
+}
+
+// Get notation values from notation map
+func GetNotation(nmap mongo.DASRecord) (string, string, string) {
+	api_output := GetString(nmap, "api_output")
+	rec_key := GetString(nmap, "rec_key")
+	api := GetString(nmap, "api")
+	return api, api_output, rec_key
 }
