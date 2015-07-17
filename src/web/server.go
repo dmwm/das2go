@@ -26,6 +26,8 @@ import (
  */
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("query")
+	pid := r.FormValue("pid")
+	log.Println("input", query, pid)
 	limit, err := strconv.Atoi(r.FormValue("limit"))
 	if err != nil {
 		limit = 10
@@ -52,9 +54,16 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	} else if path == "/das/request" {
 		log.Println("Process request", query, limit, idx)
 	} else if path == "/das/cache" {
-		status, qhash := das.Process(query, dasmaps)
-		response["status"] = status
-		response["qhash"] = qhash
+		if len(pid) == 32 {
+			status, data := das.GetData(pid)
+			response["status"] = status
+			response["pid"] = pid
+			response["data"] = data
+		} else {
+			status, qhash := das.Process(query, dasmaps)
+			response["status"] = status
+			response["pid"] = qhash
+		}
 		response["idx"] = idx
 		response["limit"] = limit
 		js, err := json.Marshal(&response)
