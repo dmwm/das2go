@@ -90,7 +90,18 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	return base
 }
 
+// Helper function to parse DAS configuration file and return
+// MongoDB uri, dbname, collection name
+func parseConfig() (string, string, string) {
+	uri := "mongodb://localhost:8230"
+	dbname := "das"
+	coll := "cache"
+	return uri, dbname, coll
+}
+
+// helper function to process given set of URLs associted with dasquery
 func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps) {
+	uri, dbname, coll := parseConfig()
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
 	rmax := 3 // maximum number of retries
@@ -143,6 +154,8 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				records := services.Unmarshal(system, urn, r.Data, notations, expire)
 				records = services.AdjustRecords(dasquery, records)
 				log.Println("#### Unmarshalled data", system, urn, records)
+				// insert records into MongoDB
+				mongo.Insert(uri, dbname, coll, records)
 				// remove from umap, indicate that we processed it
 				delete(umap, r.Url) // remove Url from map
 			}
@@ -177,4 +190,11 @@ func Process(query string, dmaps dasmaps.DASMaps) (bool, string) {
 	// perform merge step
 	log.Println("Merge DAS data records from DAS cache into DAS merge collection")
 	return status, dasquery.Qhash
+}
+
+// Get data for given pid (DAS Query qhash)
+func GetData(pid string) (bool, []string) {
+	var data []string
+	status := true
+	return status, data
 }
