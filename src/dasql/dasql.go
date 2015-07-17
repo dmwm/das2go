@@ -22,6 +22,7 @@ type DASQuery struct {
 	Spec                        bson.M
 	Fields                      []string
 	pipe                        string
+	Instance                    string
 }
 
 // implement own formatter using DASQuery rather then *DASQuery, since
@@ -126,6 +127,7 @@ func Parse(query string) DASQuery {
 		pipe = parts[len(parts)-1]
 	}
 	nan := "_NA_"
+	instance := "prod/global"
 	daskeys := []string{"file", "dataset", "lumi", "run"}
 	specials := []string{"date", "system", "instance"}
 	spec_ops := []string{"in", "between"}
@@ -201,6 +203,7 @@ func Parse(query string) DASQuery {
 	rec.Fields = fields
 	rec.Qhash = qhash(relaxed_query)
 	rec.pipe = pipe
+	rec.Instance = instance
 	return rec
 }
 
