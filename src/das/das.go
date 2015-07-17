@@ -121,9 +121,8 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 					delete(umap, r.Url) // remove Url from map
 				}
 			} else {
-				data := string(r.Data[:])
 				system := ""
-				format := ""
+				//                 format := ""
 				expire := 0
 				urn := ""
 				for _, dmap := range maps {
@@ -136,13 +135,12 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 						urn = dasmaps.GetString(dmap, "urn")
 						system = dasmaps.GetString(dmap, "system")
 						expire = dasmaps.GetInt(dmap, "expire")
-						format = dasmaps.GetString(dmap, "format")
+						//                         format = dasmaps.GetString(dmap, "format")
 					}
 				}
 				// TODO: replace with parsing and writing to mongo
-				log.Println("Response", system, urn, format, expire, r.Url, data)
 				notations := dmaps.FindNotations(system)
-				records := services.Unmarshal(system, urn, r.Data, notations)
+				records := services.Unmarshal(system, urn, r.Data, notations, expire)
 				records = services.AdjustRecords(dasquery, records)
 				log.Println("#### Unmarshalled data", system, urn, records)
 				// remove from umap, indicate that we processed it
