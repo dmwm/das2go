@@ -44,7 +44,7 @@ func Insert(uri, dbname, collname string, records []DASRecord) {
 	session.SetMode(mgo.Monotonic, true)
 	c := session.DB(dbname).C(collname)
 	if err := c.Insert(&records); err != nil {
-		log.Println("Faile to isert DAS record", err)
+		log.Println("Fail to insert DAS record", err)
 	}
 }
 
