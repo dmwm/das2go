@@ -9,6 +9,7 @@ package das
 import (
 	"dasmaps"
 	"dasql"
+	"labix.org/v2/mgo/bson"
 	"log"
 	"mongo"
 	"net/url"
@@ -193,8 +194,10 @@ func Process(query string, dmaps dasmaps.DASMaps) (bool, string) {
 }
 
 // Get data for given pid (DAS Query qhash)
-func GetData(pid string) (bool, []string) {
-	var data []string
+func GetData(pid string) (bool, []mongo.DASRecord) {
+	uri, dbname, coll := parseConfig()
+	spec := bson.M{"qhash": pid}
+	data := mongo.Get(uri, dbname, coll, spec)
 	status := true
 	return status, data
 }
