@@ -43,9 +43,14 @@ func Insert(uri, dbname, collname string, records []DASRecord) {
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)
 	c := session.DB(dbname).C(collname)
-	if err := c.Insert(&records); err != nil {
-		log.Println("Fail to insert DAS record", err)
+	for _, rec := range records {
+		if err := c.Insert(&rec); err != nil {
+			log.Println("Fail to insert DAS record", err)
+		}
 	}
+	//     if err := c.Insert(&records); err != nil {
+	//         log.Println("Fail to insert DAS record", err)
+	//     }
 }
 
 // get records from MongoDB
