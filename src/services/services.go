@@ -32,15 +32,16 @@ func remap(system, api string, records []mongo.DASRecord, notations []mongo.DASR
 					rec[rec_key] = rec[api_key]
 				}
 			}
-			dasheader := dasHeader()
-			systems := dasheader["system"].([]string)
-			apis := dasheader["api"].([]string)
-			systems = append(systems, system)
-			apis = append(apis, apiname)
-			dasheader["system"] = systems
-			dasheader["api"] = apis
-			dasheader["expire"] = expire
 		}
+		dasheader := dasHeader()
+		systems := dasheader["system"].([]string)
+		apis := dasheader["api"].([]string)
+		systems = append(systems, system)
+		dasheader["system"] = systems
+		dasheader["expire"] = expire
+		apis = append(apis, api)
+		dasheader["api"] = apis
+		rec["das"] = dasheader
 		out = append(out, rec)
 	}
 	return out
@@ -72,6 +73,7 @@ func dasHeader() mongo.DASRecord {
 func AdjustRecords(dasquery dasql.DASQuery, records []mongo.DASRecord) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	fields := dasquery.Fields
+	qhash := dasquery.Qhash
 	if len(fields) > 1 {
 		return records
 	}
@@ -79,10 +81,12 @@ func AdjustRecords(dasquery dasql.DASQuery, records []mongo.DASRecord) []mongo.D
 	for _, rec := range records {
 		keys := utils.MapKeys(rec)
 		if utils.InList(skey, keys) {
+			rec["qhash"] = qhash
 			out = append(out, rec)
 		} else {
 			newrec := make(mongo.DASRecord)
 			newrec[skey] = rec
+			newrec["qhash"] = qhash
 			out = append(out, newrec)
 		}
 	}
