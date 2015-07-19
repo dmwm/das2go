@@ -6,6 +6,11 @@
  */
 package utils
 
+import (
+	"strconv"
+	"time"
+)
+
 func FindInList(a string, arr []string) bool {
 	for _, e := range arr {
 		if e == a {
@@ -63,4 +68,13 @@ func CheckEntries(list1, list2 []string) bool {
 		return true
 	}
 	return false
+}
+
+// convert expire timestamp (int) into seconds since epoch
+func Expire(expire int) int64 {
+	tstamp := strconv.Itoa(expire)
+	if len(tstamp) == 10 {
+		return int64(expire)
+	}
+	return int64(time.Now().Unix() + int64(expire))
 }
