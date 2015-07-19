@@ -9,6 +9,7 @@ package das
 import (
 	"dasmaps"
 	"dasql"
+	"fmt"
 	"labix.org/v2/mgo/bson"
 	"log"
 	"mongo"
@@ -150,11 +151,26 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 						//                         format = dasmaps.GetString(dmap, "format")
 					}
 				}
-				// TODO: replace with parsing and writing to mongo
+				// process data records
 				notations := dmaps.FindNotations(system)
 				records := services.Unmarshal(system, urn, r.Data, notations)
 				records = services.AdjustRecords(dasquery, system, urn, records, expire)
-				log.Println("#### Unmarshalled data", system, urn, records)
+
+				// get DAS record and adjust its settings
+				dasrecord := services.GetDASRecord(uri, dbname, coll, dasquery)
+				dasstatus := fmt.Sprintf("process system=%s urn=%s", system, urn)
+				dasexpire := services.GetExpire(dasrecord)
+				rec := records[0]
+				recexpire := services.GetExpire(rec)
+				if dasexpire < recexpire {
+					dasexpire = recexpire
+				}
+				das := dasrecord["das"].(mongo.DASRecord)
+				das["expire"] = dasexpire
+				das["status"] = dasstatus
+				dasrecord["das"] = das
+				services.UpdateDASRecord(uri, dbname, coll, dasquery.Qhash, dasrecord)
+
 				// insert records into MongoDB
 				mongo.Insert(uri, dbname, coll, records)
 				// remove from umap, indicate that we processed it
@@ -173,20 +189,27 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 }
 
 // Process DAS query
-func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) (bool, string) {
-	status := true
-	// parse input query and convert it into DASQuery format
-	//     dasquery := dasql.Parse(query)
-	//     log.Printf("Process %s\n", dasquery)
+func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) (string, string) {
 	// find out list of APIs/CMS services which can process this query request
 	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
-	var urls []string
+	var urls, srvs []string
 	// loop over services and fetch data
 	for _, dmap := range maps {
 		furl := formUrlCall(dasquery, dmap)
 		urls = append(urls, furl)
+		srv := fmt.Sprintf("urn:%s system:%s", dmap["urn"], dmap["system"])
+		srvs = append(srvs, srv)
 	}
-	// TODO: this should be sent as goroutine
+
+	// set initial status and insert das record
+	status := "accepted"
+	dasrecord := services.CreateDASRecord(dasquery, status, srvs)
+	var records []mongo.DASRecord
+	records = append(records, dasrecord)
+	uri, dbname, coll := parseConfig()
+	mongo.Insert(uri, dbname, coll, records)
+
+	// process URLs which will insert records into das cache
 	go processURLs(dasquery, urls, maps, dmaps)
 	// perform merge step
 	log.Println("Merge DAS data records from DAS cache into DAS merge collection")
