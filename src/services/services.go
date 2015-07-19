@@ -16,7 +16,7 @@ import (
 
 // remap function uses DAS notations and convert series of DAS records
 // into another set where appropriate remapping is done
-func remap(system, api string, records []mongo.DASRecord, notations []mongo.DASRecord, expire int) []mongo.DASRecord {
+func remap(api string, records []mongo.DASRecord, notations []mongo.DASRecord) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	keys := utils.MapKeys(records[0])
 	for _, rec := range records {
@@ -33,21 +33,12 @@ func remap(system, api string, records []mongo.DASRecord, notations []mongo.DASR
 				}
 			}
 		}
-		dasheader := dasHeader()
-		systems := dasheader["system"].([]string)
-		apis := dasheader["api"].([]string)
-		systems = append(systems, system)
-		dasheader["system"] = systems
-		dasheader["expire"] = expire
-		apis = append(apis, api)
-		dasheader["api"] = apis
-		rec["das"] = dasheader
 		out = append(out, rec)
 	}
 	return out
 }
 
-func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord, expire int) []mongo.DASRecord {
+func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	switch {
 	case system == "phedex":
@@ -55,7 +46,7 @@ func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord, exp
 	case system == "dbs3":
 		out = DBSUnmarshal(api, data)
 	}
-	return remap(system, api, out, notations, expire)
+	return remap(api, out, notations)
 }
 
 func dasHeader() mongo.DASRecord {
@@ -70,7 +61,7 @@ func dasHeader() mongo.DASRecord {
 }
 
 // adjust DAS record and add (if necessary) leading key from DAS query
-func AdjustRecords(dasquery dasql.DASQuery, records []mongo.DASRecord) []mongo.DASRecord {
+func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.DASRecord, expire int) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	fields := dasquery.Fields
 	qhash := dasquery.Qhash
@@ -79,14 +70,26 @@ func AdjustRecords(dasquery dasql.DASQuery, records []mongo.DASRecord) []mongo.D
 	}
 	skey := fields[0]
 	for _, rec := range records {
+		// DAS header for records
+		dasheader := dasHeader()
+		systems := dasheader["system"].([]string)
+		apis := dasheader["api"].([]string)
+		systems = append(systems, system)
+		dasheader["system"] = systems
+		dasheader["expire"] = utils.Expire(expire)
+		apis = append(apis, api)
+		dasheader["api"] = apis
+
 		keys := utils.MapKeys(rec)
 		if utils.InList(skey, keys) {
 			rec["qhash"] = qhash
+			rec["das"] = dasheader
 			out = append(out, rec)
 		} else {
 			newrec := make(mongo.DASRecord)
 			newrec[skey] = rec
 			newrec["qhash"] = qhash
+			newrec["das"] = dasheader
 			out = append(out, newrec)
 		}
 	}
