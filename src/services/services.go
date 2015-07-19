@@ -10,6 +10,7 @@ package services
 import (
 	"dasmaps"
 	"dasql"
+	"labix.org/v2/mgo/bson"
 	"mongo"
 	"utils"
 )
@@ -49,9 +50,10 @@ func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []m
 	return remap(api, out, notations)
 }
 
-func dasHeader() mongo.DASRecord {
+func DASHeader() mongo.DASRecord {
 	das := make(mongo.DASRecord)
-	das["expire"] = 0
+	das["expire"] = 60 // default expire
+	das["record"] = 1  // by default it is a data record (1 vs das record 0)
 	das["primary_key"] = ""
 	das["instance"] = ""
 	das["api"] = []string{}
@@ -71,7 +73,7 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 	skey := fields[0]
 	for _, rec := range records {
 		// DAS header for records
-		dasheader := dasHeader()
+		dasheader := DASHeader()
 		systems := dasheader["system"].([]string)
 		apis := dasheader["api"].([]string)
 		systems = append(systems, system)
@@ -94,4 +96,42 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 		}
 	}
 	return out
+}
+
+// create DAS record for DAS cache
+func CreateDASRecord(dasquery dasql.DASQuery, status string, srvs []string) mongo.DASRecord {
+	dasrecord := make(mongo.DASRecord)
+	dasrecord["query"] = dasquery.Query
+	dasrecord["qhash"] = dasquery.Qhash
+	dasrecord["instance"] = dasquery.Instance
+	dasheader := DASHeader()
+	dasheader["record"] = 0
+	dasheader["status"] = status
+	dasheader["services"] = srvs
+	dasheader["system"] = []string{"das"}
+	dasheader["expire"] = utils.Expire(60) // initial expire
+	dasheader["api"] = []string{"das"}
+	dasrecord["das"] = dasheader
+	return dasrecord
+}
+
+// get DAS record from das cache
+func GetDASRecord(uri, dbname, coll string, dasquery dasql.DASQuery) mongo.DASRecord {
+	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 0}
+	rec := mongo.Get(uri, dbname, coll, spec)
+	return rec[0]
+}
+
+// update DAS record in das cache
+func UpdateDASRecord(uri, dbname, coll, qhash string, dasrecord mongo.DASRecord) {
+	spec := bson.M{"qhash": qhash, "das.record": 0}
+	newdata := bson.M{"query": dasrecord["query"], "qhash": dasrecord["qhash"], "instance": dasrecord["instance"], "das": dasrecord["das"]}
+	mongo.Update(uri, dbname, coll, spec, newdata)
+}
+
+// helper function to get expire value from DAS/data record
+func GetExpire(rec mongo.DASRecord) int64 {
+	das := rec["das"].(mongo.DASRecord)
+	expire := das["expire"].(int64)
+	return expire
 }
