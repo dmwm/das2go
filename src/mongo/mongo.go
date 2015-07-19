@@ -70,6 +70,38 @@ func Get(uri, dbname, collname string, spec bson.M) []DASRecord {
 	return out
 }
 
+// get number records from MongoDB
+func Count(uri, dbname, collname string, spec bson.M) int {
+	session, err := mgo.Dial(uri)
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB(dbname).C(collname)
+	nrec := 0
+	nrec, err = c.Find(spec).Count()
+	if err != nil {
+		panic(err)
+	}
+	return nrec
+}
+
+// remove records from MongoDB
+func Remove(uri, dbname, collname string, spec bson.M) {
+	session, err := mgo.Dial(uri)
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB(dbname).C(collname)
+	_, err = c.RemoveAll(spec)
+	if err != nil && err != mgo.ErrNotFound {
+		panic(err)
+	}
+}
+
 func LoadJsonData(data []byte) DASRecord {
 	r := make(DASRecord)
 	err := json.Unmarshal(data, &r)
