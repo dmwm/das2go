@@ -14,6 +14,7 @@ package web
 import (
 	"das"
 	"dasmaps"
+	"dasql"
 	//     "html/template"
 	"encoding/json"
 	"log"
@@ -26,7 +27,16 @@ import (
  */
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("query")
+	dasquery := dasql.Parse(query)
+	log.Printf("Process %s\n", dasquery)
+
 	pid := r.FormValue("pid")
+	if pid == "" {
+		pid = dasquery.Qhash
+	}
+	if len(pid) != 32 {
+		http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
+	}
 	log.Println("input", query, pid)
 	limit, err := strconv.Atoi(r.FormValue("limit"))
 	if err != nil {
@@ -48,19 +58,22 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		log.Println("DAS services", dasmaps.Services())
 	}
 
+	// Remove expire records from cache
+	das.RemoveExpired(dasquery.Qhash)
+
 	// process requests based on the path
 	if path == "/das" {
 		log.Println("Process /das", query, limit, idx)
 	} else if path == "/das/request" {
 		log.Println("Process request", query, limit, idx)
 	} else if path == "/das/cache" {
-		if len(pid) == 32 {
+		if das.CheckData(pid) { // data exists in cache
 			status, data := das.GetData(pid)
 			response["status"] = status
 			response["pid"] = pid
 			response["data"] = data
-		} else {
-			status, qhash := das.Process(query, dasmaps)
+		} else { // no data in cache (even client supplied the pid), process it
+			status, qhash := das.Process(dasquery, dasmaps)
 			response["status"] = status
 			response["pid"] = qhash
 		}
