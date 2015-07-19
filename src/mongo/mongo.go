@@ -70,6 +70,21 @@ func Get(uri, dbname, collname string, spec bson.M) []DASRecord {
 	return out
 }
 
+// update inplace for given spec
+func Update(uri, dbname, collname string, spec, newdata bson.M) {
+	session, err := mgo.Dial(uri)
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB(dbname).C(collname)
+	err = c.Update(spec, newdata)
+	if err != nil {
+		panic(err)
+	}
+}
+
 // get number records from MongoDB
 func Count(uri, dbname, collname string, spec bson.M) int {
 	session, err := mgo.Dial(uri)
