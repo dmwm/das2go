@@ -152,8 +152,8 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				}
 				// TODO: replace with parsing and writing to mongo
 				notations := dmaps.FindNotations(system)
-				records := services.Unmarshal(system, urn, r.Data, notations, expire)
-				records = services.AdjustRecords(dasquery, records)
+				records := services.Unmarshal(system, urn, r.Data, notations)
+				records = services.AdjustRecords(dasquery, system, urn, records, expire)
 				log.Println("#### Unmarshalled data", system, urn, records)
 				// insert records into MongoDB
 				mongo.Insert(uri, dbname, coll, records)
@@ -173,11 +173,11 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 }
 
 // Process DAS query
-func Process(query string, dmaps dasmaps.DASMaps) (bool, string) {
+func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) (bool, string) {
 	status := true
 	// parse input query and convert it into DASQuery format
-	dasquery := dasql.Parse(query)
-	log.Printf("Process %s\n", dasquery)
+	//     dasquery := dasql.Parse(query)
+	//     log.Printf("Process %s\n", dasquery)
 	// find out list of APIs/CMS services which can process this query request
 	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
 	var urls []string
@@ -200,4 +200,25 @@ func GetData(pid string) (bool, []mongo.DASRecord) {
 	data := mongo.Get(uri, dbname, coll, spec)
 	status := true
 	return status, data
+}
+
+// Check if data exists in DAS cache for given query/pid
+func CheckData(pid string) bool {
+	uri, dbname, coll := parseConfig()
+	espec := bson.M{"$gt": time.Now().Unix()}
+	spec := bson.M{"qhash": pid, "das.expire": espec}
+	nrec := mongo.Count(uri, dbname, coll, spec)
+	if nrec > 0 {
+		return true
+	}
+	return false
+}
+
+// Remove expired records
+func RemoveExpired(pid string) {
+	uri, dbname, coll := parseConfig()
+	espec := bson.M{"$lt": time.Now().Unix()}
+	spec := bson.M{"qhash": pid, "das.expire": espec}
+	log.Println("### RemoveExpired", spec)
+	mongo.Remove(uri, dbname, coll, spec)
 }
