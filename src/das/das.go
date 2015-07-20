@@ -244,7 +244,7 @@ func GetData(pid, coll string) (bool, []mongo.DASRecord) {
 func CheckDataReadiness(pid string) bool {
 	uri, dbname := utils.ParseConfig()
 	espec := bson.M{"$gt": time.Now().Unix()}
-	spec := bson.M{"qhash": pid, "das.expire": espec, "record": 0, "das.status": "ok"}
+	spec := bson.M{"qhash": pid, "das.expire": espec, "das.record": 0, "das.status": "ok"}
 	nrec := mongo.Count(uri, dbname, "cache", spec)
 	if nrec == 1 {
 		return true
