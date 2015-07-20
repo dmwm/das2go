@@ -142,10 +142,28 @@ func GetExpire(rec mongo.DASRecord) int64 {
 // merge DAS data records
 func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	uri, dbname := utils.ParseConfig()
-	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 1}
+	// get DAS record and extract primary key
+	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 0}
 	records := mongo.Get(uri, dbname, "cache", spec)
+	dasrecord := records[0]
+	das := dasrecord["das"].(mongo.DASRecord)
+	pkey := das["primary_key"].(string)
+	// get DAS data record sorted by primary key
+	spec = bson.M{"qhash": dasquery.Qhash, "das.record": 1}
+	records = mongo.GetSorted(uri, dbname, "cache", spec, pkey)
+
+	// loop over data records and merge them, extract smallest expire timestamp
 	var expire int64
-	// put logic to merge records
-	expire = time.Now().Unix() + 3600
+	expire = time.Now().Unix() * 2
+	var out []mongo.DASRecord
+	for _, rec := range records {
+		das := rec["das"].(mongo.DASRecord)
+		dasexpire := das["expire"].(int64)
+		if expire < dasexpire {
+			expire = dasexpire
+		}
+		// put logic to merge records
+		out = append(out, rec)
+	}
 	return records, expire
 }
