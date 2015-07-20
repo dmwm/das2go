@@ -99,7 +99,7 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 }
 
 // create DAS record for DAS cache
-func CreateDASRecord(dasquery dasql.DASQuery, status string, srvs []string) mongo.DASRecord {
+func CreateDASRecord(dasquery dasql.DASQuery, status string, srvs, pkeys []string) mongo.DASRecord {
 	dasrecord := make(mongo.DASRecord)
 	dasrecord["query"] = dasquery.Query
 	dasrecord["qhash"] = dasquery.Qhash
@@ -108,6 +108,8 @@ func CreateDASRecord(dasquery dasql.DASQuery, status string, srvs []string) mong
 	dasheader["record"] = 0
 	dasheader["status"] = status
 	dasheader["services"] = srvs
+	dasheader["lookup_keys"] = utils.List2Set(pkeys)
+	dasheader["primary_key"] = pkeys[0]
 	dasheader["system"] = []string{"das"}
 	dasheader["expire"] = utils.Expire(60) // initial expire
 	dasheader["api"] = []string{"das"}
