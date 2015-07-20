@@ -70,6 +70,23 @@ func Get(uri, dbname, collname string, spec bson.M) []DASRecord {
 	return out
 }
 
+// get records from MongoDB sorted by given key
+func GetSorted(uri, dbname, collname string, spec bson.M, skey string) []DASRecord {
+	out := []DASRecord{}
+	session, err := mgo.Dial(uri)
+	if err != nil {
+		panic(err)
+	}
+	defer session.Close()
+	session.SetMode(mgo.Monotonic, true)
+	c := session.DB(dbname).C(collname)
+	err = c.Find(spec).Sort(skey).All(&out)
+	if err != nil {
+		panic(err)
+	}
+	return out
+}
+
 // update inplace for given spec
 func Update(uri, dbname, collname string, spec, newdata bson.M) {
 	session, err := mgo.Dial(uri)
