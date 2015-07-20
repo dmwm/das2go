@@ -12,6 +12,7 @@ import (
 	"dasql"
 	"labix.org/v2/mgo/bson"
 	"mongo"
+	"time"
 	"utils"
 )
 
@@ -99,19 +100,19 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 }
 
 // create DAS record for DAS cache
-func CreateDASRecord(dasquery dasql.DASQuery, status string, srvs, pkeys []string) mongo.DASRecord {
+func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRecord {
 	dasrecord := make(mongo.DASRecord)
 	dasrecord["query"] = dasquery.Query
 	dasrecord["qhash"] = dasquery.Qhash
 	dasrecord["instance"] = dasquery.Instance
 	dasheader := DASHeader()
-	dasheader["record"] = 0
-	dasheader["status"] = status
+	dasheader["record"] = 0           // DAS record type, zero for DAS record
+	dasheader["status"] = "requested" // initial status
 	dasheader["services"] = srvs
 	dasheader["lookup_keys"] = utils.List2Set(pkeys)
 	dasheader["primary_key"] = pkeys[0]
 	dasheader["system"] = []string{"das"}
-	dasheader["expire"] = utils.Expire(60) // initial expire
+	dasheader["expire"] = utils.Expire(60) // initial expire, 60 seconds from now
 	dasheader["api"] = []string{"das"}
 	dasrecord["das"] = dasheader
 	return dasrecord
@@ -136,4 +137,15 @@ func GetExpire(rec mongo.DASRecord) int64 {
 	das := rec["das"].(mongo.DASRecord)
 	expire := das["expire"].(int64)
 	return expire
+}
+
+// merge DAS data records
+func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
+	uri, dbname := utils.ParseConfig()
+	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 1}
+	records := mongo.Get(uri, dbname, "cache", spec)
+	var expire int64
+	// put logic to merge records
+	expire = time.Now().Unix() + 3600
+	return records, expire
 }
