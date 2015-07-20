@@ -67,14 +67,17 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	} else if path == "/das/request" {
 		log.Println("Process request", query, limit, idx)
 	} else if path == "/das/cache" {
-		if das.CheckData(pid) { // data exists in cache
-			status, data := das.GetData(pid)
+		if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
+			status, data := das.GetData(pid, "merge")
 			response["status"] = status
 			response["pid"] = pid
 			response["data"] = data
+		} else if das.CheckData(pid) { // data exists in cache but still processing
+			response["status"] = "processing"
+			response["pid"] = pid
 		} else { // no data in cache (even client supplied the pid), process it
-			status, qhash := das.Process(dasquery, dasmaps)
-			response["status"] = status
+			qhash := das.Process(dasquery, dasmaps)
+			response["status"] = "requested"
 			response["pid"] = qhash
 		}
 		response["idx"] = idx
