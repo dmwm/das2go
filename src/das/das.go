@@ -158,7 +158,7 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 
 				// get DAS record and adjust its settings
 				dasrecord := services.GetDASRecord(uri, dbname, coll, dasquery)
-				dasstatus := fmt.Sprintf("process system=%s urn=%s", system, urn)
+				dasstatus := fmt.Sprintf("process %s:%s", system, urn)
 				dasexpire := services.GetExpire(dasrecord)
 				rec := records[0]
 				recexpire := services.GetExpire(rec)
@@ -192,18 +192,30 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) (string, string) {
 	// find out list of APIs/CMS services which can process this query request
 	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
-	var urls, srvs []string
+	var urls, srvs, pkeys []string
 	// loop over services and fetch data
 	for _, dmap := range maps {
 		furl := formUrlCall(dasquery, dmap)
 		urls = append(urls, furl)
-		srv := fmt.Sprintf("urn:%s system:%s", dmap["urn"], dmap["system"])
+		srv := fmt.Sprintf("%s:%s", dmap["system"], dmap["urn"])
 		srvs = append(srvs, srv)
+		lkeys := strings.Split(dmap["lookup"].(string), ",")
+		for _, pkey := range lkeys {
+			for _, item := range dmap["das_map"].([]interface{}) {
+				rec := item.(mongo.DASRecord)
+				daskey := rec["das_key"].(string)
+				reckey := rec["rec_key"].(string)
+				if daskey == pkey {
+					pkeys = append(pkeys, reckey)
+					break
+				}
+			}
+		}
 	}
 
 	// set initial status and insert das record
 	status := "accepted"
-	dasrecord := services.CreateDASRecord(dasquery, status, srvs)
+	dasrecord := services.CreateDASRecord(dasquery, status, srvs, pkeys)
 	var records []mongo.DASRecord
 	records = append(records, dasrecord)
 	uri, dbname, coll := parseConfig()
