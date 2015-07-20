@@ -78,3 +78,14 @@ func Expire(expire int) int64 {
 	}
 	return int64(time.Now().Unix() + int64(expire))
 }
+
+// helper function to convert input list into set
+func List2Set(arr []string) []string {
+	var out []string
+	for _, key := range arr {
+		if !InList(key, out) {
+			out = append(out, key)
+		}
+	}
+	return out
+}
