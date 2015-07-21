@@ -21,6 +21,9 @@ import (
 // into another set where appropriate remapping is done
 func remap(api string, records []mongo.DASRecord, notations []mongo.DASRecord) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	if len(records) == 0 {
+		return records
+	}
 	keys := utils.MapKeys(records[0])
 	for _, rec := range records {
 		for _, row := range notations {
@@ -111,9 +114,8 @@ func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRec
 	dasheader["status"] = "requested" // initial status
 	dasheader["services"] = srvs
 	dasheader["primary_key"] = pkeys[0]
-	//     dasheader["system"] = []string{"das"}
 	dasheader["expire"] = utils.Expire(60) // initial expire, 60 seconds from now
-	//     dasheader["api"] = []string{"das"}
+	dasheader["ts"] = time.Now().Unix()
 	dasrecord["das"] = dasheader
 	return dasrecord
 }
@@ -214,7 +216,7 @@ func mergeDASparts(das1, das2 mongo.DASRecord) mongo.DASRecord {
 		expire = ex2
 	}
 	das["expire"] = expire
-	das["status"] = "merged"
+	das["status"] = "ok" // merged step should return ok status
 	das["primary_key"] = das1["primary_key"]
 	das["record"] = 1
 	return das
