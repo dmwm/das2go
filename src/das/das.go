@@ -93,7 +93,7 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 }
 
 // helper function to process given set of URLs associted with dasquery
-func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps) {
+func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps, pkeys []string) {
 	uri, dbname := utils.ParseConfig()
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
@@ -145,7 +145,7 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				// process data records
 				notations := dmaps.FindNotations(system)
 				records := services.Unmarshal(system, urn, r.Data, notations)
-				records = services.AdjustRecords(dasquery, system, urn, records, expire)
+				records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
 
 				// get DAS record and adjust its settings
 				dasrecord := services.GetDASRecord(uri, dbname, "cache", dasquery)
@@ -226,16 +226,20 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	mongo.Insert(uri, dbname, "cache", records)
 
 	// process URLs which will insert records into das cache and merge them into das merge collection
-	go processURLs(dasquery, urls, maps, dmaps)
+	go processURLs(dasquery, urls, maps, dmaps, pkeys)
 	return dasquery.Qhash
 }
 
 // Get data for given pid (DAS Query qhash)
-func GetData(pid, coll string) (bool, []mongo.DASRecord) {
+func GetData(pid, coll string) (string, []mongo.DASRecord) {
 	uri, dbname := utils.ParseConfig()
 	spec := bson.M{"qhash": pid}
 	data := mongo.Get(uri, dbname, coll, spec)
-	status := true
+	status, err := mongo.GetStringValue(data[0], "das.status")
+	if err != nil {
+		var data []mongo.DASRecord
+		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), data
+	}
 	return status, data
 }
 
