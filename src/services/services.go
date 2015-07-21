@@ -12,6 +12,7 @@ import (
 	"dasql"
 	"labix.org/v2/mgo/bson"
 	"mongo"
+	"strings"
 	"time"
 	"utils"
 )
@@ -57,8 +58,9 @@ func DASHeader() mongo.DASRecord {
 	das["record"] = 1  // by default it is a data record (1 vs das record 0)
 	das["primary_key"] = ""
 	das["instance"] = ""
-	das["api"] = []string{}
-	das["system"] = []string{}
+	//     das["api"] = []string{}
+	//     das["system"] = []string{}
+	das["services"] = []string{}
 	return das
 
 }
@@ -75,13 +77,11 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 	for _, rec := range records {
 		// DAS header for records
 		dasheader := DASHeader()
-		systems := dasheader["system"].([]string)
-		apis := dasheader["api"].([]string)
-		systems = append(systems, system)
-		dasheader["system"] = systems
+		srvs := dasheader["services"].([]string)
+		srv := strings.Join([]string{system, api}, ":")
+		srvs = append(srvs, srv)
+		dasheader["services"] = srvs
 		dasheader["expire"] = utils.Expire(expire)
-		apis = append(apis, api)
-		dasheader["api"] = apis
 
 		keys := utils.MapKeys(rec)
 		if utils.InList(skey, keys) {
@@ -111,9 +111,9 @@ func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRec
 	dasheader["services"] = srvs
 	dasheader["lookup_keys"] = utils.List2Set(pkeys)
 	dasheader["primary_key"] = pkeys[0]
-	dasheader["system"] = []string{"das"}
+	//     dasheader["system"] = []string{"das"}
 	dasheader["expire"] = utils.Expire(60) // initial expire, 60 seconds from now
-	dasheader["api"] = []string{"das"}
+	//     dasheader["api"] = []string{"das"}
 	dasrecord["das"] = dasheader
 	return dasrecord
 }
@@ -148,6 +148,7 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	dasrecord := records[0]
 	das := dasrecord["das"].(mongo.DASRecord)
 	pkey := das["primary_key"].(string)
+	mkey := strings.Split(pkey, ".")[0]
 	// get DAS data record sorted by primary key
 	spec = bson.M{"qhash": dasquery.Qhash, "das.record": 1}
 	records = mongo.GetSorted(uri, dbname, "cache", spec, pkey)
@@ -156,14 +157,67 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	var expire int64
 	expire = time.Now().Unix() * 2
 	var out []mongo.DASRecord
-	for _, rec := range records {
+	var oldrec, newrec, rec mongo.DASRecord
+	oldrec = records[0] // init with first record
+	newrec = records[0] // init with first record
+	for _, rec = range records {
 		das := rec["das"].(mongo.DASRecord)
 		dasexpire := das["expire"].(int64)
 		if expire < dasexpire {
 			expire = dasexpire
 		}
-		// put logic to merge records
-		out = append(out, rec)
+		data1, err1 := mongo.GetStringValue(oldrec, mkey)
+		data2, err2 := mongo.GetStringValue(rec, mkey)
+		if err1 == nil && err2 == nil && data1 != data2 {
+			oldrec = rec
+			// append newrec into output here
+			out = append(out, newrec)
+			continue
+		}
+		newrec = mergeRecords(rec, oldrec, mkey, dasquery.Qhash)
 	}
-	return records, expire
+	// we still left with last oldrec which should be merged with last record from the loop
+	newrec = mergeRecords(rec, oldrec, mkey, dasquery.Qhash)
+	out = append(out, newrec)
+	return out, expire
+}
+
+// function to merge DAS data records on given key
+func mergeRecords(oldrec, newrec mongo.DASRecord, key, qhash string) mongo.DASRecord {
+	var rec []mongo.DASRecord
+	rec = append(rec, oldrec[key].(mongo.DASRecord))
+	rec = append(rec, newrec[key].(mongo.DASRecord))
+	das := mergeDASparts(oldrec["das"].(mongo.DASRecord), newrec["das"].(mongo.DASRecord))
+	return mongo.DASRecord{key: rec, "qhash": qhash, "das": das}
+}
+
+// helper function to merge das parts of DAS records
+func mergeDASparts(das1, das2 mongo.DASRecord) mongo.DASRecord {
+	das := make(mongo.DASRecord)
+	var srvs []string
+	srvs1 := das1["services"].([]interface{})
+	srvs2 := das2["services"].([]interface{})
+	for _, srv := range srvs1 {
+		srvs = append(srvs, srv.(string))
+	}
+	for _, srv := range srvs2 {
+		srvs = append(srvs, srv.(string))
+	}
+	das["services"] = srvs
+	var expire int64
+	expire = time.Now().Unix() * 2
+	ex1, err1 := mongo.GetInt64Value(das1, "expire")
+	ex2, err2 := mongo.GetInt64Value(das1, "expire")
+	if err1 == nil && ex1 < expire {
+		expire = ex1
+	}
+	if err2 == nil && ex2 < expire {
+		expire = ex2
+	}
+	das["expire"] = expire
+	das["status"] = "merged"
+	das["primary_key"] = das1["primary_key"]
+	das["lookup_keys"] = das1["lookup_keys"]
+	das["record"] = 1
+	return das
 }
