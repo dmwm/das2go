@@ -151,10 +151,12 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				dasrecord := services.GetDASRecord(uri, dbname, "cache", dasquery)
 				dasstatus := fmt.Sprintf("process %s:%s", system, urn)
 				dasexpire := services.GetExpire(dasrecord)
-				rec := records[0]
-				recexpire := services.GetExpire(rec)
-				if dasexpire < recexpire {
-					dasexpire = recexpire
+				if len(records) != 0 {
+					rec := records[0]
+					recexpire := services.GetExpire(rec)
+					if dasexpire < recexpire {
+						dasexpire = recexpire
+					}
 				}
 				das := dasrecord["das"].(mongo.DASRecord)
 				das["expire"] = dasexpire
@@ -241,6 +243,25 @@ func GetData(pid, coll string) (string, []mongo.DASRecord) {
 		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), data
 	}
 	return status, data
+}
+
+// Get number of records for given DAS query qhash
+func Count(pid string) int {
+	uri, dbname := utils.ParseConfig()
+	spec := bson.M{"qhash": pid}
+	return mongo.Count(uri, dbname, "merge", spec)
+}
+
+// Get initial timestamp of DAS query request
+func GetTimestamp(pid string) int64 {
+	uri, dbname := utils.ParseConfig()
+	spec := bson.M{"qhash": pid, "das.record": 0}
+	data := mongo.Get(uri, dbname, "cache", spec)
+	ts, err := mongo.GetInt64Value(data[0], "das.ts")
+	if err != nil {
+		return time.Now().Unix()
+	}
+	return ts
 }
 
 // Check if data exists in DAS cache for given query/pid
