@@ -66,7 +66,7 @@ func DASHeader() mongo.DASRecord {
 }
 
 // adjust DAS record and add (if necessary) leading key from DAS query
-func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.DASRecord, expire int) []mongo.DASRecord {
+func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.DASRecord, expire int, pkeys []string) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	fields := dasquery.Fields
 	qhash := dasquery.Qhash
@@ -82,6 +82,7 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 		srvs = append(srvs, srv)
 		dasheader["services"] = srvs
 		dasheader["expire"] = utils.Expire(expire)
+		dasheader["primary_key"] = pkeys[0]
 
 		keys := utils.MapKeys(rec)
 		if utils.InList(skey, keys) {
@@ -109,7 +110,6 @@ func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRec
 	dasheader["record"] = 0           // DAS record type, zero for DAS record
 	dasheader["status"] = "requested" // initial status
 	dasheader["services"] = srvs
-	dasheader["lookup_keys"] = utils.List2Set(pkeys)
 	dasheader["primary_key"] = pkeys[0]
 	//     dasheader["system"] = []string{"das"}
 	dasheader["expire"] = utils.Expire(60) // initial expire, 60 seconds from now
@@ -166,15 +166,14 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 		if expire < dasexpire {
 			expire = dasexpire
 		}
-		data1, err1 := mongo.GetStringValue(oldrec, mkey)
-		data2, err2 := mongo.GetStringValue(rec, mkey)
+		data1, err1 := mongo.GetStringValue(oldrec, pkey)
+		data2, err2 := mongo.GetStringValue(rec, pkey)
 		if err1 == nil && err2 == nil && data1 != data2 {
 			oldrec = rec
-			// append newrec into output here
 			out = append(out, newrec)
-			continue
+		} else {
+			newrec = mergeRecords(rec, oldrec, mkey, dasquery.Qhash)
 		}
-		newrec = mergeRecords(rec, oldrec, mkey, dasquery.Qhash)
 	}
 	// we still left with last oldrec which should be merged with last record from the loop
 	newrec = mergeRecords(rec, oldrec, mkey, dasquery.Qhash)
@@ -217,7 +216,6 @@ func mergeDASparts(das1, das2 mongo.DASRecord) mongo.DASRecord {
 	das["expire"] = expire
 	das["status"] = "merged"
 	das["primary_key"] = das1["primary_key"]
-	das["lookup_keys"] = das1["lookup_keys"]
 	das["record"] = 1
 	return das
 }
