@@ -26,7 +26,7 @@ import (
  * RequestHandler is used by web server to handle incoming requests
  */
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
-	query := r.FormValue("query")
+	query := r.FormValue("input")
 	dasquery := dasql.Parse(query)
 	log.Printf("Process %s\n", dasquery)
 
@@ -69,16 +69,22 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	} else if path == "/das/cache" {
 		if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
 			status, data := das.GetData(pid, "merge")
+			response["nresults"] = das.Count(pid)
+			response["timestamp"] = das.GetTimestamp(pid)
 			response["status"] = status
 			response["pid"] = pid
 			response["data"] = data
 		} else if das.CheckData(pid) { // data exists in cache but still processing
-			response["status"] = "processing"
-			response["pid"] = pid
+			w.Write([]byte(pid))
+			return
+			//             response["status"] = "processing"
+			//             response["pid"] = pid
 		} else { // no data in cache (even client supplied the pid), process it
 			qhash := das.Process(dasquery, dasmaps)
-			response["status"] = "requested"
-			response["pid"] = qhash
+			w.Write([]byte(qhash))
+			return
+			//             response["status"] = "requested"
+			//             response["pid"] = qhash
 		}
 		response["idx"] = idx
 		response["limit"] = limit
