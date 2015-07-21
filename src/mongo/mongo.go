@@ -10,29 +10,85 @@ package mongo
 
 import (
 	"encoding/json"
+	"fmt"
 	"labix.org/v2/mgo"
 	"labix.org/v2/mgo/bson"
 	"log"
+	"strings"
 )
 
 type DASRecord map[string]interface{}
 
-func GetStringValue(rec DASRecord, key string) string {
+// function to get string value from DAS record for given key
+func GetStringValue(rec DASRecord, key string) (string, error) {
+	keys := strings.Split(key, ".")
+	if len(keys) > 1 {
+		val := rec[keys[0]].(DASRecord)
+		if len(keys) == 2 {
+			return GetStringValue(val, keys[1])
+		}
+		return GetStringValue(val, strings.Join(keys[1:len(keys)], "."))
+	}
 	value := rec[key]
 	val, ok := value.(string)
 	if ok {
-		return val
+		return val, nil
 	}
-	panic("Wrong type")
+	return "", fmt.Errorf("Unable to cast value for key '%s'", key)
 }
-func GetIntValue(rec DASRecord, key string) int {
+
+// function to get int value from DAS record for given key
+func GetIntValue(rec DASRecord, key string) (int, error) {
+	keys := strings.Split(key, ".")
+	if len(keys) > 1 {
+		val := rec[keys[0]].(DASRecord)
+		if len(keys) == 2 {
+			return GetIntValue(val, keys[1])
+		}
+		return GetIntValue(val, strings.Join(keys[1:len(keys)], "."))
+	}
 	value := rec[key]
 	val, ok := value.(int)
 	if ok {
-		return val
+		return val, nil
 	}
-	panic("Wrong type")
+	return 0, fmt.Errorf("Unable to cast value for key '%s'", key)
 }
+
+// function to get int value from DAS record for given key
+func GetInt64Value(rec DASRecord, key string) (int64, error) {
+	keys := strings.Split(key, ".")
+	if len(keys) > 1 {
+		val := rec[keys[0]].(DASRecord)
+		if len(keys) == 2 {
+			return GetInt64Value(val, keys[1])
+		}
+		return GetInt64Value(val, strings.Join(keys[1:len(keys)], "."))
+	}
+	value := rec[key]
+	val, ok := value.(int64)
+	if ok {
+		return val, nil
+	}
+	return 0, fmt.Errorf("Unable to cast value for key '%s'", key)
+}
+
+// func GetStringValue(rec DASRecord, key string) string {
+//     value := rec[key]
+//     val, ok := value.(string)
+//     if ok {
+//         return val
+//     }
+//     panic("Wrong type")
+// }
+// func GetIntValue(rec DASRecord, key string) int {
+//     value := rec[key]
+//     val, ok := value.(int)
+//     if ok {
+//         return val
+//     }
+//     panic("Wrong type")
+// }
 
 // insert into MongoDB
 func Insert(uri, dbname, collname string, records []DASRecord) {
