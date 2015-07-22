@@ -22,9 +22,13 @@ import (
 	"strconv"
 )
 
+// global dasmaps
+var _dasmaps dasmaps.DASMaps
+
 /*
  * RequestHandler is used by web server to handle incoming requests
  */
+
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("input")
 	dasquery := dasql.Parse(query)
@@ -37,7 +41,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	if len(pid) != 32 {
 		http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
 	}
-	log.Println("input", query, pid)
 	limit, err := strconv.Atoi(r.FormValue("limit"))
 	if err != nil {
 		limit = 10
@@ -48,15 +51,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	path := r.URL.Path
 	response := make(map[string]interface{})
-
-	// load DAS Maps if neccessary
-	var dasmaps dasmaps.DASMaps
-	uri := "mongodb://localhost:8230"
-	if len(dasmaps.Services()) == 0 {
-		log.Println("Load DAS maps")
-		dasmaps.LoadMaps(uri, "mapping", "db")
-		log.Println("DAS services", dasmaps.Services())
-	}
 
 	// Remove expire records from cache
 	das.RemoveExpired(dasquery.Qhash)
@@ -80,7 +74,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			//             response["status"] = "processing"
 			//             response["pid"] = pid
 		} else { // no data in cache (even client supplied the pid), process it
-			qhash := das.Process(dasquery, dasmaps)
+			qhash := das.Process(dasquery, _dasmaps)
 			w.Write([]byte(qhash))
 			return
 			//             response["status"] = "requested"
@@ -105,6 +99,15 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 // proxy server. It defines /fetch public interface
 func Server(port string) {
 	log.Printf("Start server localhost:%s/das", port)
+
+	// load DAS Maps if neccessary
+	uri := "mongodb://localhost:8230"
+	if len(_dasmaps.Services()) == 0 {
+		log.Println("Load DAS maps")
+		_dasmaps.LoadMaps(uri, "mapping", "db")
+		log.Println("DAS services", _dasmaps.Services())
+	}
+
 	http.HandleFunc("/das/request", RequestHandler)
 	http.HandleFunc("/das/cache", RequestHandler)
 	http.HandleFunc("/das", RequestHandler)
