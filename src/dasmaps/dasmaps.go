@@ -139,8 +139,8 @@ func getRequiredArgs(rec mongo.DASRecord) []string {
 	return out
 }
 
-func (m *DASMaps) LoadMaps(uri, dbname, dbcoll string) {
-	m.records = mongo.Get(uri, dbname, dbcoll, bson.M{})
+func (m *DASMaps) LoadMaps(dbname, dbcoll string) {
+	m.records = mongo.Get(dbname, dbcoll, bson.M{}, 0, -1) // index=0, limit=-1
 }
 
 func GetString(dmap mongo.DASRecord, key string) string {

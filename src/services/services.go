@@ -121,17 +121,17 @@ func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRec
 }
 
 // get DAS record from das cache
-func GetDASRecord(uri, dbname, coll string, dasquery dasql.DASQuery) mongo.DASRecord {
+func GetDASRecord(dasquery dasql.DASQuery) mongo.DASRecord {
 	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 0}
-	rec := mongo.Get(uri, dbname, coll, spec)
+	rec := mongo.Get("das", "cache", spec, 0, 1)
 	return rec[0]
 }
 
 // update DAS record in das cache
-func UpdateDASRecord(uri, dbname, coll, qhash string, dasrecord mongo.DASRecord) {
+func UpdateDASRecord(qhash string, dasrecord mongo.DASRecord) {
 	spec := bson.M{"qhash": qhash, "das.record": 0}
 	newdata := bson.M{"query": dasrecord["query"], "qhash": dasrecord["qhash"], "instance": dasrecord["instance"], "das": dasrecord["das"]}
-	mongo.Update(uri, dbname, coll, spec, newdata)
+	mongo.Update("das", "cache", spec, newdata)
 }
 
 // helper function to get expire value from DAS/data record
@@ -143,17 +143,16 @@ func GetExpire(rec mongo.DASRecord) int64 {
 
 // merge DAS data records
 func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
-	uri, dbname := utils.ParseConfig()
 	// get DAS record and extract primary key
 	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 0}
-	records := mongo.Get(uri, dbname, "cache", spec)
+	records := mongo.Get("das", "cache", spec, 0, 1)
 	dasrecord := records[0]
 	das := dasrecord["das"].(mongo.DASRecord)
 	pkey := das["primary_key"].(string)
 	mkey := strings.Split(pkey, ".")[0]
 	// get DAS data record sorted by primary key
 	spec = bson.M{"qhash": dasquery.Qhash, "das.record": 1}
-	records = mongo.GetSorted(uri, dbname, "cache", spec, pkey)
+	records = mongo.GetSorted("das", "cache", spec, pkey)
 
 	// loop over data records and merge them, extract smallest expire timestamp
 	var expire int64

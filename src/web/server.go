@@ -25,6 +25,28 @@ import (
 // global dasmaps
 var _dasmaps dasmaps.DASMaps
 
+func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
+	response := make(map[string]interface{})
+	if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
+		status, data := das.GetData(pid, "merge", idx, limit)
+		response["nresults"] = das.Count(pid)
+		response["timestamp"] = das.GetTimestamp(pid)
+		response["status"] = status
+		response["pid"] = pid
+		response["data"] = data
+	} else if das.CheckData(pid) { // data exists in cache but still processing
+		response["status"] = "processing"
+		response["pid"] = pid
+	} else { // no data in cache (even client supplied the pid), process it
+		qhash := das.Process(dasquery, _dasmaps)
+		response["status"] = "requested"
+		response["pid"] = qhash
+	}
+	response["idx"] = idx
+	response["limit"] = limit
+	return response
+}
+
 /*
  * RequestHandler is used by web server to handle incoming requests
  */
@@ -32,7 +54,7 @@ var _dasmaps dasmaps.DASMaps
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("input")
 	dasquery := dasql.Parse(query)
-	log.Printf("Process %s\n", dasquery)
+	log.Println(dasquery)
 
 	pid := r.FormValue("pid")
 	if pid == "" {
@@ -50,7 +72,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		idx = 0
 	}
 	path := r.URL.Path
-	response := make(map[string]interface{})
+	//     response := make(map[string]interface{})
 
 	// Remove expire records from cache
 	das.RemoveExpired(dasquery.Qhash)
@@ -59,29 +81,39 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	if path == "/das" {
 		log.Println("Process /das", query, limit, idx)
 	} else if path == "/das/request" {
-		log.Println("Process request", query, limit, idx)
+		response := processRequest(dasquery, pid, idx, limit)
+		log.Println("/das/request", response)
+		// put response on a web
 	} else if path == "/das/cache" {
-		if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
-			status, data := das.GetData(pid, "merge")
-			response["nresults"] = das.Count(pid)
-			response["timestamp"] = das.GetTimestamp(pid)
-			response["status"] = status
-			response["pid"] = pid
-			response["data"] = data
-		} else if das.CheckData(pid) { // data exists in cache but still processing
-			w.Write([]byte(pid))
+		response := processRequest(dasquery, pid, idx, limit)
+		status := response["status"]
+		if status != "ok" {
+			w.Write([]byte(response["pid"].(string)))
 			return
-			//             response["status"] = "processing"
-			//             response["pid"] = pid
-		} else { // no data in cache (even client supplied the pid), process it
-			qhash := das.Process(dasquery, _dasmaps)
-			w.Write([]byte(qhash))
-			return
-			//             response["status"] = "requested"
-			//             response["pid"] = qhash
 		}
-		response["idx"] = idx
-		response["limit"] = limit
+		/*
+			if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
+				status, data := das.GetData(pid, "merge")
+				response["nresults"] = das.Count(pid)
+				response["timestamp"] = das.GetTimestamp(pid)
+				response["status"] = status
+				response["pid"] = pid
+				response["data"] = data
+			} else if das.CheckData(pid) { // data exists in cache but still processing
+				w.Write([]byte(pid))
+				return
+				//             response["status"] = "processing"
+				//             response["pid"] = pid
+			} else { // no data in cache (even client supplied the pid), process it
+				qhash := das.Process(dasquery, _dasmaps)
+				w.Write([]byte(qhash))
+				return
+				//             response["status"] = "requested"
+				//             response["pid"] = qhash
+			}
+			response["idx"] = idx
+			response["limit"] = limit
+		*/
 		js, err := json.Marshal(&response)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -101,10 +133,9 @@ func Server(port string) {
 	log.Printf("Start server localhost:%s/das", port)
 
 	// load DAS Maps if neccessary
-	uri := "mongodb://localhost:8230"
 	if len(_dasmaps.Services()) == 0 {
 		log.Println("Load DAS maps")
-		_dasmaps.LoadMaps(uri, "mapping", "db")
+		_dasmaps.LoadMaps("mapping", "db")
 		log.Println("DAS services", _dasmaps.Services())
 	}
 

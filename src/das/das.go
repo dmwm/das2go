@@ -94,7 +94,6 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 
 // helper function to process given set of URLs associted with dasquery
 func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps, pkeys []string) {
-	uri, dbname := utils.ParseConfig()
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
 	rmax := 3 // maximum number of retries
@@ -143,7 +142,7 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
 
 				// get DAS record and adjust its settings
-				dasrecord := services.GetDASRecord(uri, dbname, "cache", dasquery)
+				dasrecord := services.GetDASRecord(dasquery)
 				dasstatus := fmt.Sprintf("process %s:%s", system, urn)
 				dasexpire := services.GetExpire(dasrecord)
 				if len(records) != 0 {
@@ -157,19 +156,19 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				das["expire"] = dasexpire
 				das["status"] = dasstatus
 				dasrecord["das"] = das
-				services.UpdateDASRecord(uri, dbname, "cache", dasquery.Qhash, dasrecord)
+				services.UpdateDASRecord(dasquery.Qhash, dasrecord)
 
 				// insert records into DAS cache collection
-				mongo.Insert(uri, dbname, "cache", records)
+				mongo.Insert("das", "cache", records)
 				// remove from umap, indicate that we processed it
 				delete(umap, r.Url) // remove Url from map
 			}
 		default:
 			if len(umap) == 0 { // no more requests, merge data records
 				records, expire := services.MergeDASRecords(dasquery)
-				mongo.Insert(uri, dbname, "merge", records)
+				mongo.Insert("das", "merge", records)
 				// get DAS record and adjust its settings
-				dasrecord := services.GetDASRecord(uri, dbname, "cache", dasquery)
+				dasrecord := services.GetDASRecord(dasquery)
 				dasexpire := services.GetExpire(dasrecord)
 				if dasexpire < expire {
 					dasexpire = expire
@@ -178,7 +177,7 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				das["expire"] = dasexpire
 				das["status"] = "ok"
 				dasrecord["das"] = das
-				services.UpdateDASRecord(uri, dbname, "cache", dasquery.Qhash, dasrecord)
+				services.UpdateDASRecord(dasquery.Qhash, dasrecord)
 				exit = true
 			}
 			time.Sleep(time.Duration(10) * time.Millisecond) // wait for response
@@ -217,8 +216,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	dasrecord := services.CreateDASRecord(dasquery, srvs, pkeys)
 	var records []mongo.DASRecord
 	records = append(records, dasrecord)
-	uri, dbname := utils.ParseConfig()
-	mongo.Insert(uri, dbname, "cache", records)
+	mongo.Insert("das", "cache", records)
 
 	// process URLs which will insert records into das cache and merge them into das merge collection
 	go processURLs(dasquery, urls, maps, dmaps, pkeys)
@@ -226,10 +224,9 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 }
 
 // Get data for given pid (DAS Query qhash)
-func GetData(pid, coll string) (string, []mongo.DASRecord) {
-	uri, dbname := utils.ParseConfig()
+func GetData(pid, coll string, idx, limit int) (string, []mongo.DASRecord) {
 	spec := bson.M{"qhash": pid}
-	data := mongo.Get(uri, dbname, coll, spec)
+	data := mongo.Get("das", coll, spec, idx, limit)
 	status, err := mongo.GetStringValue(data[0], "das.status")
 	if err != nil {
 		var data []mongo.DASRecord
@@ -240,16 +237,14 @@ func GetData(pid, coll string) (string, []mongo.DASRecord) {
 
 // Get number of records for given DAS query qhash
 func Count(pid string) int {
-	uri, dbname := utils.ParseConfig()
 	spec := bson.M{"qhash": pid}
-	return mongo.Count(uri, dbname, "merge", spec)
+	return mongo.Count("das", "merge", spec)
 }
 
 // Get initial timestamp of DAS query request
 func GetTimestamp(pid string) int64 {
-	uri, dbname := utils.ParseConfig()
 	spec := bson.M{"qhash": pid, "das.record": 0}
-	data := mongo.Get(uri, dbname, "cache", spec)
+	data := mongo.Get("das", "cache", spec, 0, 1)
 	ts, err := mongo.GetInt64Value(data[0], "das.ts")
 	if err != nil {
 		return time.Now().Unix()
@@ -260,10 +255,9 @@ func GetTimestamp(pid string) int64 {
 // Check if data exists in DAS cache for given query/pid
 // we look-up DAS record (record=0) with status ok (merging step is done)
 func CheckDataReadiness(pid string) bool {
-	uri, dbname := utils.ParseConfig()
 	espec := bson.M{"$gt": time.Now().Unix()}
 	spec := bson.M{"qhash": pid, "das.expire": espec, "das.record": 0, "das.status": "ok"}
-	nrec := mongo.Count(uri, dbname, "cache", spec)
+	nrec := mongo.Count("das", "cache", spec)
 	if nrec == 1 {
 		return true
 	}
@@ -272,10 +266,9 @@ func CheckDataReadiness(pid string) bool {
 
 // Check if data exists in DAS cache for given query/pid
 func CheckData(pid string) bool {
-	uri, dbname := utils.ParseConfig()
 	espec := bson.M{"$gt": time.Now().Unix()}
 	spec := bson.M{"qhash": pid, "das.expire": espec}
-	nrec := mongo.Count(uri, dbname, "cache", spec)
+	nrec := mongo.Count("das", "cache", spec)
 	if nrec > 0 {
 		return true
 	}
@@ -284,9 +277,8 @@ func CheckData(pid string) bool {
 
 // Remove expired records
 func RemoveExpired(pid string) {
-	uri, dbname := utils.ParseConfig()
 	espec := bson.M{"$lt": time.Now().Unix()}
 	spec := bson.M{"qhash": pid, "das.expire": espec}
-	mongo.Remove(uri, dbname, "cache", spec) // remove from cache collection
-	mongo.Remove(uri, dbname, "merge", spec) // remove from merge collection
+	mongo.Remove("das", "cache", spec) // remove from cache collection
+	mongo.Remove("das", "merge", spec) // remove from merge collection
 }

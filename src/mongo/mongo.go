@@ -9,6 +9,7 @@
 package mongo
 
 import (
+	"config"
 	"encoding/json"
 	"fmt"
 	"labix.org/v2/mgo"
@@ -73,26 +74,9 @@ func GetInt64Value(rec DASRecord, key string) (int64, error) {
 	return 0, fmt.Errorf("Unable to cast value for key '%s'", key)
 }
 
-// func GetStringValue(rec DASRecord, key string) string {
-//     value := rec[key]
-//     val, ok := value.(string)
-//     if ok {
-//         return val
-//     }
-//     panic("Wrong type")
-// }
-// func GetIntValue(rec DASRecord, key string) int {
-//     value := rec[key]
-//     val, ok := value.(int)
-//     if ok {
-//         return val
-//     }
-//     panic("Wrong type")
-// }
-
 // insert into MongoDB
-func Insert(uri, dbname, collname string, records []DASRecord) {
-	session, err := mgo.Dial(uri)
+func Insert(dbname, collname string, records []DASRecord) {
+	session, err := mgo.Dial(config.Uri())
 	if err != nil {
 		panic(err)
 	}
@@ -104,22 +88,23 @@ func Insert(uri, dbname, collname string, records []DASRecord) {
 			log.Println("Fail to insert DAS record", err)
 		}
 	}
-	//     if err := c.Insert(&records); err != nil {
-	//         log.Println("Fail to insert DAS record", err)
-	//     }
 }
 
 // get records from MongoDB
-func Get(uri, dbname, collname string, spec bson.M) []DASRecord {
+func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 	out := []DASRecord{}
-	session, err := mgo.Dial(uri)
+	session, err := mgo.Dial(config.Uri())
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)
 	c := session.DB(dbname).C(collname)
-	err = c.Find(spec).All(&out)
+	if limit > 0 {
+		err = c.Find(spec).Skip(idx).Limit(limit).All(&out)
+	} else {
+		err = c.Find(spec).Skip(idx).All(&out)
+	}
 	if err != nil {
 		panic(err)
 	}
@@ -127,9 +112,9 @@ func Get(uri, dbname, collname string, spec bson.M) []DASRecord {
 }
 
 // get records from MongoDB sorted by given key
-func GetSorted(uri, dbname, collname string, spec bson.M, skey string) []DASRecord {
+func GetSorted(dbname, collname string, spec bson.M, skey string) []DASRecord {
 	out := []DASRecord{}
-	session, err := mgo.Dial(uri)
+	session, err := mgo.Dial(config.Uri())
 	if err != nil {
 		panic(err)
 	}
@@ -144,8 +129,8 @@ func GetSorted(uri, dbname, collname string, spec bson.M, skey string) []DASReco
 }
 
 // update inplace for given spec
-func Update(uri, dbname, collname string, spec, newdata bson.M) {
-	session, err := mgo.Dial(uri)
+func Update(dbname, collname string, spec, newdata bson.M) {
+	session, err := mgo.Dial(config.Uri())
 	if err != nil {
 		panic(err)
 	}
@@ -159,8 +144,8 @@ func Update(uri, dbname, collname string, spec, newdata bson.M) {
 }
 
 // get number records from MongoDB
-func Count(uri, dbname, collname string, spec bson.M) int {
-	session, err := mgo.Dial(uri)
+func Count(dbname, collname string, spec bson.M) int {
+	session, err := mgo.Dial(config.Uri())
 	if err != nil {
 		panic(err)
 	}
@@ -176,8 +161,8 @@ func Count(uri, dbname, collname string, spec bson.M) int {
 }
 
 // remove records from MongoDB
-func Remove(uri, dbname, collname string, spec bson.M) {
-	session, err := mgo.Dial(uri)
+func Remove(dbname, collname string, spec bson.M) {
+	session, err := mgo.Dial(config.Uri())
 	if err != nil {
 		panic(err)
 	}
