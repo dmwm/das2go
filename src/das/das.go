@@ -99,13 +99,8 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 	umap := map[string]int{}
 	rmax := 3 // maximum number of retries
 	for _, furl := range urls {
-		log.Println("Call", furl)
 		umap[furl] = 0 // number of retries per url
 		go utils.Fetch(furl, out)
-		// transform data into JSON
-		log.Println("Transform record")
-		// insert record into MongoDB
-		log.Println("Insert record into MongoDB")
 	}
 
 	// collect all results from out channel
@@ -171,9 +166,7 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 			}
 		default:
 			if len(umap) == 0 { // no more requests, merge data records
-				log.Println("Merge DAS data records from DAS cache into DAS merge collection")
 				records, expire := services.MergeDASRecords(dasquery)
-				log.Println("Merge records", len(records), expire)
 				mongo.Insert(uri, dbname, "merge", records)
 				// get DAS record and adjust its settings
 				dasrecord := services.GetDASRecord(uri, dbname, "cache", dasquery)
