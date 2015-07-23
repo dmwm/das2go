@@ -74,15 +74,47 @@ func GetInt64Value(rec DASRecord, key string) (int64, error) {
 	return 0, fmt.Errorf("Unable to cast value for key '%s'", key)
 }
 
-// insert into MongoDB
-func Insert(dbname, collname string, records []DASRecord) {
+type MongoConnection struct {
+	Session *mgo.Session
+}
+
+func (m *MongoConnection) Connect(dbname, collname string) *mgo.Collection {
+	var err error
+	if m.Session == nil {
+		m.Session, err = mgo.Dial(config.Uri())
+		if err != nil {
+			panic(err)
+		}
+		m.Session.SetMode(mgo.Monotonic, true)
+		//     } else {
+		//         m.Session = m.Session.New()
+	}
+	coll := m.Session.DB(dbname).C(collname)
+	return coll
+}
+
+func (m *MongoConnection) Close() {
+	m.Close()
+}
+
+var _Mongo MongoConnection
+
+// helper function to get MongoDB collection object
+func dbcol(dbname, collname string) *mgo.Collection {
 	session, err := mgo.Dial(config.Uri())
 	if err != nil {
 		panic(err)
 	}
 	defer session.Close()
 	session.SetMode(mgo.Monotonic, true)
-	c := session.DB(dbname).C(collname)
+	coll := session.DB(dbname).C(collname)
+	return coll
+}
+
+// insert into MongoDB
+func Insert(dbname, collname string, records []DASRecord) {
+	c := _Mongo.Connect(dbname, collname)
+	//     c := dbcol(dbname, collname)
 	for _, rec := range records {
 		if err := c.Insert(&rec); err != nil {
 			log.Println("Fail to insert DAS record", err)
@@ -93,13 +125,9 @@ func Insert(dbname, collname string, records []DASRecord) {
 // get records from MongoDB
 func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 	out := []DASRecord{}
-	session, err := mgo.Dial(config.Uri())
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB(dbname).C(collname)
+	c := _Mongo.Connect(dbname, collname)
+	//     c := dbcol(dbname, collname)
+	var err error
 	if limit > 0 {
 		err = c.Find(spec).Skip(idx).Limit(limit).All(&out)
 	} else {
@@ -114,14 +142,9 @@ func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 // get records from MongoDB sorted by given key
 func GetSorted(dbname, collname string, spec bson.M, skey string) []DASRecord {
 	out := []DASRecord{}
-	session, err := mgo.Dial(config.Uri())
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB(dbname).C(collname)
-	err = c.Find(spec).Sort(skey).All(&out)
+	c := _Mongo.Connect(dbname, collname)
+	//     c := dbcol(dbname, collname)
+	err := c.Find(spec).Sort(skey).All(&out)
 	if err != nil {
 		panic(err)
 	}
@@ -130,14 +153,9 @@ func GetSorted(dbname, collname string, spec bson.M, skey string) []DASRecord {
 
 // update inplace for given spec
 func Update(dbname, collname string, spec, newdata bson.M) {
-	session, err := mgo.Dial(config.Uri())
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB(dbname).C(collname)
-	err = c.Update(spec, newdata)
+	c := _Mongo.Connect(dbname, collname)
+	//     c := dbcol(dbname, collname)
+	err := c.Update(spec, newdata)
 	if err != nil {
 		panic(err)
 	}
@@ -145,15 +163,9 @@ func Update(dbname, collname string, spec, newdata bson.M) {
 
 // get number records from MongoDB
 func Count(dbname, collname string, spec bson.M) int {
-	session, err := mgo.Dial(config.Uri())
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB(dbname).C(collname)
-	nrec := 0
-	nrec, err = c.Find(spec).Count()
+	c := _Mongo.Connect(dbname, collname)
+	//     c := dbcol(dbname, collname)
+	nrec, err := c.Find(spec).Count()
 	if err != nil {
 		panic(err)
 	}
@@ -162,19 +174,15 @@ func Count(dbname, collname string, spec bson.M) int {
 
 // remove records from MongoDB
 func Remove(dbname, collname string, spec bson.M) {
-	session, err := mgo.Dial(config.Uri())
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	session.SetMode(mgo.Monotonic, true)
-	c := session.DB(dbname).C(collname)
-	_, err = c.RemoveAll(spec)
+	c := _Mongo.Connect(dbname, collname)
+	//     c := dbcol(dbname, collname)
+	_, err := c.RemoveAll(spec)
 	if err != nil && err != mgo.ErrNotFound {
 		panic(err)
 	}
 }
 
+// Load json data stream from series of bytes
 func LoadJsonData(data []byte) DASRecord {
 	r := make(DASRecord)
 	err := json.Unmarshal(data, &r)
@@ -182,4 +190,21 @@ func LoadJsonData(data []byte) DASRecord {
 		panic(err)
 	}
 	return r
+}
+
+// create DAS cache indexes
+func CreateIndexes(dbname, collname string, indecies []string) {
+	index := mgo.Index{
+		Key:        indecies,
+		Unique:     true,
+		DropDups:   true,
+		Background: true,
+		Sparse:     true,
+	}
+	c := _Mongo.Connect(dbname, collname)
+	//     c := dbcol(dbname, collname)
+	err := c.EnsureIndex(index)
+	if err != nil {
+		panic(err)
+	}
 }
