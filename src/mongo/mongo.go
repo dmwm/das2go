@@ -114,7 +114,6 @@ func dbcol(dbname, collname string) *mgo.Collection {
 // insert into MongoDB
 func Insert(dbname, collname string, records []DASRecord) {
 	c := _Mongo.Connect(dbname, collname)
-	//     c := dbcol(dbname, collname)
 	for _, rec := range records {
 		if err := c.Insert(&rec); err != nil {
 			log.Println("Fail to insert DAS record", err)
@@ -126,7 +125,6 @@ func Insert(dbname, collname string, records []DASRecord) {
 func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 	out := []DASRecord{}
 	c := _Mongo.Connect(dbname, collname)
-	//     c := dbcol(dbname, collname)
 	var err error
 	if limit > 0 {
 		err = c.Find(spec).Skip(idx).Limit(limit).All(&out)
@@ -143,7 +141,6 @@ func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 func GetSorted(dbname, collname string, spec bson.M, skey string) []DASRecord {
 	out := []DASRecord{}
 	c := _Mongo.Connect(dbname, collname)
-	//     c := dbcol(dbname, collname)
 	err := c.Find(spec).Sort(skey).All(&out)
 	if err != nil {
 		panic(err)
@@ -154,7 +151,6 @@ func GetSorted(dbname, collname string, spec bson.M, skey string) []DASRecord {
 // update inplace for given spec
 func Update(dbname, collname string, spec, newdata bson.M) {
 	c := _Mongo.Connect(dbname, collname)
-	//     c := dbcol(dbname, collname)
 	err := c.Update(spec, newdata)
 	if err != nil {
 		panic(err)
@@ -164,7 +160,6 @@ func Update(dbname, collname string, spec, newdata bson.M) {
 // get number records from MongoDB
 func Count(dbname, collname string, spec bson.M) int {
 	c := _Mongo.Connect(dbname, collname)
-	//     c := dbcol(dbname, collname)
 	nrec, err := c.Find(spec).Count()
 	if err != nil {
 		panic(err)
@@ -175,7 +170,6 @@ func Count(dbname, collname string, spec bson.M) int {
 // remove records from MongoDB
 func Remove(dbname, collname string, spec bson.M) {
 	c := _Mongo.Connect(dbname, collname)
-	//     c := dbcol(dbname, collname)
 	_, err := c.RemoveAll(spec)
 	if err != nil && err != mgo.ErrNotFound {
 		panic(err)
@@ -202,7 +196,6 @@ func CreateIndexes(dbname, collname string, indecies []string) {
 		Sparse:     true,
 	}
 	c := _Mongo.Connect(dbname, collname)
-	//     c := dbcol(dbname, collname)
 	err := c.EnsureIndex(index)
 	if err != nil {
 		panic(err)
