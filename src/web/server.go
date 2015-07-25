@@ -22,6 +22,9 @@ import (
 	"strconv"
 )
 
+// profiler
+import _ "net/http/pprof"
+
 // global dasmaps
 var _dasmaps dasmaps.DASMaps
 
@@ -91,29 +94,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write([]byte(response["pid"].(string)))
 			return
 		}
-		/*
-			if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
-				status, data := das.GetData(pid, "merge")
-				response["nresults"] = das.Count(pid)
-				response["timestamp"] = das.GetTimestamp(pid)
-				response["status"] = status
-				response["pid"] = pid
-				response["data"] = data
-			} else if das.CheckData(pid) { // data exists in cache but still processing
-				w.Write([]byte(pid))
-				return
-				//             response["status"] = "processing"
-				//             response["pid"] = pid
-			} else { // no data in cache (even client supplied the pid), process it
-				qhash := das.Process(dasquery, _dasmaps)
-				w.Write([]byte(qhash))
-				return
-				//             response["status"] = "requested"
-				//             response["pid"] = qhash
-			}
-			response["idx"] = idx
-			response["limit"] = limit
-		*/
 		js, err := json.Marshal(&response)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -121,6 +101,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(js)
+		js = nil
+		response["data"] = nil
+		response = nil
 	} else {
 		//         t, _ := template.ParseFiles("src/templates/error.html")
 		//         t.Execute(w, nil)
