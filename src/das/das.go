@@ -10,7 +10,7 @@ import (
 	"dasmaps"
 	"dasql"
 	"fmt"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 	"log"
 	"mongo"
 	"net/url"

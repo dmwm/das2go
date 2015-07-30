@@ -10,7 +10,7 @@ package services
 import (
 	"dasmaps"
 	"dasql"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 	"mongo"
 	"strings"
 	"time"

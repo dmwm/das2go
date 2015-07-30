@@ -12,8 +12,8 @@ import (
 	"config"
 	"encoding/json"
 	"fmt"
-	"labix.org/v2/mgo"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 	"log"
 	"strings"
 )
@@ -78,7 +78,7 @@ type MongoConnection struct {
 	Session *mgo.Session
 }
 
-func (m *MongoConnection) Connect(dbname, collname string) *mgo.Collection {
+func (m *MongoConnection) Connect() *mgo.Session {
 	var err error
 	if m.Session == nil {
 		m.Session, err = mgo.Dial(config.Uri())
@@ -86,17 +86,11 @@ func (m *MongoConnection) Connect(dbname, collname string) *mgo.Collection {
 			panic(err)
 		}
 		m.Session.SetMode(mgo.Monotonic, true)
-		//     } else {
-		//         m.Session = m.Session.New()
 	}
-	coll := m.Session.DB(dbname).C(collname)
-	return coll
+	return m.Session.Clone()
 }
 
-func (m *MongoConnection) Close() {
-	m.Close()
-}
-
+// global object which holds MongoDB connection
 var _Mongo MongoConnection
 
 // helper function to get MongoDB collection object
@@ -113,7 +107,9 @@ func dbcol(dbname, collname string) *mgo.Collection {
 
 // insert into MongoDB
 func Insert(dbname, collname string, records []DASRecord) {
-	c := _Mongo.Connect(dbname, collname)
+	s := _Mongo.Connect()
+	defer s.Close()
+	c := s.DB(dbname).C(collname)
 	for _, rec := range records {
 		if err := c.Insert(&rec); err != nil {
 			log.Println("Fail to insert DAS record", err)
@@ -124,7 +120,9 @@ func Insert(dbname, collname string, records []DASRecord) {
 // get records from MongoDB
 func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 	out := []DASRecord{}
-	c := _Mongo.Connect(dbname, collname)
+	s := _Mongo.Connect()
+	defer s.Close()
+	c := s.DB(dbname).C(collname)
 	var err error
 	if limit > 0 {
 		err = c.Find(spec).Skip(idx).Limit(limit).All(&out)
@@ -140,7 +138,9 @@ func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 // get records from MongoDB sorted by given key
 func GetSorted(dbname, collname string, spec bson.M, skey string) []DASRecord {
 	out := []DASRecord{}
-	c := _Mongo.Connect(dbname, collname)
+	s := _Mongo.Connect()
+	defer s.Close()
+	c := s.DB(dbname).C(collname)
 	err := c.Find(spec).Sort(skey).All(&out)
 	if err != nil {
 		panic(err)
@@ -150,7 +150,9 @@ func GetSorted(dbname, collname string, spec bson.M, skey string) []DASRecord {
 
 // update inplace for given spec
 func Update(dbname, collname string, spec, newdata bson.M) {
-	c := _Mongo.Connect(dbname, collname)
+	s := _Mongo.Connect()
+	defer s.Close()
+	c := s.DB(dbname).C(collname)
 	err := c.Update(spec, newdata)
 	if err != nil {
 		panic(err)
@@ -159,7 +161,9 @@ func Update(dbname, collname string, spec, newdata bson.M) {
 
 // get number records from MongoDB
 func Count(dbname, collname string, spec bson.M) int {
-	c := _Mongo.Connect(dbname, collname)
+	s := _Mongo.Connect()
+	defer s.Close()
+	c := s.DB(dbname).C(collname)
 	nrec, err := c.Find(spec).Count()
 	if err != nil {
 		panic(err)
@@ -169,7 +173,9 @@ func Count(dbname, collname string, spec bson.M) int {
 
 // remove records from MongoDB
 func Remove(dbname, collname string, spec bson.M) {
-	c := _Mongo.Connect(dbname, collname)
+	s := _Mongo.Connect()
+	defer s.Close()
+	c := s.DB(dbname).C(collname)
 	_, err := c.RemoveAll(spec)
 	if err != nil && err != mgo.ErrNotFound {
 		panic(err)
@@ -187,17 +193,16 @@ func LoadJsonData(data []byte) DASRecord {
 }
 
 // create DAS cache indexes
-func CreateIndexes(dbname, collname string, indecies []string) {
+func CreateIndexes(dbname, collname string, keys []string) {
+	s := _Mongo.Connect()
+	defer s.Close()
+	c := s.DB(dbname).C(collname)
 	index := mgo.Index{
-		Key:        indecies,
-		Unique:     true,
-		DropDups:   true,
+		Key:        keys,
+		Unique:     false,
 		Background: true,
 		Sparse:     true,
 	}
-	c := _Mongo.Connect(dbname, collname)
 	err := c.EnsureIndex(index)
-	if err != nil {
-		panic(err)
-	}
+	log.Println(err)
 }

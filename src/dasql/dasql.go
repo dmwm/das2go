@@ -10,7 +10,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"labix.org/v2/mgo/bson"
+	"gopkg.in/mgo.v2/bson"
 	"log"
 	"strconv"
 	"strings"
