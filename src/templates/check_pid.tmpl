@@ -1,0 +1,10 @@
+<!-- das_check_pid.tmpl -->
+<img src="{{.Base}}/images/loading.gif" alt="loading"/>
+request PID={{.PID}}, please wait...
+<a href="/das/request?input={{.Input}}">stop</a> request
+<!--
+<script type="text/javascript">
+setTimeout('ajaxCheckPid("$base", "$method", "$pid", "$interval")', $interval)
+</script>
+-->
+<!-- enf of das_check_pid.tmpl -->
