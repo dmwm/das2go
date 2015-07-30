@@ -1,0 +1,51 @@
+<!DOCTYPE HTML>
+<!-- das_top.tmpl -->
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+<head profile="http://www.w3.org/2005/11/profile">
+    <title>CMS Data Aggregation Service</title>
+
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta http-equiv="Content-Language" content="en-us" />
+    <meta http-equiv="Content-Script-Type" content="text/javascript" />
+    <meta http-equiv="imagetoolbar" content="no" />
+    <meta name="author" content="Valentin Kuznetsov (vkuznet at gmail dot com)" />
+    <meta name="MSSmartTagsPreventParsing" content="true" />
+    <meta name="ROBOTS" content="ALL" />
+    <meta name="Copyright" content="(CC) 2009, CMS collaboration." />
+    <meta name="Rating" content="General" />
+
+    <link rel="icon" type="image/png" href="{{.Base}}/images/cms_logo.png" />
+    <link rel="stylesheet" type="text/css" href="{{.Base}}/css/das.css"/>
+
+    <link rel="search" type="application/opensearchdescription+xml" href="{{.Base}}/opensearch" title="CMS DAS" />
+    <script type="text/javascript" src="{{.Base}}/js/prototype.js"></script>
+    <script type="text/javascript" src="{{.Base}}/js/utils.js"></script>
+    <script type="text/javascript" src="{{.Base}}/js/ajax_utils.js"></script>
+</head>
+<body class="yui-skin-sam">
+
+<div id="banner">
+<table>
+<tr><td>
+<img src="{{.Base}}/images/cms_logo.jpg" alt="CMS" width="30" style="border:none" />
+</td><td>
+<h3>Data Aggregation System (DAS):
+<a href="{{.Base}}/">Home</a>
+| <a id="das_top_srv" href="{{.Base}}/services">Services</a>
+| <a id="das_top_keys" href="{{.Base}}/keys">Keys</a>
+| <a id="das_top_bug" href="https://github.com/dmwm/DAS/issues">Bug report</a>
+| <a id="das_top_status" href="{{.Base}}/status">Status</a>
+| <a id="das_top_cli" href="{{.Base}}/cli">CLI</a>
+| <a id="das_top_faq" href="{{.Base}}/faq">FAQ</a>
+| <a id="das_top_cli" href="javascript:FlipTag('das_cards')">Help</a>
+</h3>
+</td></tr>
+</table>
+</div>
+<!--<hr class="line" /> -->
+<script type="text/javascript">
+function wait() {
+    plage_img('_response', '{{.Base}}/images/loading.gif', 'please wait');
+}
+</script>
+<!-- end of das_top.tmpl -->
