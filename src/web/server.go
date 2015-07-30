@@ -101,9 +101,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(js)
-		js = nil
-		response["data"] = nil
-		response = nil
 	} else {
 		//         t, _ := template.ParseFiles("src/templates/error.html")
 		//         t.Execute(w, nil)
