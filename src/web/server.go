@@ -146,15 +146,8 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			content := parseTmpl(_tdir, tmpl, tmplData)
 			if status == "ok" {
 				data := response["data"].([]mongo.DASRecord)
-				var out []mongo.DASRecord
-				for _, item := range data {
-					das := item["das"].(mongo.DASRecord)
-					key := strings.Split(das["primary_key"].(string), ".")[0]
-					records := item[key].([]interface{})
-					for _, rec := range records {
-						out = append(out, rec.(mongo.DASRecord))
-					}
-				}
+				presentationMap := _dasmaps.PresentationMap()
+				out := das.PresentData(dasquery, data, presentationMap)
 				tmplData["Data"] = out
 				tmpl = "data.tmpl"
 			} else {
