@@ -83,6 +83,7 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
  */
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("input")
+	pid := r.FormValue("pid")
 	limit, err := strconv.Atoi(r.FormValue("limit"))
 	if err != nil {
 		limit = 10
@@ -92,13 +93,17 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		idx = 0
 	}
 	path := r.URL.Path
+	log.Println("CALL", path, query, pid)
 
 	// process requests based on the path
+	dbses := []string{"prod/global", "prod/phys01", "prod/phys02", "prod/phys03", "prod/caf"}
 	tmplData := map[string]interface{}{}
 	tmplData["Base"] = "/das"
 	tmplData["Time"] = time.Now()
+	tmplData["Input"] = query
+	tmplData["DBSinstance"] = dbses[0]
 	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
-	tmplData["DBSes"] = []string{"prod/global", "prod/phys01", "prod/phys02", "prod/phys03", "prod/caf"}
+	tmplData["DBSes"] = dbses
 	if path == "/das" || path == "/das/" {
 		tmpl := "top.tmpl"
 		top_page := parseTmpl(_tdir, tmpl, tmplData)
@@ -109,8 +114,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(top_page + content + bottom_page))
 	} else {
 		dasquery := dasql.Parse(query)
-		log.Println(dasquery)
-		pid := r.FormValue("pid")
 		if pid == "" {
 			pid = dasquery.Qhash
 		}
@@ -136,16 +139,29 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write(js)
 		} else if path == "/das/request" {
 			status := response["status"]
+			log.Println("RESPONSE", response)
 			tmpl := "top.tmpl"
 			top_page := parseTmpl(_tdir, tmpl, tmplData)
 			tmpl = "searchform.tmpl"
 			content := parseTmpl(_tdir, tmpl, tmplData)
 			if status == "ok" {
-				tmplData["Data"] = response["data"]
-				log.Println("status", status) // replace with appropriate structure
+				data := response["data"].([]mongo.DASRecord)
+				var out []mongo.DASRecord
+				for _, item := range data {
+					das := item["das"].(mongo.DASRecord)
+					key := strings.Split(das["primary_key"].(string), ".")[0]
+					records := item[key].([]interface{})
+					for _, rec := range records {
+						out = append(out, rec.(mongo.DASRecord))
+					}
+				}
+				tmplData["Data"] = out
+				tmpl = "data.tmpl"
 			} else {
 				tmplData["PID"] = pid
 				tmplData["Input"] = query
+				tmplData["Interval"] = 2500
+				tmplData["Method"] = "request"
 				tmpl = "check_pid.tmpl"
 			}
 			page := parseTmpl(_tdir, tmpl, tmplData)
