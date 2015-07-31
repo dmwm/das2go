@@ -89,10 +89,3 @@ func List2Set(arr []string) []string {
 	}
 	return out
 }
-
-// function to parse DAS configuration file
-// func ParseConfig() (string, string) {
-//     _uri := "mongodb://localhost:8230"
-//     _dbname := "das"
-//     return _uri, _dbname
-// }
