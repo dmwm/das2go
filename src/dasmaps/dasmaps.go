@@ -16,9 +16,10 @@ import (
 )
 
 type DASMaps struct {
-	records   []mongo.DASRecord
-	services  []string
-	notations []mongo.DASRecord
+	records       []mongo.DASRecord
+	services      []string
+	notations     []mongo.DASRecord
+	presentations mongo.DASRecord
 }
 
 func (m *DASMaps) Maps() []mongo.DASRecord {
@@ -70,6 +71,27 @@ func (m *DASMaps) NotationMaps() []mongo.DASRecord {
 	return m.notations
 }
 
+// DASMaps interface method to get notation maps
+func (m *DASMaps) PresentationMap() mongo.DASRecord {
+	if len(m.presentations) != 0 {
+		return m.presentations
+	}
+	var value string
+	for _, rec := range m.records {
+		rtype := rec["type"]
+		if val, ok := rtype.(string); ok {
+			value = val
+		} else {
+			continue
+		}
+		if value == "presentation" {
+			m.presentations = rec["presentation"].(mongo.DASRecord)
+			break
+		}
+	}
+	return m.presentations
+}
+
 // Find notation maps for given system
 func (m *DASMaps) FindNotations(system string) []mongo.DASRecord {
 	var out []mongo.DASRecord
@@ -83,6 +105,11 @@ func (m *DASMaps) FindNotations(system string) []mongo.DASRecord {
 		}
 	}
 	return out
+}
+
+// Find presentation maps for given primary DAS key
+func (m *DASMaps) FindPresentation(daskey string) []mongo.DASRecord {
+	return m.presentations[daskey].([]mongo.DASRecord)
 }
 
 // get DAS map from given record
