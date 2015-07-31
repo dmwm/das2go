@@ -59,7 +59,7 @@ autocompletion
 
 <script type="text/javascript">
 //<![CDATA[
-updateInput('$input', '$inst');
+updateInput('{{.Input}}', '{{.DBSinstance}}');
 function dbs_inst() {
    var doc = document.getElementById('instance');
    return doc.value;
