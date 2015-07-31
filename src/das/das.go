@@ -225,12 +225,15 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 
 // Get data for given pid (DAS Query qhash)
 func GetData(pid, coll string, idx, limit int) (string, []mongo.DASRecord) {
+	var empty_data []mongo.DASRecord
 	spec := bson.M{"qhash": pid}
 	data := mongo.Get("das", coll, spec, idx, limit)
+	if len(data) == 0 {
+		return fmt.Sprintf("No data in DAS cache"), empty_data
+	}
 	status, err := mongo.GetStringValue(data[0], "das.status")
 	if err != nil {
-		var data []mongo.DASRecord
-		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), data
+		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), empty_data
 	}
 	return status, data
 }
