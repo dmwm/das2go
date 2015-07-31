@@ -148,7 +148,7 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				if len(records) != 0 {
 					rec := records[0]
 					recexpire := services.GetExpire(rec)
-					if dasexpire < recexpire {
+					if dasexpire > recexpire {
 						dasexpire = recexpire
 					}
 				}
@@ -284,4 +284,81 @@ func RemoveExpired(pid string) {
 	spec := bson.M{"qhash": pid, "das.expire": espec}
 	mongo.Remove("das", "cache", spec) // remove from cache collection
 	mongo.Remove("das", "merge", spec) // remove from merge collection
+}
+
+// Represent DAS records for web UI
+func PresentData(dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord) []string {
+	var out []string
+	line := "<hr/>\n"
+	br := "<br/>\n"
+	fields := dasquery.Fields
+	for _, item := range data {
+		//         das := item["das"].(mongo.DASRecord)
+		for _, key := range fields {
+			records := item[key].([]interface{})
+			uiRows := pmap[key].([]interface{})
+			for _, elem := range records {
+				rec := elem.(mongo.DASRecord)
+				var values []string
+				for _, uir := range uiRows {
+					uirow := uir.(mongo.DASRecord)
+					daskey := uirow["das"].(string)
+					webkey := uirow["ui"].(string)
+					attrs := strings.Split(daskey, ".")
+					attr := strings.Join(attrs[1:len(attrs)], ".")
+					value := ExtractValue(rec, attr)
+					if len(value) > 0 {
+						row := fmt.Sprintf("%s: %v\n", webkey, value)
+						values = append(values, row)
+					}
+				}
+				out = append(out, strings.Join(values, ","))
+			}
+			out = append(out, br)
+		}
+		out = append(out, line)
+	}
+	return out
+}
+
+// helper function to extract value from das record
+// relies on type switching, see
+// https://golang.org/doc/effective_go.html#type_switch
+func ExtractValue(data mongo.DASRecord, daskey string) string {
+	log.Println("EXTRACT VALUE", daskey)
+	var out []string
+	keys := strings.Split(daskey, ".")
+	count := 1
+	for _, key := range keys {
+		value := data[key]
+		if value == nil {
+			return ""
+		}
+		log.Println("KEY", key, value)
+		switch value := value.(type) {
+		case string:
+			out = append(out, value)
+			break
+		case int:
+			out = append(out, fmt.Sprintf("%d", value))
+			break
+		case int64:
+			out = append(out, fmt.Sprintf("%d", value))
+			break
+		case float64:
+			out = append(out, fmt.Sprintf("%v", value))
+			break
+		case []interface{}:
+			out = append(out, "NOT IMPLEMENTED YET")
+			break
+		default:
+			if count != len(keys) {
+				return ExtractValue(value.(mongo.DASRecord), strings.Join(keys[count:len(keys)], "."))
+			}
+			out = append(out, fmt.Sprintf("%v", value))
+			break
+		}
+		count = count + 1
+	}
+	return strings.Join(out, ",")
 }
