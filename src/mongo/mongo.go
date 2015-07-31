@@ -204,5 +204,7 @@ func CreateIndexes(dbname, collname string, keys []string) {
 		Sparse:     true,
 	}
 	err := c.EnsureIndex(index)
-	log.Println(err)
+	if err != nil {
+		log.Println(err)
+	}
 }
