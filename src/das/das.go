@@ -325,7 +325,6 @@ func PresentData(dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DAS
 // relies on type switching, see
 // https://golang.org/doc/effective_go.html#type_switch
 func ExtractValue(data mongo.DASRecord, daskey string) string {
-	log.Println("EXTRACT VALUE", daskey)
 	var out []string
 	keys := strings.Split(daskey, ".")
 	count := 1
@@ -334,29 +333,30 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 		if value == nil {
 			return ""
 		}
-		log.Println("KEY", key, value)
 		switch value := value.(type) {
 		case string:
 			out = append(out, value)
-			break
 		case int:
 			out = append(out, fmt.Sprintf("%d", value))
-			break
 		case int64:
 			out = append(out, fmt.Sprintf("%d", value))
-			break
 		case float64:
-			out = append(out, fmt.Sprintf("%v", value))
-			break
+			if key == "size" {
+				out = append(out, utils.SizeFormat(value))
+			} else {
+				out = append(out, fmt.Sprintf("%v", value))
+			}
 		case []interface{}:
-			out = append(out, "NOT IMPLEMENTED YET")
+			for _, rec := range value {
+				value := ExtractValue(rec.(mongo.DASRecord), strings.Join(keys[count:len(keys)], "."))
+				out = append(out, fmt.Sprintf("%v", value))
+			}
 			break
 		default:
 			if count != len(keys) {
 				return ExtractValue(value.(mongo.DASRecord), strings.Join(keys[count:len(keys)], "."))
 			}
 			out = append(out, fmt.Sprintf("%v", value))
-			break
 		}
 		count = count + 1
 	}
