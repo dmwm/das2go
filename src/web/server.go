@@ -93,7 +93,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		idx = 0
 	}
 	path := r.URL.Path
-	log.Println("CALL", path, query, pid)
+	//     log.Println("CALL", path, query, pid)
 
 	// process requests based on the path
 	dbses := []string{"prod/global", "prod/phys01", "prod/phys02", "prod/phys03", "prod/caf"}
@@ -139,7 +139,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write(js)
 		} else if path == "/das/request" {
 			status := response["status"]
-			log.Println("RESPONSE", response)
+			//             log.Println("RESPONSE", response)
 			tmpl := "top.tmpl"
 			top_page := parseTmpl(_tdir, tmpl, tmplData)
 			tmpl = "searchform.tmpl"
