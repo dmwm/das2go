@@ -148,7 +148,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			if status == "ok" {
 				data := response["data"].([]mongo.DASRecord)
 				presentationMap := _dasmaps.PresentationMap()
-				page = das.PresentData(dasquery, data, presentationMap)
+				page = PresentData(dasquery, data, presentationMap)
 			} else {
 				tmplData["PID"] = pid
 				tmplData["Input"] = query
