@@ -84,6 +84,7 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("input")
 	pid := r.FormValue("pid")
+	ajax := r.FormValue("ajax")
 	limit, err := strconv.Atoi(r.FormValue("limit"))
 	if err != nil {
 		limit = 10
@@ -156,7 +157,11 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				page = parseTmpl(_tdir, "check_pid.tmpl", tmplData)
 			}
 			bottom_page := parseTmpl(_tdir, "bottom.tmpl", tmplData)
-			w.Write([]byte(top_page + content + cards + page + bottom_page))
+			if ajax == "" {
+				w.Write([]byte(top_page + content + cards + page + bottom_page))
+			} else {
+				w.Write([]byte(page))
+			}
 		} else {
 			//         t, _ := template.ParseFiles("src/templates/error.html")
 			//         t.Execute(w, nil)

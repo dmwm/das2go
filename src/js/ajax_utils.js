@@ -12,12 +12,12 @@ function ajaxCheckPid(base, method, input, pid, interval) {
     } else { wait = limit; }
     new Ajax.Updater('response', base+'/'+method,
     { method: 'get' ,
-      parameters : {'pid': pid, 'input': input},
+      parameters : {'pid': pid, 'input': input, 'ajax': 1},
       onException: function() {return;},
       onComplete : function() {
         if (url.indexOf('view=xml') != -1 ||
             url.indexOf('view=json') != -1 ||
-            url.indexOf('view=plain') != -1) reload();
+            url.indexOf('view=plain') != -1) return;
       },
       onSuccess : function(transport) {
         var sec = wait/1000;
@@ -29,7 +29,7 @@ function ajaxCheckPid(base, method, input, pid, interval) {
             transport.responseText += msg;
             setTimeout('ajaxCheckPid("'+base+'","'+method+'","'+input+'","'+pid+'","'+wait+'")', wait);
         } else {
-            reload();
+            return;
         }
       }
     });
