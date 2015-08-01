@@ -164,7 +164,7 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	for _, rec = range records {
 		das := rec["das"].(mongo.DASRecord)
 		dasexpire := das["expire"].(int64)
-		if expire < dasexpire {
+		if expire > dasexpire {
 			expire = dasexpire
 		}
 		data1, err1 := mongo.GetStringValue(oldrec, pkey)
