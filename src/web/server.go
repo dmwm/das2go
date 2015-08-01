@@ -105,14 +105,15 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
 	tmplData["DBSes"] = dbses
 	if path == "/das" || path == "/das/" {
-		tmpl := "top.tmpl"
-		top_page := parseTmpl(_tdir, tmpl, tmplData)
-		tmpl = "searchform.tmpl"
-		content := parseTmpl(_tdir, tmpl, tmplData)
-		tmpl = "bottom.tmpl"
-		bottom_page := parseTmpl(_tdir, tmpl, tmplData)
-		w.Write([]byte(top_page + content + bottom_page))
+		tmplData["CardClass"] = "show"
+		cards := parseTmpl(_tdir, "cards.tmpl", tmplData)
+		top_page := parseTmpl(_tdir, "top.tmpl", tmplData)
+		content := parseTmpl(_tdir, "searchform.tmpl", tmplData)
+		bottom_page := parseTmpl(_tdir, "bottom.tmpl", tmplData)
+		w.Write([]byte(top_page + content + cards + bottom_page))
 	} else {
+		tmplData["CardClass"] = "hide"
+		cards := parseTmpl(_tdir, "cards.tmpl", tmplData)
 		dasquery := dasql.Parse(query)
 		if pid == "" {
 			pid = dasquery.Qhash
@@ -140,10 +141,8 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		} else if path == "/das/request" {
 			status := response["status"]
 			//             log.Println("RESPONSE", response)
-			tmpl := "top.tmpl"
-			top_page := parseTmpl(_tdir, tmpl, tmplData)
-			tmpl = "searchform.tmpl"
-			content := parseTmpl(_tdir, tmpl, tmplData)
+			top_page := parseTmpl(_tdir, "top.tmpl", tmplData)
+			content := parseTmpl(_tdir, "searchform.tmpl", tmplData)
 			var page string
 			if status == "ok" {
 				data := response["data"].([]mongo.DASRecord)
@@ -154,12 +153,10 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				tmplData["Input"] = query
 				tmplData["Interval"] = 2500
 				tmplData["Method"] = "request"
-				tmpl = "check_pid.tmpl"
-				page = parseTmpl(_tdir, tmpl, tmplData)
+				page = parseTmpl(_tdir, "check_pid.tmpl", tmplData)
 			}
-			tmpl = "bottom.tmpl"
-			bottom_page := parseTmpl(_tdir, tmpl, tmplData)
-			w.Write([]byte(top_page + content + page + bottom_page))
+			bottom_page := parseTmpl(_tdir, "bottom.tmpl", tmplData)
+			w.Write([]byte(top_page + content + cards + page + bottom_page))
 		} else {
 			//         t, _ := template.ParseFiles("src/templates/error.html")
 			//         t.Execute(w, nil)
