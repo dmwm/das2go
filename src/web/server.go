@@ -144,20 +144,19 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			top_page := parseTmpl(_tdir, tmpl, tmplData)
 			tmpl = "searchform.tmpl"
 			content := parseTmpl(_tdir, tmpl, tmplData)
+			var page string
 			if status == "ok" {
 				data := response["data"].([]mongo.DASRecord)
 				presentationMap := _dasmaps.PresentationMap()
-				out := das.PresentData(dasquery, data, presentationMap)
-				tmplData["Data"] = out
-				tmpl = "data.tmpl"
+				page = das.PresentData(dasquery, data, presentationMap)
 			} else {
 				tmplData["PID"] = pid
 				tmplData["Input"] = query
 				tmplData["Interval"] = 2500
 				tmplData["Method"] = "request"
 				tmpl = "check_pid.tmpl"
+				page = parseTmpl(_tdir, tmpl, tmplData)
 			}
-			page := parseTmpl(_tdir, tmpl, tmplData)
 			tmpl = "bottom.tmpl"
 			bottom_page := parseTmpl(_tdir, tmpl, tmplData)
 			w.Write([]byte(top_page + content + page + bottom_page))
