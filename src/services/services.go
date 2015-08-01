@@ -220,3 +220,15 @@ func mergeDASparts(das1, das2 mongo.DASRecord) mongo.DASRecord {
 	das["record"] = 1
 	return das
 }
+
+// helper function to fix all DAS cache record expire timestamps
+func UpdateExpire(qhash string, records []mongo.DASRecord, dasexpire int64) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	for _, rec := range records {
+		das := rec["das"].(mongo.DASRecord)
+		das["expire"] = dasexpire
+		rec["das"] = das
+		out = append(out, rec)
+	}
+	return out
+}
