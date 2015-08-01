@@ -158,6 +158,9 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				dasrecord["das"] = das
 				services.UpdateDASRecord(dasquery.Qhash, dasrecord)
 
+				// fix all records expire values based on lowest one
+				records = services.UpdateExpire(dasquery.Qhash, records, dasexpire)
+
 				// insert records into DAS cache collection
 				mongo.Insert("das", "cache", records)
 				// remove from umap, indicate that we processed it
@@ -286,29 +289,53 @@ func RemoveExpired(pid string) {
 	mongo.Remove("das", "merge", spec) // remove from merge collection
 }
 
+// helper function to make a link
+func href(daskey, value string) string {
+	key := strings.Split(daskey, ".")[0]
+	ref := fmt.Sprintf("%s=%s", key, value)
+	out := fmt.Sprintf("<a href=\"/request?input=%s\">%s</a>", ref, value)
+	return out
+}
+
 // Represent DAS records for web UI
-func PresentData(dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord) []string {
+func PresentData(dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord) string {
 	var out []string
-	line := "<hr/>\n"
-	br := "<br/>\n"
+	line := "<hr class=\"line\" />"
+	br := "<br/>"
 	fields := dasquery.Fields
+	var services []string
 	for _, item := range data {
-		//         das := item["das"].(mongo.DASRecord)
+		das := item["das"].(mongo.DASRecord)
+		if len(services) == 0 {
+			for _, v := range das["services"].([]interface{}) {
+				srv := strings.Split(v.(string), ":")[0]
+				services = append(services, srv)
+			}
+		}
+		pkey := das["primary_key"].(string)
 		for _, key := range fields {
 			records := item[key].([]interface{})
 			uiRows := pmap[key].([]interface{})
-			for _, elem := range records {
+			for idx, elem := range records {
 				rec := elem.(mongo.DASRecord)
 				var values []string
 				for _, uir := range uiRows {
 					uirow := uir.(mongo.DASRecord)
 					daskey := uirow["das"].(string)
+					if idx != 0 && daskey == pkey {
+						continue // look-up only once primary key
+					}
 					webkey := uirow["ui"].(string)
 					attrs := strings.Split(daskey, ".")
 					attr := strings.Join(attrs[1:len(attrs)], ".")
 					value := ExtractValue(rec, attr)
 					if len(value) > 0 {
-						row := fmt.Sprintf("%s: %v\n", webkey, value)
+						var row string
+						if daskey == pkey {
+							row = fmt.Sprintf("%s: <b>%v</b>\n", webkey, href(pkey, value))
+						} else {
+							row = fmt.Sprintf("%s: %v\n", webkey, value)
+						}
 						values = append(values, row)
 					}
 				}
@@ -318,7 +345,8 @@ func PresentData(dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DAS
 		}
 		out = append(out, line)
 	}
-	return out
+	out = append(out, fmt.Sprintf("Services: %v", services))
+	return strings.Join(out, "\n")
 }
 
 // helper function to extract value from das record
