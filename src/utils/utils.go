@@ -7,6 +7,7 @@
 package utils
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 )
@@ -88,4 +89,17 @@ func List2Set(arr []string) []string {
 		}
 	}
 	return out
+}
+
+// helper function to convert size into human readable form
+func SizeFormat(val float64) string {
+	base := 1000. // CMS convert is to use power of 10
+	xlist := []string{"", "KB", "MB", "GB", "TB", "PB"}
+	for _, vvv := range xlist {
+		if val < base {
+			return fmt.Sprintf("%3.1f%s", val, vvv)
+		}
+		val = val / base
+	}
+	return fmt.Sprintf("%3.1f%s", val, xlist[len(xlist)])
 }
