@@ -21,8 +21,11 @@ type DASQuery struct {
 	Query, relaxed_query, Qhash string
 	Spec                        bson.M
 	Fields                      []string
-	pipe                        string
+	Pipe                        string
 	Instance                    string
+	Filters                     map[string][]string
+	Aggregators                 [][]string
+	Error                       string
 }
 
 // implement own formatter using DASQuery rather then *DASQuery, since
@@ -72,30 +75,33 @@ func relax(query string) string {
 	return strings.Join(out, " ")
 }
 
-func ql_error(query string, idx int, msg string) {
-	log.Printf("query=%v, idx=%v, msg=%v", query, idx, msg)
-	log.Fatal("QL error")
+func qlError(query string, idx int, msg string) string {
+	fullmsg := fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, idx, msg)
+	log.Println(fullmsg)
+	return fullmsg
 }
-func parse_array(query string, idx int, oper string, val string) ([]int, int) {
+func parseArray(query string, idx int, oper string, val string) ([]int, int, string) {
+	qlerr := ""
+	out := []int{}
 	if oper != "in" || oper != "between" {
-		ql_error(query, idx, "Invalid operator '"+oper+"' for DAS array")
+		qlerr = qlError(query, idx, "Invalid operator '"+oper+"' for DAS array")
+		return out, -1, qlerr
 	}
 	query = string(query[idx : len(query)-1])
 	idx = strings.Index(query, "[")
 	jdx := strings.Index(query, "]")
-	out := []int{}
 	values := strings.Split(string(query[idx+1:jdx]), ",")
 	for _, v := range values {
 		val, err := strconv.Atoi(strings.Replace(v, " ", "", -1))
 		if err != nil {
-			ql_error(query, idx, "Fail to parse array value: "+v)
+			qlError(query, idx, "Fail to parse array value: "+v)
 		}
 		out = append(out, val)
 	}
-	return out, jdx + 1
+	return out, jdx + 1, qlerr
 }
-func parse_quotes(query string, idx int, quote string) (string, int) {
-	out := "parse_quotes"
+func parseQuotes(query string, idx int, quote string) (string, int) {
+	out := "parseQuotes"
 	step := 1
 	return out, step
 }
@@ -106,7 +112,7 @@ func spec_entry(key, oper string, val interface{}) bson.M {
 	}
 	return rec
 }
-func update_spec(spec, entry bson.M) {
+func updateSpec(spec, entry bson.M) {
 	for key, value := range entry {
 		spec[key] = value
 	}
@@ -119,7 +125,9 @@ func qhash(query string) string {
 
 // TODO: I need to add pipe parsing
 //
-func Parse(query string) DASQuery {
+func Parse(query string) (DASQuery, string) {
+	var qlerr string
+	var rec DASQuery
 	relaxed_query := relax(query)
 	parts := strings.SplitN(relaxed_query, "|", 2)
 	pipe := ""
@@ -164,21 +172,26 @@ func Parse(query string) DASQuery {
 		} else if utils.InList(nval, operators()) {
 			first_nnval := string(nnval[0])
 			if !utils.InList(val, append(daskeys, specials...)) {
-				ql_error(relaxed_query, idx, "Wrong DAS key: "+val)
+				qlerr = qlError(relaxed_query, idx, "Wrong DAS key: "+val)
+				return rec, qlerr
 			}
 			if first_nnval == "[" {
-				value, step := parse_array(relaxed_query, idx, nval, val)
-				update_spec(spec, spec_entry(val, nval, value))
+				value, step, qlerr := parseArray(relaxed_query, idx, nval, val)
+				if qlerr != "" {
+					return rec, qlerr
+				}
+				updateSpec(spec, spec_entry(val, nval, value))
 				idx += step
 			} else if utils.InList(nval, spec_ops) {
 				msg := "operator " + nval + " should be followed by square bracket"
-				ql_error(relaxed_query, idx, msg)
+				qlerr = qlError(relaxed_query, idx, msg)
+				return rec, qlerr
 			} else if first_nnval == "\"" || first_nnval == "'" {
-				value, step := parse_quotes(relaxed_query, idx, first_nnval)
-				update_spec(spec, spec_entry(val, nval, value))
+				value, step := parseQuotes(relaxed_query, idx, first_nnval)
+				updateSpec(spec, spec_entry(val, nval, value))
 				idx += step
 			} else {
-				update_spec(spec, spec_entry(val, nval, nnval))
+				updateSpec(spec, spec_entry(val, nval, nnval))
 				idx += 3
 			}
 			idx += 1
@@ -188,24 +201,105 @@ func Parse(query string) DASQuery {
 				idx += 1
 				continue
 			} else {
-				ql_error(relaxed_query, idx, "Not a DAS key")
+				qlerr = qlError(relaxed_query, idx, "Not a DAS key")
+				return rec, qlerr
 			}
 		} else {
-			ql_error(relaxed_query, idx, "We should not be here")
+			qlerr = qlError(relaxed_query, idx, "We should not be here")
+			return rec, qlerr
 		}
 
 	}
+	// if no selection keys are given, we'll use spec dictionary keys
+	if len(fields) == 0 {
+		for key, _ := range spec {
+			fields = append(fields, key)
+		}
+	}
+	filters, aggregators, qlerror := parsePipe(pipe)
 
-	var rec DASQuery
 	rec.Query = query
 	rec.relaxed_query = relaxed_query
 	rec.Spec = spec
 	rec.Fields = fields
 	rec.Qhash = qhash(relaxed_query)
-	rec.pipe = pipe
+	rec.Pipe = pipe
 	rec.Instance = instance
-	return rec
+	rec.Filters = filters
+	rec.Aggregators = aggregators
+	return rec, qlerror
 }
 
-func parse_pipe(query string, filters []string, aggregators []string) {
+func parsePipe(pipe string) (map[string][]string, [][]string, string) {
+	qlerr := ""
+	filters := make(map[string][]string)
+	aggregators := [][]string{}
+	var item, next, nnext, nnnext, cfilter string
+	nan := "_NA_"
+	aggrs := []string{"sum", "min", "max", "avg"}
+	opers := []string{">", "<", ">=", "<=", "=", "!="}
+	idx := 0
+	arr := strings.Split(pipe, " ")
+	qlen := len(arr)
+	if qlen == 0 {
+		return filters, aggregators, qlerr
+	}
+	for idx < qlen {
+		item = arr[idx]
+		if idx+1 < qlen {
+			next = arr[idx+1]
+		} else {
+			next = nan
+		}
+		if idx+2 < qlen {
+			nnext = arr[idx+2]
+		} else {
+			nnext = nan
+		}
+		if idx+3 < qlen {
+			nnnext = arr[idx+3]
+		} else {
+			nnnext = nan
+		}
+		if item == "grep" {
+			cfilter = item
+			filters["grep"] = append(filters[item], next)
+			idx += 2
+		} else if item == "," {
+			if cfilter == "grep" {
+				if utils.InList(nnext, opers) {
+					val := fmt.Sprintf("%s%s%s", next, nnext, nnnext)
+					filters[cfilter] = append(filters[cfilter], val)
+					idx += 2
+				} else {
+					filters[cfilter] = append(filters[cfilter], next)
+				}
+			}
+			idx += 2
+		} else if item == "sort" {
+			cfilter = item
+			filters[item] = append(filters[item], next)
+			idx += 2
+		} else if item == "unique" {
+			cfilter = item
+			filters[item] = append(filters[item], "1")
+			idx += 1
+		} else if utils.InList(item, aggrs) {
+			cfilter = item
+			left := next
+			val := nnext
+			right := nnnext
+			if left != "(" || right != ")" || idx+3 >= qlen {
+				msg := "Wrong aggregator representation, please check your query"
+				qlerr = qlError(pipe, idx, msg)
+				return filters, aggregators, qlerr
+			}
+			pair := []string{item, val}
+			aggregators = append(aggregators, pair)
+			idx += 3
+		} else {
+			idx += 1
+		}
+	}
+	return filters, aggregators, qlerr
 }
