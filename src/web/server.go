@@ -17,6 +17,7 @@ import (
 	"dasmaps"
 	"dasql"
 	"encoding/json"
+	"fmt"
 	"html/template"
 	"log"
 	"mongo"
@@ -31,7 +32,7 @@ import (
 // profiler
 import _ "net/http/pprof"
 
-// global dasmaps
+// global variables used in this module
 var _dasmaps dasmaps.DASMaps
 var _tdir string
 
@@ -85,6 +86,13 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	query := r.FormValue("input")
 	pid := r.FormValue("pid")
 	ajax := r.FormValue("ajax")
+	hash := r.FormValue("hash")
+	if hash != "" {
+		dasquery, err := dasql.Parse(query)
+		msg := fmt.Sprintf("%s, spec=%v, filters=%v, aggregators=%v, err=%s", dasquery, dasquery.Spec, dasquery.Filters, dasquery.Aggregators, err)
+		w.Write([]byte(msg))
+		return
+	}
 	limit, err := strconv.Atoi(r.FormValue("limit"))
 	if err != nil {
 		limit = 10
@@ -112,16 +120,21 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		content := parseTmpl(_tdir, "searchform.tmpl", tmplData)
 		bottom_page := parseTmpl(_tdir, "bottom.tmpl", tmplData)
 		w.Write([]byte(top_page + content + cards + bottom_page))
+		return
 	} else {
 		tmplData["CardClass"] = "hide"
 		cards := parseTmpl(_tdir, "cards.tmpl", tmplData)
-		dasquery := dasql.Parse(query)
+		dasquery, err := dasql.Parse(query)
+		if err != "" {
+			w.Write([]byte(err))
+		}
 		if pid == "" {
 			pid = dasquery.Qhash
 		}
 		if len(pid) != 32 {
 			http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
 		}
+		//         log.Println("DASQUERY", dasquery, "FIELDS", dasquery.Fields, "SPEC", dasquery.Spec, "FILTERS", dasquery.Filters, "AGGRS", dasquery.Aggregators, "PIPE", dasquery.Pipe)
 		// Remove expire records from cache
 		das.RemoveExpired(dasquery.Qhash)
 		// process given query
@@ -196,9 +209,10 @@ func Server(port string) {
 		log.Println("DAS services", _dasmaps.Services())
 	}
 
-	// create all required indecies in das.cache, das.merge collections
+	// create all required indexes in das.cache, das.merge collections
 	indexes := []string{"qhash", "das.expire", "das.record"}
 	mongo.CreateIndexes("das", "cache", indexes)
+	mongo.CreateIndexes("das", "merge", indexes)
 
 	// assign handlers
 	http.Handle("/das/css/", http.StripPrefix("/das/css/", http.FileServer(http.Dir(tcss))))
