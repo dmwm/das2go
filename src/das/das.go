@@ -80,13 +80,16 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 				log.Fatal("Unable to get value for daskey=", dkey, ", reckey=", rkey, " from record=", dmap)
 			}
 			matched, _ := regexp.MatchString(pat, val)
-			if matched {
+			if matched || pat == "" {
 				vals.Add(arg, val)
 			}
 		}
 	}
 	args := vals.Encode()
-	if len(args) > 1 {
+	if len(vals) < len(skeys) {
+		return "" // number of arguments should be equal or more number of spec key values
+	}
+	if len(args) > 0 {
 		return base + "?" + args
 	}
 	return base
@@ -199,7 +202,9 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	// loop over services and fetch data
 	for _, dmap := range maps {
 		furl := formUrlCall(dasquery, dmap)
-		urls = append(urls, furl)
+		if furl != "" {
+			urls = append(urls, furl)
+		}
 		srv := fmt.Sprintf("%s:%s", dmap["system"], dmap["urn"])
 		srvs = append(srvs, srv)
 		lkeys := strings.Split(dmap["lookup"].(string), ",")
@@ -226,11 +231,63 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	return dasquery.Qhash
 }
 
+// helper function to modify spec with given filter
+func modSpec(spec bson.M, filter string) {
+	var key, val string
+	var vals []string
+	if strings.Index(filter, "<") > 0 {
+		if strings.Index(filter, "<=") > 0 {
+			vals = strings.Split(filter, "<=")
+		} else {
+			vals = strings.Split(filter, "<")
+		}
+	} else if strings.Index(filter, "<") > 0 {
+		if strings.Index(filter, ">=") > 0 {
+			vals = strings.Split(filter, ">=")
+		} else {
+			vals = strings.Split(filter, ">")
+		}
+	} else if strings.Index(filter, "!=") > 0 {
+		vals = strings.Split(filter, "!=")
+	} else if strings.Index(filter, "=") > 0 {
+		vals = strings.Split(filter, "=")
+	} else {
+		return
+	}
+	key = vals[0]
+	val = vals[1]
+	spec[key] = val
+}
+
 // Get data for given pid (DAS Query qhash)
-func GetData(pid, coll string, idx, limit int) (string, []mongo.DASRecord) {
-	var empty_data []mongo.DASRecord
+func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mongo.DASRecord) {
+	var empty_data, data []mongo.DASRecord
+	pid := dasquery.Qhash
+	filters := dasquery.Filters
+	//     aggrs := dasquery.Aggregators
 	spec := bson.M{"qhash": pid}
-	data := mongo.Get("das", coll, spec, idx, limit)
+	skeys := filters["sort"]
+	if len(filters) > 0 {
+		var afilters []string
+		for key, vals := range filters {
+			if key == "grep" {
+				for _, val := range vals {
+					if strings.Index(val, "<") > 0 || strings.Index(val, "<") > 0 || strings.Index(val, "!") > 0 || strings.Index(val, "=") > 0 {
+						modSpec(spec, val)
+					} else {
+						afilters = append(afilters, val)
+					}
+				}
+			}
+		}
+		if len(afilters) > 0 {
+			data = mongo.GetFilteredSorted("das", coll, spec, afilters, skeys, idx, limit)
+		} else {
+			data = mongo.Get("das", coll, spec, idx, limit)
+		}
+	} else {
+		data = mongo.Get("das", coll, spec, idx, limit)
+	}
 	if len(data) == 0 {
 		return fmt.Sprintf("No data in DAS cache"), empty_data
 	}
