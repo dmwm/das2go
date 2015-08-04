@@ -134,7 +134,7 @@ func Fetch(url string, ch chan<- ResponseType) {
 	}
 	response.Data = body
 	endTime := time.Now()
-	log.Println(url, endTime.Sub(startTime))
+	log.Println("DAS fetch", url, endTime.Sub(startTime))
 	ch <- response
 }
 
