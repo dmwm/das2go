@@ -136,12 +136,47 @@ func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 }
 
 // get records from MongoDB sorted by given key
-func GetSorted(dbname, collname string, spec bson.M, skey string) []DASRecord {
+func GetSorted(dbname, collname string, spec bson.M, skeys []string) []DASRecord {
 	out := []DASRecord{}
 	s := _Mongo.Connect()
 	defer s.Close()
 	c := s.DB(dbname).C(collname)
-	err := c.Find(spec).Sort(skey).All(&out)
+	err := c.Find(spec).Sort(skeys...).All(&out)
+	if err != nil {
+		panic(err)
+	}
+	return out
+}
+
+// helper function to present in bson selected fields
+func sel(q ...string) (r bson.M) {
+	r = make(bson.M, len(q))
+	for _, s := range q {
+		r[s] = 1
+	}
+	return
+}
+
+// get records from MongoDB filtered and sorted by given key
+func GetFilteredSorted(dbname, collname string, spec bson.M, fields, skeys []string, idx, limit int) []DASRecord {
+	out := []DASRecord{}
+	s := _Mongo.Connect()
+	defer s.Close()
+	c := s.DB(dbname).C(collname)
+	var err error
+	if limit > 0 {
+		if len(skeys) > 0 {
+			err = c.Find(spec).Skip(idx).Limit(limit).Select(sel(fields...)).Sort(skeys...).All(&out)
+		} else {
+			err = c.Find(spec).Skip(idx).Limit(limit).Select(sel(fields...)).All(&out)
+		}
+	} else {
+		if len(skeys) > 0 {
+			err = c.Find(spec).Select(sel(fields...)).Sort(skeys...).All(&out)
+		} else {
+			err = c.Find(spec).Select(sel(fields...)).All(&out)
+		}
+	}
 	if err != nil {
 		panic(err)
 	}
