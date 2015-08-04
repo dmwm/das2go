@@ -152,7 +152,9 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	mkey := strings.Split(pkey, ".")[0]
 	// get DAS data record sorted by primary key
 	spec = bson.M{"qhash": dasquery.Qhash, "das.record": 1}
-	records = mongo.GetSorted("das", "cache", spec, pkey)
+	var skeys []string
+	skeys = append(skeys, pkey)
+	records = mongo.GetSorted("das", "cache", spec, skeys)
 
 	// loop over data records and merge them, extract smallest expire timestamp
 	var expire int64
