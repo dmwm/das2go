@@ -124,6 +124,18 @@ func GetDASMaps(entry interface{}) []mongo.DASRecord {
 	return maps
 }
 
+// helper function to extract all required arguments for given dasmap record
+func getRequiredArgs(rec mongo.DASRecord) []string {
+	var out []string
+	params := rec["params"].(mongo.DASRecord)
+	for k, v := range params {
+		if v == "required" {
+			out = append(out, k)
+		}
+	}
+	return out
+}
+
 // Find services for given set fields and spec pair, return DAS maps associated with found services
 func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 	keys := utils.MapKeys(spec)
@@ -146,30 +158,20 @@ func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 	for _, rec := range cond_records {
 		lkeys := strings.Split(rec["lookup"].(string), ",")
 		rkeys := getRequiredArgs(rec)
-		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(keys, rkeys) {
-			log.Println("Match", rec["system"], rec["urn"], rec["url"], keys, rkeys)
+		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) {
+			log.Println("DAS match", rec["system"], rec["urn"], rec["url"], "spec keys", keys, "required keys", rkeys)
 			out = append(out, rec)
 		}
 	}
 	return out
 }
 
-// TODO: extract all required arguments for given dasmap record
-func getRequiredArgs(rec mongo.DASRecord) []string {
-	var out []string
-	params := rec["params"].(mongo.DASRecord)
-	for k, v := range params {
-		if v == "required" {
-			out = append(out, k)
-		}
-	}
-	return out
-}
-
+// Load maps DASMaps API
 func (m *DASMaps) LoadMaps(dbname, dbcoll string) {
 	m.records = mongo.Get(dbname, dbcoll, bson.M{}, 0, -1) // index=0, limit=-1
 }
 
+// Get string value from DAS map for a given key
 func GetString(dmap mongo.DASRecord, key string) string {
 	val, ok := dmap[key].(string)
 	if !ok {
@@ -177,6 +179,8 @@ func GetString(dmap mongo.DASRecord, key string) string {
 	}
 	return val
 }
+
+// Get int value from DAS map for a given key
 func GetInt(dmap mongo.DASRecord, key string) int {
 	val, ok := dmap[key].(int)
 	if !ok {
@@ -184,6 +188,8 @@ func GetInt(dmap mongo.DASRecord, key string) int {
 	}
 	return val
 }
+
+// Get float value from DAS map for a given key
 func GetFloat(dmap mongo.DASRecord, key string) float64 {
 	val, ok := dmap[key].(float64)
 	if !ok {
