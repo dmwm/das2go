@@ -58,9 +58,11 @@ func parseTmpl(tdir, tmpl string, data interface{}) string {
 }
 
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
+	//     log.Println("DAS WEB", dasquery, "FIELDS", dasquery.Fields, "SPEC", dasquery.Spec, "FILTERS", dasquery.Filters, "AGGRS", dasquery.Aggregators)
+	log.Println("DAS WEB", dasquery)
 	response := make(map[string]interface{})
 	if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
-		status, data := das.GetData(pid, "merge", idx, limit)
+		status, data := das.GetData(dasquery, "merge", idx, limit)
 		response["nresults"] = das.Count(pid)
 		response["timestamp"] = das.GetTimestamp(pid)
 		response["status"] = status
@@ -134,7 +136,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		if len(pid) != 32 {
 			http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
 		}
-		//         log.Println("DASQUERY", dasquery, "FIELDS", dasquery.Fields, "SPEC", dasquery.Spec, "FILTERS", dasquery.Filters, "AGGRS", dasquery.Aggregators, "PIPE", dasquery.Pipe)
 		// Remove expire records from cache
 		das.RemoveExpired(dasquery.Qhash)
 		// process given query
