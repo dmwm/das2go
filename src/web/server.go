@@ -89,8 +89,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	pid := r.FormValue("pid")
 	ajax := r.FormValue("ajax")
 	hash := r.FormValue("hash")
+	inst := r.FormValue("instance")
 	if hash != "" {
-		dasquery, err := dasql.Parse(query)
+		dasquery, err := dasql.Parse(query, inst)
 		msg := fmt.Sprintf("%s, spec=%v, filters=%v, aggregators=%v, err=%s", dasquery, dasquery.Spec, dasquery.Filters, dasquery.Aggregators, err)
 		w.Write([]byte(msg))
 		return
@@ -126,7 +127,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		tmplData["CardClass"] = "hide"
 		cards := parseTmpl(_tdir, "cards.tmpl", tmplData)
-		dasquery, err := dasql.Parse(query)
+		dasquery, err := dasql.Parse(query, inst)
 		if err != "" {
 			w.Write([]byte(err))
 		}
@@ -162,7 +163,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			if status == "ok" {
 				data := response["data"].([]mongo.DASRecord)
 				presentationMap := _dasmaps.PresentationMap()
-				page = PresentData(dasquery, data, presentationMap)
+				page = PresentData(path, dasquery, data, presentationMap)
 			} else {
 				tmplData["PID"] = pid
 				tmplData["Input"] = query
