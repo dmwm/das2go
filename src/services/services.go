@@ -86,6 +86,7 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 		dasheader["services"] = srvs
 		dasheader["expire"] = utils.Expire(expire)
 		dasheader["primary_key"] = pkeys[0]
+		dasheader["instance"] = dasquery.Instance
 
 		keys := utils.MapKeys(rec)
 		if utils.InList(skey, keys) {
@@ -108,7 +109,6 @@ func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRec
 	dasrecord := make(mongo.DASRecord)
 	dasrecord["query"] = dasquery.Query
 	dasrecord["qhash"] = dasquery.Qhash
-	dasrecord["instance"] = dasquery.Instance
 	dasheader := DASHeader()
 	dasheader["record"] = 0           // DAS record type, zero for DAS record
 	dasheader["status"] = "requested" // initial status
@@ -116,6 +116,7 @@ func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRec
 	dasheader["primary_key"] = pkeys[0]
 	dasheader["expire"] = utils.Expire(60) // initial expire, 60 seconds from now
 	dasheader["ts"] = time.Now().Unix()
+	dasheader["instance"] = dasquery.Instance
 	dasrecord["das"] = dasheader
 	return dasrecord
 }
@@ -219,6 +220,7 @@ func mergeDASparts(das1, das2 mongo.DASRecord) mongo.DASRecord {
 	das["expire"] = expire
 	das["status"] = "ok" // merged step should return ok status
 	das["primary_key"] = das1["primary_key"]
+	das["instance"] = das1["instance"]
 	das["record"] = 1
 	return das
 }
