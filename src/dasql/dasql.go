@@ -125,7 +125,7 @@ func qhash(query string) string {
 
 // TODO: I need to add pipe parsing
 //
-func Parse(query string) (DASQuery, string) {
+func Parse(query, inst string) (DASQuery, string) {
 	var qlerr string
 	var rec DASQuery
 	relaxed_query := relax(query)
@@ -135,7 +135,6 @@ func Parse(query string) (DASQuery, string) {
 		pipe = parts[len(parts)-1]
 	}
 	nan := "_NA_"
-	instance := "prod/global"
 	daskeys := []string{"file", "dataset", "lumi", "run"}
 	specials := []string{"date", "system", "instance"}
 	spec_ops := []string{"in", "between"}
@@ -224,7 +223,7 @@ func Parse(query string) (DASQuery, string) {
 	rec.Fields = fields
 	rec.Qhash = qhash(relaxed_query)
 	rec.Pipe = pipe
-	rec.Instance = instance
+	rec.Instance = inst
 	rec.Filters = filters
 	rec.Aggregators = aggregators
 	return rec, qlerror
