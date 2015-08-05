@@ -11,10 +11,10 @@ import (
 )
 
 // helper function to make a link
-func href(daskey, value string) string {
+func href(path, daskey, value string) string {
 	key := strings.Split(daskey, ".")[0]
 	ref := fmt.Sprintf("%s=%s", key, value)
-	out := fmt.Sprintf("<a href=\"/request?input=%s\">%s</a>", ref, value)
+	out := fmt.Sprintf("<span class=\"highlight\"><a href=\"%s?input=%s\">%s</a></span>", path, ref, value)
 	return out
 }
 
@@ -63,20 +63,33 @@ func genColor(system string) (string, string) {
 
 // helper function to show services
 func colServices(services []string) string {
-	var out []string
+	out := make(map[string]interface{})
 	for _, val := range services {
 		bkg, col := genColor(val)
 		srv := fmt.Sprintf("<span style=\"background-color:%s;color:%s;padding:2px\">%s</span>", bkg, col, val)
-		out = append(out, srv)
+		out[srv] = 1
 	}
-	return "Services: " + strings.Join(out, "")
+	return "Sources: " + strings.Join(utils.MapKeys(out), "")
+}
+
+// helper function to create links
+func dasLinks(path, inst, val string, links []interface{}) string {
+	var out []string
+	for _, row := range links {
+		rec := row.(mongo.DASRecord)
+		name := rec["name"].(string)
+		query := fmt.Sprintf(rec["query"].(string), val)
+		link := fmt.Sprintf("<a href=\"%s?instance=%s&input=%s\">%s</a>", path, inst, query, name)
+		out = append(out, link)
+	}
+	return "<br/>" + strings.Join(out, ", ")
 }
 
 // Represent DAS records for web UI
-func PresentData(dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord) string {
+func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord) string {
 	var out []string
 	line := "<hr class=\"line\" />"
-	br := "<br/>"
+	//     br := "<br/>"
 	fields := dasquery.Fields
 	var services []string
 	for jdx, item := range data {
@@ -88,15 +101,21 @@ func PresentData(dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DAS
 			}
 		}
 		pkey := das["primary_key"].(string)
+		inst := das["instance"].(string)
 		for _, key := range fields {
 			records := item[key].([]interface{})
 			uiRows := pmap[key].([]interface{})
+			var links []interface{}
+			var pval string
 			for idx, elem := range records {
 				rec := elem.(mongo.DASRecord)
 				var values []string
 				for _, uir := range uiRows {
 					uirow := uir.(mongo.DASRecord)
 					daskey := uirow["das"].(string)
+					if links == nil {
+						links = uirow["link"].([]interface{})
+					}
 					if idx != 0 && daskey == pkey {
 						continue // look-up only once primary key
 					}
@@ -104,19 +123,22 @@ func PresentData(dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DAS
 					attrs := strings.Split(daskey, ".")
 					attr := strings.Join(attrs[1:len(attrs)], ".")
 					value := ExtractValue(rec, attr)
+					if pval == "" {
+						pval = value
+					}
 					if len(value) > 0 {
 						var row string
 						if daskey == pkey {
-							row = fmt.Sprintf("%s: <b>%v</b>\n<br/>\n", webkey, href(pkey, value))
+							row = fmt.Sprintf("%s: %v\n<br/>\n", webkey, href(path, pkey, value))
 						} else {
 							row = fmt.Sprintf("%s: %v\n", webkey, value)
 						}
 						values = append(values, row)
 					}
 				}
-				out = append(out, strings.Join(values, ","))
+				out = append(out, strings.Join(values, ", "))
 			}
-			out = append(out, br)
+			out = append(out, dasLinks(path, inst, pval, links))
 		}
 		out = append(out, colServices(services))
 		if jdx != len(data) {
