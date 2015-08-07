@@ -125,8 +125,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(top_page + content + cards + bottom_page))
 		return
 	} else {
-		tmplData["CardClass"] = "hide"
-		cards := parseTmpl(_tdir, "cards.tmpl", tmplData)
 		dasquery, err := dasql.Parse(query, inst)
 		if err != "" {
 			w.Write([]byte(err))
@@ -155,6 +153,8 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(js)
 		} else if path == "/das/request" {
+			tmplData["CardClass"] = "hide"
+			cards := parseTmpl(_tdir, "cards.tmpl", tmplData)
 			status := response["status"]
 			//             log.Println("RESPONSE", response)
 			top_page := parseTmpl(_tdir, "top.tmpl", tmplData)
