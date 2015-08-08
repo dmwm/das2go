@@ -3,6 +3,7 @@
 request PID={{.PID}}, please wait...
 <a href="/das/request?input={{.Input}}">stop</a> request
 <script type="text/javascript">
+HideTag('das_cards')
 setTimeout('ajaxCheckPid("{{.Base}}", "{{.Method}}", "{{.Input}}", "{{.PID}}", "{{.Interval}}")', {{.Interval}})
 </script>
 <!-- enf of das_check_pid.tmpl -->
