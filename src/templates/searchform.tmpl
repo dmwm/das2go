@@ -59,7 +59,7 @@ autocompletion
 
 <script type="text/javascript">
 //<![CDATA[
-updateInput('{{.Input}}', '{{.DBSinstance}}');
+updateInput(getUrlParam('input'), '{{.DBSinstance}}');
 function dbs_inst() {
    var doc = document.getElementById('instance');
    return doc.value;
@@ -160,6 +160,11 @@ function HideDasKeys(e) {
 document.observe('keydown', HideDasKeys);
 // It should observe given tag (code below), but somehow does not
 //\$('das_keys_desc').observe('keydown', HideDasKeys);
+
+// Show DAS cards when there is no input on a page
+if(getUrlParam('input')=="") {
+    ShowTag('das_cards')
+}
 </script>
 
 <div id="response" name="response" class="results"> <!-- we close this tag in das_bottom.tmpl -->
