@@ -14,18 +14,15 @@
 package web
 
 import (
-	"bytes"
 	"das"
 	"dasmaps"
 	"dasql"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"log"
 	"mongo"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -36,28 +33,8 @@ import _ "net/http/pprof"
 
 // global variables used in this module
 var _dasmaps dasmaps.DASMaps
-var _tdir string
-
-// consume list of templates and release their full path counterparts
-func fileNames(tdir string, filenames ...string) []string {
-	flist := []string{}
-	for _, fname := range filenames {
-		flist = append(flist, filepath.Join(tdir, fname))
-	}
-	return flist
-}
-
-// parse template with given data
-func parseTmpl(tdir, tmpl string, data interface{}) string {
-	buf := new(bytes.Buffer)
-	filenames := fileNames(tdir, tmpl)
-	t := template.Must(template.ParseFiles(filenames...))
-	err := t.Execute(buf, data)
-	if err != nil {
-		panic(err)
-	}
-	return buf.String()
-}
+var _tdir, _top, _bottom, _search, _cards, _base string
+var _dbses []string
 
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
 	//     log.Println("DAS WEB", dasquery, "FIELDS", dasquery.Fields, "SPEC", dasquery.Spec, "FILTERS", dasquery.Filters, "AGGRS", dasquery.Aggregators)
@@ -108,23 +85,11 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	path := r.URL.Path
 	//     log.Println("CALL", path, query, pid)
+	tmplData := make(map[string]interface{})
 
 	// process requests based on the path
-	dbses := []string{"prod/global", "prod/phys01", "prod/phys02", "prod/phys03", "prod/caf"}
-	tmplData := map[string]interface{}{}
-	tmplData["Base"] = "/das"
-	tmplData["Time"] = time.Now()
-	tmplData["Input"] = query
-	tmplData["DBSinstance"] = dbses[0]
-	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
-	tmplData["DBSes"] = dbses
 	if path == "/das" || path == "/das/" {
-		tmplData["CardClass"] = "show"
-		cards := parseTmpl(_tdir, "cards.tmpl", tmplData)
-		top_page := parseTmpl(_tdir, "top.tmpl", tmplData)
-		content := parseTmpl(_tdir, "searchform.tmpl", tmplData)
-		bottom_page := parseTmpl(_tdir, "bottom.tmpl", tmplData)
-		w.Write([]byte(top_page + content + cards + bottom_page))
+		w.Write([]byte(_top + _search + _cards + _bottom))
 		return
 	} else {
 		dasquery, err := dasql.Parse(query, inst)
@@ -155,27 +120,23 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(js)
 		} else if path == "/das/request" {
-			tmplData["CardClass"] = "hide"
-			cards := parseTmpl(_tdir, "cards.tmpl", tmplData)
 			status := response["status"]
 			//             log.Println("RESPONSE", response)
-			top_page := parseTmpl(_tdir, "top.tmpl", tmplData)
-			content := parseTmpl(_tdir, "searchform.tmpl", tmplData)
 			var page string
 			if status == "ok" {
 				data := response["data"].([]mongo.DASRecord)
 				presentationMap := _dasmaps.PresentationMap()
 				page = PresentData(path, dasquery, data, presentationMap)
 			} else {
+				tmplData["Base"] = _base
 				tmplData["PID"] = pid
 				tmplData["Input"] = query
 				tmplData["Interval"] = 2500
 				tmplData["Method"] = "request"
 				page = parseTmpl(_tdir, "check_pid.tmpl", tmplData)
 			}
-			bottom_page := parseTmpl(_tdir, "bottom.tmpl", tmplData)
 			if ajax == "" {
-				w.Write([]byte(top_page + content + cards + page + bottom_page))
+				w.Write([]byte(_top + _search + _cards + page + _bottom))
 			} else {
 				w.Write([]byte(page))
 			}
@@ -205,6 +166,22 @@ func Server(port string) {
 			timg = val[1]
 		}
 	}
+
+	// DAS templates
+	_base = "/das"
+	_dbses = []string{"prod/global", "prod/phys01", "prod/phys02", "prod/phys03", "prod/caf"}
+	tmplData := make(map[string]interface{})
+	tmplData["Base"] = _base
+	tmplData["Time"] = time.Now()
+	tmplData["Input"] = ""
+	tmplData["DBSinstance"] = _dbses[0]
+	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
+	tmplData["DBSes"] = _dbses
+	var templates DASTemplates
+	_top = templates.Top(_tdir, tmplData)
+	_bottom = templates.Bottom(_tdir, tmplData)
+	_search = templates.SearchForm(_tdir, tmplData)
+	_cards = templates.Cards(_tdir, tmplData)
 
 	// load DAS Maps if neccessary
 	if len(_dasmaps.Services()) == 0 {
