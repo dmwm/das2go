@@ -103,7 +103,13 @@ function getUrlParam(name) {
     name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
     var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
         results = regex.exec(location.search);
-    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+    var res;
+    if (results === null) {
+        res="";
+    } else {
+        res=decodeURIComponent(results[1].replace(/\+/g, " "));
+    }
+    return res
 }
 function UrlParams() {
     var url=window.location.href;
