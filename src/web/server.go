@@ -4,10 +4,12 @@
  * Description: DAS web server, it handles all DAS reuqests
  * Created    : Fri Jun 26 14:25:01 EDT 2015
  *
- * Some links: http://www.alexedwards.net/blog/golang-response-snippets
- * http://blog.golang.org/json-and-go
- * http://golang.org/pkg/html/template/
- * https://labix.org/mgo
+ * Some links:  http://www.alexedwards.net/blog/golang-response-snippets
+ *              http://blog.golang.org/json-and-go
+ * Mgo/BSON:    https://labix.org/mgo
+ * Go patterns: http://www.golangpatterns.info/home
+ * Templates:   http://gohugo.io/templates/go-templates/
+ *              http://golang.org/pkg/html/template/
  */
 package web
 
