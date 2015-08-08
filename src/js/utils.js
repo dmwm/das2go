@@ -99,6 +99,12 @@ function load(url) {
 function reload() {
     load(window.location.href);
 }
+function getUrlParam(name) {
+    name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+    var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+        results = regex.exec(location.search);
+    return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+}
 function UrlParams() {
     var url=window.location.href;
     var arr=url.split('&');
