@@ -70,7 +70,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	hash := r.FormValue("hash")
 	inst := r.FormValue("instance")
 	if hash != "" {
-		dasquery, err := dasql.Parse(query, inst)
+		dasquery, err := dasql.Parse(query, inst, _dasmaps.DASKeys())
 		msg := fmt.Sprintf("%s, spec=%v, filters=%v, aggregators=%v, err=%s", dasquery, dasquery.Spec, dasquery.Filters, dasquery.Aggregators, err)
 		w.Write([]byte(msg))
 		return
@@ -92,7 +92,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(_top + _search + _cards + _bottom))
 		return
 	} else {
-		dasquery, err := dasql.Parse(query, inst)
+		dasquery, err := dasql.Parse(query, inst, _dasmaps.DASKeys())
 		if err != "" {
 			w.Write([]byte(err))
 		}
@@ -188,6 +188,7 @@ func Server(port string) {
 		log.Println("Load DAS maps")
 		_dasmaps.LoadMaps("mapping", "db")
 		log.Println("DAS services", _dasmaps.Services())
+		log.Println("DAS keys", _dasmaps.DASKeys())
 	}
 
 	// create all required indexes in das.cache, das.merge collections
