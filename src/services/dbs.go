@@ -18,9 +18,7 @@ func loadDBSData(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	err := json.Unmarshal(data, &out)
 	if err != nil {
-		var out2 interface{}
-		json.Unmarshal(data, &out2)
-		fmt.Println("DBS unable to unmarshal the data into DAS record", api, out2)
+		fmt.Println("DBS unable to unmarshal the data into DAS record", api, string(data))
 	}
 	return out
 }
