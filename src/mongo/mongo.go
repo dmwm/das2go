@@ -85,25 +85,15 @@ func (m *MongoConnection) Connect() *mgo.Session {
 		if err != nil {
 			panic(err)
 		}
-		m.Session.SetMode(mgo.Monotonic, true)
+		//         m.Session.SetMode(mgo.Monotonic, true)
+		//         m.Session.SetMode(mgo.Monotonic, true)
+		m.Session.SetMode(mgo.Strong, true)
 	}
 	return m.Session.Clone()
 }
 
 // global object which holds MongoDB connection
 var _Mongo MongoConnection
-
-// helper function to get MongoDB collection object
-func dbcol(dbname, collname string) *mgo.Collection {
-	session, err := mgo.Dial(config.Uri())
-	if err != nil {
-		panic(err)
-	}
-	defer session.Close()
-	session.SetMode(mgo.Monotonic, true)
-	coll := session.DB(dbname).C(collname)
-	return coll
-}
 
 // insert into MongoDB
 func Insert(dbname, collname string, records []DASRecord) {
