@@ -20,10 +20,39 @@ type DASMaps struct {
 	services      []string
 	notations     []mongo.DASRecord
 	presentations mongo.DASRecord
+	daskeys       []string
 }
 
 func (m *DASMaps) Maps() []mongo.DASRecord {
 	return m.records
+}
+
+// DASMaps interface method to get list of DAS keys
+func (m *DASMaps) DASKeys() []string {
+	if len(m.daskeys) != 0 {
+		return m.daskeys
+	}
+	var value string
+	for _, rec := range m.records {
+		rtype := rec["type"]
+		if val, ok := rtype.(string); ok {
+			value = val
+		} else {
+			continue
+		}
+		if value == "service" {
+			dmaps := GetDASMaps(rec["das_map"])
+			for _, dmap := range dmaps {
+				entry := dmap["das_key"]
+				if dkey, ok := entry.(string); ok {
+					if !utils.FindInList(dkey, m.daskeys) {
+						m.daskeys = append(m.daskeys, dkey)
+					}
+				}
+			}
+		}
+	}
+	return m.daskeys
 }
 
 // DASMaps interface method to get list of services
