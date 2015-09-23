@@ -14,6 +14,7 @@ import (
 	"log"
 	"mongo"
 	"net/url"
+	"reflect"
 	"regexp"
 	"services"
 	"strings"
@@ -63,6 +64,13 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
+	urn, _ := dasmap["urn"].(string)
+	if base == "local_api" {
+		return base
+	}
+	if utils.InList(urn, services.DASLocalAPIs()) {
+		return "local_api"
+	}
 	// TMP, until we change phedex maps to use JSON
 	if strings.Contains(base, "phedex") {
 		base = strings.Replace(base, "xml", "json", -1)
@@ -93,6 +101,67 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		return base + "?" + args
 	}
 	return base
+}
+
+type DASRecords []mongo.DASRecord
+
+// helper function to process given set of URLs associted with dasquery
+func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []string) {
+	for _, dmap := range dmaps {
+		urn := dasmaps.GetString(dmap, "urn")
+		system := dasmaps.GetString(dmap, "system")
+		expire := dasmaps.GetInt(dmap, "expire")
+		api := fmt.Sprintf("L_%s_%s", system, urn)
+		// we use reflection to look-up api from our services/localapis.go functions
+		// for details on reflection see
+		// http://stackoverflow.com/questions/12127585/go-lookup-function-by-name
+		t := reflect.ValueOf(services.LocalAPIs{})              // type of LocalAPIs struct
+		m := t.MethodByName(api)                                // associative function name for given api
+		args := []reflect.Value{reflect.ValueOf(dasquery.Spec)} // list of function arguments
+		vals := m.Call(args)[0]                                 // return value
+		records := vals.Interface().([]mongo.DASRecord)         // cast reflect value to its type
+		log.Println("### LOCAL APIS", urn, system, expire, dmap, api, m, len(records))
+
+		records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
+
+		// get DAS record and adjust its settings
+		dasrecord := services.GetDASRecord(dasquery)
+		dasstatus := fmt.Sprintf("process %s:%s", system, urn)
+		dasexpire := services.GetExpire(dasrecord)
+		if len(records) != 0 {
+			rec := records[0]
+			log.Println("### LOCAL APIs, rec", rec)
+			recexpire := services.GetExpire(rec)
+			if dasexpire > recexpire {
+				dasexpire = recexpire
+			}
+		}
+		das := dasrecord["das"].(mongo.DASRecord)
+		das["expire"] = dasexpire
+		das["status"] = dasstatus
+		dasrecord["das"] = das
+		services.UpdateDASRecord(dasquery.Qhash, dasrecord)
+
+		// fix all records expire values based on lowest one
+		records = services.UpdateExpire(dasquery.Qhash, records, dasexpire)
+
+		// insert records into DAS cache collection
+		log.Println("### MONGO INSERT", len(records), records[0])
+		mongo.Insert("das", "cache", records)
+	}
+	records, expire := services.MergeDASRecords(dasquery)
+	mongo.Insert("das", "merge", records)
+	// get DAS record and adjust its settings
+	dasrecord := services.GetDASRecord(dasquery)
+	dasexpire := services.GetExpire(dasrecord)
+	if dasexpire < expire {
+		dasexpire = expire
+	}
+	das := dasrecord["das"].(mongo.DASRecord)
+	das["expire"] = dasexpire
+	das["status"] = "ok"
+	dasrecord["das"] = das
+	services.UpdateDASRecord(dasquery.Qhash, dasrecord)
 }
 
 // helper function to process given set of URLs associted with dasquery
@@ -199,10 +268,13 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	// find out list of APIs/CMS services which can process this query request
 	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
 	var urls, srvs, pkeys []string
+	var local_apis []mongo.DASRecord
 	// loop over services and fetch data
 	for _, dmap := range maps {
 		furl := formUrlCall(dasquery, dmap)
-		if furl != "" {
+		if furl == "local_api" {
+			local_apis = append(local_apis, dmap)
+		} else if furl != "" {
 			urls = append(urls, furl)
 		}
 		srv := fmt.Sprintf("%s:%s", dmap["system"], dmap["urn"])
@@ -226,8 +298,15 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	records = append(records, dasrecord)
 	mongo.Insert("das", "cache", records)
 
+	// process local_api calls
+	if len(local_apis) > 0 {
+		go processLocalApis(dasquery, local_apis, pkeys)
+	}
+
 	// process URLs which will insert records into das cache and merge them into das merge collection
-	go processURLs(dasquery, urls, maps, dmaps, pkeys)
+	if len(urls) > 0 {
+		go processURLs(dasquery, urls, maps, dmaps, pkeys)
+	}
 	return dasquery.Qhash
 }
 
