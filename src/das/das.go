@@ -107,15 +107,10 @@ type DASRecords []mongo.DASRecord
 
 // helper function to process given set of URLs associted with dasquery
 func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []string) {
-	var expire int64
-	expire = time.Now().Unix() * 2 // initial expire timestamp
 	for _, dmap := range dmaps {
 		urn := dasmaps.GetString(dmap, "urn")
 		system := dasmaps.GetString(dmap, "system")
-		mapexpire = dasmaps.GetInt(dmap, "expire")
-		if mapexpire < expire {
-			expire = mapexpire
-		}
+		expire := dasmaps.GetInt(dmap, "expire")
 		api := fmt.Sprintf("L_%s_%s", system, urn)
 		// we use reflection to look-up api from our services/localapis.go functions
 		// for details on reflection see
@@ -125,7 +120,7 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		args := []reflect.Value{reflect.ValueOf(dasquery.Spec)} // list of function arguments
 		vals := m.Call(args)[0]                                 // return value
 		records := vals.Interface().([]mongo.DASRecord)         // cast reflect value to its type
-		log.Println("### LOCAL APIS", urn, system, expire, dmap, api, m, len(records))
+		//         log.Println("### LOCAL APIS", urn, system, expire, dmap, api, m, len(records))
 
 		records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
 
@@ -152,6 +147,8 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		// insert records into DAS cache collection
 		mongo.Insert("das", "cache", records)
 	}
+	// initial expire timestamp is 1h
+	expire := utils.Expire(3600)
 	// get DAS record and adjust its settings
 	dasrecord := services.GetDASRecord(dasquery)
 	dasexpire := services.GetExpire(dasrecord)
