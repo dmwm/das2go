@@ -155,11 +155,25 @@ func GetDASMaps(entry interface{}) []mongo.DASRecord {
 
 // helper function to extract all required arguments for given dasmap record
 func getRequiredArgs(rec mongo.DASRecord) []string {
-	var out []string
+	var out, args []string
 	params := rec["params"].(mongo.DASRecord)
 	for k, v := range params {
 		if v == "required" {
-			out = append(out, k)
+			args = append(args, k)
+		}
+	}
+	dasmaps := GetDASMaps(rec["das_map"])
+	for _, dmap := range dasmaps {
+		das_key := dmap["das_key"].(string)
+		api_val := dmap["api_arg"]
+		if api_val == nil {
+			continue
+		}
+		api_arg := api_val.(string)
+		for _, v := range args {
+			if v == api_arg && !utils.InList(das_key, out) {
+				out = append(out, das_key)
+			}
 		}
 	}
 	return out
