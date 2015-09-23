@@ -109,6 +109,32 @@ func Worker(in <-chan string, out chan<- ResponseType, quit <-chan bool) {
  * Fetch(url string, ch chan<- []byte)
  * Fetch data for provided URL and redirect results to given channel
  */
+func FetchResponse(url string) ResponseType {
+	var response ResponseType
+	response.Url = url
+	if validate_url(url) == false {
+		response.Error = errors.New("Invalid URL")
+		return response
+	}
+	resp, err := client.Get(url)
+	if err != nil {
+		response.Error = err
+		return response
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		response.Error = err
+		return response
+	}
+	response.Data = body
+	return response
+}
+
+/*
+ * Fetch(url string, ch chan<- []byte)
+ * Fetch data for provided URL and redirect results to given channel
+ */
 func Fetch(url string, ch chan<- ResponseType) {
 	//    log.Println("Receive", url)
 	startTime := time.Now()
