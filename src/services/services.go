@@ -73,9 +73,9 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 	var out []mongo.DASRecord
 	fields := dasquery.Fields
 	qhash := dasquery.Qhash
-	if len(fields) > 1 {
-		return records
-	}
+	//     if len(fields) > 1 {
+	//         return records
+	//     }
 	skey := fields[0]
 	for _, rec := range records {
 		// DAS header for records
