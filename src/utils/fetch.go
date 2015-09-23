@@ -105,10 +105,7 @@ func Worker(in <-chan string, out chan<- ResponseType, quit <-chan bool) {
 	}
 }
 
-/*
- * Fetch(url string, ch chan<- []byte)
- * Fetch data for provided URL and redirect results to given channel
- */
+// Fetch data for provided URL
 func FetchResponse(url string) ResponseType {
 	var response ResponseType
 	response.Url = url
@@ -131,42 +128,17 @@ func FetchResponse(url string) ResponseType {
 	return response
 }
 
-/*
- * Fetch(url string, ch chan<- []byte)
- * Fetch data for provided URL and redirect results to given channel
- */
+// Fetch data for provided URL and redirect results to given channel
 func Fetch(url string, ch chan<- ResponseType) {
 	//    log.Println("Receive", url)
 	startTime := time.Now()
-	var response ResponseType
-	response.Url = url
-	if validate_url(url) == false {
-		response.Error = errors.New("Invalid URL")
-		ch <- response
-		return
-	}
-	resp, err := client.Get(url)
-	if err != nil {
-		response.Error = err
-		ch <- response
-		return
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		response.Error = err
-		ch <- response
-		return
-	}
-	response.Data = body
+	response := FetchResponse(url)
 	endTime := time.Now()
 	log.Println("DAS fetch", url, endTime.Sub(startTime))
 	ch <- response
 }
 
-/*
- * Helper function which validates given URL
- */
+// Helper function which validates given URL
 func validate_url(url string) bool {
 	if len(url) > 0 {
 		pat := "(https|http)://[-A-Za-z0-9_+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]"
