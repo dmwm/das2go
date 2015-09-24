@@ -73,11 +73,19 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 	var out []mongo.DASRecord
 	fields := dasquery.Fields
 	qhash := dasquery.Qhash
+	spec := dasquery.Spec
 	//     if len(fields) > 1 {
 	//         return records
 	//     }
 	skey := fields[0]
 	for _, rec := range records {
+		// Check that spec key:values are presented in a record
+		prim_key := strings.Split(pkeys[0], ".")
+		for key, val := range spec {
+			if key == prim_key[0] {
+				rec[prim_key[1]] = val
+			}
+		}
 		// DAS header for records
 		dasheader := DASHeader()
 		srvs := dasheader["services"].([]string)
@@ -152,6 +160,7 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	lkeys := dasquery.Fields
 	pkey := das["primary_key"].(string)
 	mkey := strings.Split(pkey, ".")[0]
+	akey := strings.Split(pkey, ".")[1]
 	// get DAS data record sorted by primary key
 	spec = bson.M{"qhash": dasquery.Qhash, "das.record": 1}
 	var skeys []string
@@ -181,8 +190,8 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 		if expire > dasexpire {
 			expire = dasexpire
 		}
-		data1, err1 := mongo.GetStringValue(oldrec, pkey)
-		data2, err2 := mongo.GetStringValue(rec, pkey)
+		data1, err1 := mongo.GetStringValue(oldrec, akey)
+		data2, err2 := mongo.GetStringValue(rec, akey)
 		if err1 == nil && err2 == nil && data1 != data2 {
 			oldrec = rec
 			out = append(out, newrec)
