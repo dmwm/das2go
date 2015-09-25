@@ -83,17 +83,17 @@ func qlError(query string, idx int, msg string) string {
 	fmt.Println(fullmsg)
 	return fullmsg
 }
-func parseArray(query string, idx int, oper string, val string) ([]int, int, string) {
+func parseArray(rquery string, odx int, oper string, val string) ([]int, int, string) {
 	qlerr := ""
 	out := []int{}
 	if !(oper == "in" || oper == "between") {
-		qlerr = qlError(query, idx, "Invalid operator '"+oper+"' for DAS array")
+		qlerr = qlError(rquery, odx, "Invalid operator '"+oper+"' for DAS array")
 		return out, -1, qlerr
 	}
 	// we receive relatex query, let's split it by spaces and extract array part
-	arr := strings.Split(query, " ")
-	query = strings.Join(arr[idx:len(arr)], " ")
-	idx = strings.Index(query, "[")
+	arr := strings.Split(rquery, " ")
+	query := strings.Join(arr[odx:len(arr)], " ")
+	idx := strings.Index(query, "[")
 	jdx := strings.Index(query, "]")
 	values := strings.Split(string(query[idx+1:jdx]), ",")
 	for _, v := range values {
@@ -103,7 +103,14 @@ func parseArray(query string, idx int, oper string, val string) ([]int, int, str
 		}
 		out = append(out, val)
 	}
-	return out, jdx + 1, qlerr
+	// find position of last bracket in array of tokens
+	for key, val := range arr {
+		if val == "]" {
+			jdx = key
+			break
+		}
+	}
+	return out, jdx + 2 - odx, qlerr
 }
 func parseQuotes(query string, idx int, quote string) (string, int) {
 	out := "parseQuotes"
@@ -232,6 +239,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	rec.Instance = inst
 	rec.Filters = filters
 	rec.Aggregators = aggregators
+	//     fmt.Printf("DAS QUERY parser output, spec=%v, fields=%v query=%v\n", spec, fields, rec)
 	return rec, qlerror
 }
 
