@@ -179,6 +179,20 @@ func getRequiredArgs(rec mongo.DASRecord) []string {
 	return out
 }
 
+// helper function for DASRecord type similar to utils.InList
+func inList(a mongo.DASRecord, list []mongo.DASRecord) bool {
+	check := 0
+	for _, b := range list {
+		if b["urn"] == a["urn"] && b["url"] == a["url"] && b["system"] == a["system"] {
+			check += 1
+		}
+	}
+	if check != 0 {
+		return true
+	}
+	return false
+}
+
 // Find services for given set fields and spec pair, return DAS maps associated with found services
 func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 	keys := utils.MapKeys(spec)
@@ -201,7 +215,7 @@ func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 	for _, rec := range cond_records {
 		lkeys := strings.Split(rec["lookup"].(string), ",")
 		rkeys := getRequiredArgs(rec)
-		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) {
+		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && !inList(rec, out) {
 			log.Println("DAS match", rec["system"], rec["urn"], rec["url"], "spec keys", keys, "required keys", rkeys)
 			out = append(out, rec)
 		}
