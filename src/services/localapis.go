@@ -140,7 +140,7 @@ func dbs_urls(spec bson.M, api string) []string {
 		}
 		urls = append(urls, myurl)
 	}
-	return urls
+	return utils.List2Set(urls)
 }
 
 // helper function to get file,run,lumi triplets
@@ -240,8 +240,13 @@ func file4db_runs_site(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	api := "files"
 	urls := dbs_urls(spec, api)
-	fmt.Println(urls)
-	//     files := processUrls(api, urls)
+	files := processUrls(api, urls)
+	// TODO: I need to add here check files in Phedex for give site (should take it form spec)
+	for _, rec := range files {
+		row := make(mongo.DASRecord)
+		row["file"] = mongo.DASRecord{"name": rec["logical_file_name"].(string)}
+		out = append(out, row)
+	}
 	return out
 }
 func (LocalAPIs) L_combined_files4dataset_runs_site(spec bson.M) []mongo.DASRecord {
