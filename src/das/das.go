@@ -65,8 +65,8 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
 	urn, _ := dasmap["urn"].(string)
-	if base == "local_api" {
-		return base
+	if !strings.HasPrefix(base, "http") {
+		return "local_api"
 	}
 	if utils.InList(urn, services.DASLocalAPIs()) {
 		return "local_api"
