@@ -110,52 +110,46 @@ func processUrls(api string, urls []string) []mongo.DASRecord {
 }
 func file_run_lumi(spec bson.M, fields []string) []mongo.DASRecord {
 	var out []mongo.DASRecord
+
+	// get runs from spec
+	runs := spec["run"]
+	runs_args := ""
+	if runs != nil {
+		for _, val := range runs.([]int) {
+			runs_args = fmt.Sprintf("%s&run_num=%d", runs_args, val)
+		}
+	}
+
 	// find all blocks for given dataset or block
 	var urls []string
 	api := "filelumis"
 	for _, blk := range find_blocks(spec) {
 		myurl := fmt.Sprintf("%s/%s?block_name=%s", dbsurl(), api, url.QueryEscape(blk))
-		runs := spec["run"]
-		if runs != nil {
-			fmt.Println("runs parameter", runs)
-			// here I need to modify myurl and add "&run_num=%s"
+		if len(runs_args) > 0 {
+			myurl += runs_args // append run arguments
 		}
 		urls = append(urls, myurl)
 	}
-	// fetch all filelumis
 	filelumis := processUrls(api, urls)
 	// use filelumis DBS API output to get
 	// run_num, logical_file_name, lumi_secion_num from provided fields
-	//     var mapkeys []string
 	for _, rec := range filelumis {
 		row := make(mongo.DASRecord)
 		for _, key := range fields {
 			if key == "run_num" {
 				row["run"] = mongo.DASRecord{"run_number": rec[key]}
-			}
-			if key == "lumi_section_num" {
+			} else if key == "lumi_section_num" {
 				row["lumi"] = mongo.DASRecord{"number": rec[key]}
-			}
-			if key == "logical_file_name" {
+			} else if key == "logical_file_name" {
 				row["file"] = mongo.DASRecord{"name": rec[key]}
 			}
 		}
-		for key, val := range spec {
-			row[key] = val
-		}
-		//         if len(mapkeys) == 0 {
-		//             mapkeys = utils.MapKeys(rec)
-		//         }
-		//         for _, key := range mapkeys {
-		//             if !utils.InList(key, fields) {
-		//                 delete(rec, key)
-		//             }
-		//         }
-		//         out = append(out, rec)
 		out = append(out, row)
 	}
 	return out
 }
+
+// DBS3 local APIs
 func (LocalAPIs) L_dbs3_run_lumi4dataset(spec bson.M) []mongo.DASRecord {
 	fields := []string{"run_num", "lumi_section_num"}
 	return file_run_lumi(spec, fields)
@@ -183,6 +177,7 @@ func (LocalAPIs) L_dbs3_file_run_lumi4block(spec bson.M) []mongo.DASRecord {
 	return file_run_lumi(spec, fields)
 }
 
+// TODO: APIs below needs to be implemented
 func (LocalAPIs) L_dbs3_block_run_lumi4dataset(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	return out
@@ -196,6 +191,36 @@ func (LocalAPIs) L_dbs3_blocks4tier_dates(spec bson.M) []mongo.DASRecord {
 	return out
 }
 func (LocalAPIs) L_dbs3_lumi4block_run(spec bson.M) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	return out
+}
+
+// Combined APIs
+func (LocalAPIs) L_combined_dataset4site_release(spec bson.M) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	return out
+}
+func (LocalAPIs) L_combined_dataset4site_release_parent(spec bson.M) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	return out
+}
+func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	return out
+}
+func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	return out
+}
+func (LocalAPIs) L_combined_lumi4dataset(spec bson.M) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	return out
+}
+func (LocalAPIs) L_combined_files4dataset_runs_site(spec bson.M) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	return out
+}
+func (LocalAPIs) L_combined_files4block_runs_site(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	return out
 }
