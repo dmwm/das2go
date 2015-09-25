@@ -11,7 +11,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
-	"log"
 	"strconv"
 	"strings"
 	"utils"
@@ -36,7 +35,7 @@ func (q DASQuery) String() string {
 }
 
 func operators() []string {
-	return []string{"(", ")", ">", "<", "!", "[", "]", ",", "="}
+	return []string{"(", ")", ">", "<", "!", "[", "]", ",", "=", "in", "between"}
 }
 func relax(query string) string {
 	for _, oper := range operators() {
@@ -54,6 +53,10 @@ func relax(query string) string {
 	idx := 0
 	for idx < qlen {
 		sval := string(arr[idx])
+		if sval == "" {
+			idx += 1
+			continue
+		}
 		if idx+2 < qlen {
 			nnval = string(arr[idx+2])
 		} else {
@@ -77,17 +80,19 @@ func relax(query string) string {
 
 func qlError(query string, idx int, msg string) string {
 	fullmsg := fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, idx, msg)
-	log.Println(fullmsg)
+	fmt.Println(fullmsg)
 	return fullmsg
 }
 func parseArray(query string, idx int, oper string, val string) ([]int, int, string) {
 	qlerr := ""
 	out := []int{}
-	if oper != "in" || oper != "between" {
+	if !(oper == "in" || oper == "between") {
 		qlerr = qlError(query, idx, "Invalid operator '"+oper+"' for DAS array")
 		return out, -1, qlerr
 	}
-	query = string(query[idx : len(query)-1])
+	// we receive relatex query, let's split it by spaces and extract array part
+	arr := strings.Split(query, " ")
+	query = strings.Join(arr[idx:len(arr)], " ")
 	idx = strings.Index(query, "[")
 	jdx := strings.Index(query, "]")
 	values := strings.Split(string(query[idx+1:jdx]), ",")
@@ -108,6 +113,8 @@ func parseQuotes(query string, idx int, quote string) (string, int) {
 func spec_entry(key, oper string, val interface{}) bson.M {
 	rec := bson.M{}
 	if oper == "=" || oper == "last" {
+		rec[key] = val
+	} else if oper == "in" || oper == "between" {
 		rec[key] = val
 	}
 	return rec
@@ -160,7 +167,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		} else {
 			nnval = nan
 		}
-		//         log.Printf("Process idx='%d', val='%s', nval='%s', nnval='%s'\n", idx, val, nval, nnval)
+		//         fmt.Printf("Process idx='%d', val='%s', nval='%s', nnval='%s'\n", idx, val, nval, nnval)
 		if nval != nan && (nval == "," || utils.InList(nval, daskeys) == true) {
 			if utils.InList(val, daskeys) {
 				fields = append(fields, val)
@@ -174,7 +181,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 				return rec, qlerr
 			}
 			if first_nnval == "[" {
-				value, step, qlerr := parseArray(relaxed_query, idx, nval, val)
+				value, step, qlerr := parseArray(relaxed_query, idx+2, nval, val)
 				if qlerr != "" {
 					return rec, qlerr
 				}
@@ -190,7 +197,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 				idx += step
 			} else {
 				updateSpec(spec, spec_entry(val, nval, nnval))
-				idx += 3
+				idx += 2
 			}
 			idx += 1
 		} else if nval == nan && nnval == nan {
@@ -203,7 +210,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 				return rec, qlerr
 			}
 		} else {
-			qlerr = qlError(relaxed_query, idx, "We should not be here")
+			qlerr = qlError(relaxed_query, idx, "unable to parse DAS query")
 			return rec, qlerr
 		}
 
