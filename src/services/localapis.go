@@ -119,8 +119,8 @@ func run_args(spec bson.M) string {
 	runs := spec["run"]
 	runs_args := ""
 	if runs != nil {
-		for _, val := range runs.([]int) {
-			runs_args = fmt.Sprintf("%s&run_num=%d", runs_args, val)
+		for _, val := range runs.([]string) {
+			runs_args = fmt.Sprintf("%s&run_num=%s", runs_args, val)
 		}
 	}
 	return runs_args
