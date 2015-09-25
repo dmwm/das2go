@@ -11,7 +11,6 @@ import (
 	"encoding/hex"
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
-	"strconv"
 	"strings"
 	"utils"
 )
@@ -83,9 +82,9 @@ func qlError(query string, idx int, msg string) string {
 	fmt.Println(fullmsg)
 	return fullmsg
 }
-func parseArray(rquery string, odx int, oper string, val string) ([]int, int, string) {
+func parseArray(rquery string, odx int, oper string, val string) ([]string, int, string) {
 	qlerr := ""
-	out := []int{}
+	out := []string{}
 	if !(oper == "in" || oper == "between") {
 		qlerr = qlError(rquery, odx, "Invalid operator '"+oper+"' for DAS array")
 		return out, -1, qlerr
@@ -97,10 +96,10 @@ func parseArray(rquery string, odx int, oper string, val string) ([]int, int, st
 	jdx := strings.Index(query, "]")
 	values := strings.Split(string(query[idx+1:jdx]), ",")
 	for _, v := range values {
-		val, err := strconv.Atoi(strings.Replace(v, " ", "", -1))
-		if err != nil {
-			qlError(query, idx, "Fail to parse array value: "+v)
-		}
+		// here we had originally conversion of input value string into integer
+		// turns out it is not required since these parameters will be passed
+		// to url where we need string type
+		val := strings.Replace(v, " ", "", -1)
 		out = append(out, val)
 	}
 	// find position of last bracket in array of tokens
