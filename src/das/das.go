@@ -84,12 +84,23 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		dkey, rkey, arg, pat := getApiParams(dmap)
 		if utils.InList(dkey, skeys) {
 			val, ok := spec[dkey].(string)
-			if !ok {
-				log.Fatal("Unable to get value for daskey=", dkey, ", reckey=", rkey, " from record=", dmap)
-			}
-			matched, _ := regexp.MatchString(pat, val)
-			if matched || pat == "" {
-				vals.Add(arg, val)
+			if ok {
+				matched, _ := regexp.MatchString(pat, val)
+				if matched || pat == "" {
+					vals.Add(arg, val)
+				}
+			} else { // let try array of strings
+				arr, ok := spec[dkey].([]string)
+				if !ok {
+					log.Println("WARNING, unable to get value(s) for daskey=", dkey,
+						", reckey=", rkey, " from spec=", spec, " das map=", dmap)
+				}
+				for _, val := range arr {
+					matched, _ := regexp.MatchString(pat, val)
+					if matched || pat == "" {
+						vals.Add(arg, val)
+					}
+				}
 			}
 		}
 	}
