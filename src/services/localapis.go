@@ -62,6 +62,9 @@ func find_blocks(spec bson.M) []string {
 	}
 	return out
 }
+
+// helper function to process given set of urls and unmarshal results
+// from all url calls
 func processUrls(api string, urls []string) []mongo.DASRecord {
 	var out_records []mongo.DASRecord
 	out := make(chan utils.ResponseType)
@@ -108,9 +111,10 @@ func processUrls(api string, urls []string) []mongo.DASRecord {
 	}
 	return out_records
 }
-func file_run_lumi(spec bson.M, fields []string) []mongo.DASRecord {
-	var out []mongo.DASRecord
 
+// helper function to get run arguments for given spec
+// we extract run parameter from spec and construct run_num arguments for DBS
+func run_args(spec bson.M) string {
 	// get runs from spec
 	runs := spec["run"]
 	runs_args := ""
@@ -119,10 +123,16 @@ func file_run_lumi(spec bson.M, fields []string) []mongo.DASRecord {
 			runs_args = fmt.Sprintf("%s&run_num=%d", runs_args, val)
 		}
 	}
+	return runs_args
+}
+
+// helper function to get DBS urls for given spec and api
+func dbs_urls(spec bson.M, api string) []string {
+	// get runs from spec
+	runs_args := run_args(spec)
 
 	// find all blocks for given dataset or block
 	var urls []string
-	api := "filelumis"
 	for _, blk := range find_blocks(spec) {
 		myurl := fmt.Sprintf("%s/%s?block_name=%s", dbsurl(), api, url.QueryEscape(blk))
 		if len(runs_args) > 0 {
@@ -130,9 +140,18 @@ func file_run_lumi(spec bson.M, fields []string) []mongo.DASRecord {
 		}
 		urls = append(urls, myurl)
 	}
-	filelumis := processUrls(api, urls)
+	return urls
+}
+
+// helper function to get file,run,lumi triplets
+func file_run_lumi(spec bson.M, fields []string) []mongo.DASRecord {
+	var out []mongo.DASRecord
+
 	// use filelumis DBS API output to get
 	// run_num, logical_file_name, lumi_secion_num from provided fields
+	api := "filelumis"
+	urls := dbs_urls(spec, api)
+	filelumis := processUrls(api, urls)
 	for _, rec := range filelumis {
 		row := make(mongo.DASRecord)
 		for _, key := range fields {
@@ -216,11 +235,18 @@ func (LocalAPIs) L_combined_lumi4dataset(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	return out
 }
-func (LocalAPIs) L_combined_files4dataset_runs_site(spec bson.M) []mongo.DASRecord {
+
+func file4db_runs_site(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	api := "files"
+	urls := dbs_urls(spec, api)
+	fmt.Println(urls)
+	//     files := processUrls(api, urls)
 	return out
 }
+func (LocalAPIs) L_combined_files4dataset_runs_site(spec bson.M) []mongo.DASRecord {
+	return file4db_runs_site(spec)
+}
 func (LocalAPIs) L_combined_files4block_runs_site(spec bson.M) []mongo.DASRecord {
-	var out []mongo.DASRecord
-	return out
+	return file4db_runs_site(spec)
 }
