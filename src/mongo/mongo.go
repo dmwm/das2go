@@ -20,17 +20,29 @@ import (
 
 type DASRecord map[string]interface{}
 
-// function to get string value from DAS record for given key
-func GetStringValue(rec DASRecord, key string) (string, error) {
+// function to get int value from DAS record for given key
+func GetValue(rec DASRecord, key string) interface{} {
+	var val DASRecord
 	keys := strings.Split(key, ".")
 	if len(keys) > 1 {
-		val := rec[keys[0]].(DASRecord)
-		if len(keys) == 2 {
-			return GetStringValue(val, keys[1])
+		switch v := rec[keys[0]].(type) {
+		case DASRecord:
+			val = v
+		case []DASRecord:
+			val = v[0]
 		}
-		return GetStringValue(val, strings.Join(keys[1:len(keys)], "."))
+		if len(keys) == 2 {
+			return GetValue(val, keys[1])
+		}
+		return GetValue(val, strings.Join(keys[1:len(keys)], "."))
 	}
 	value := rec[key]
+	return value
+}
+
+// function to get string value from DAS record for given key
+func GetStringValue(rec DASRecord, key string) (string, error) {
+	value := GetValue(rec, key)
 	val, ok := value.(string)
 	if ok {
 		return val, nil
@@ -40,15 +52,7 @@ func GetStringValue(rec DASRecord, key string) (string, error) {
 
 // function to get int value from DAS record for given key
 func GetIntValue(rec DASRecord, key string) (int, error) {
-	keys := strings.Split(key, ".")
-	if len(keys) > 1 {
-		val := rec[keys[0]].(DASRecord)
-		if len(keys) == 2 {
-			return GetIntValue(val, keys[1])
-		}
-		return GetIntValue(val, strings.Join(keys[1:len(keys)], "."))
-	}
-	value := rec[key]
+	value := GetValue(rec, key)
 	val, ok := value.(int)
 	if ok {
 		return val, nil
@@ -58,18 +62,10 @@ func GetIntValue(rec DASRecord, key string) (int, error) {
 
 // function to get int value from DAS record for given key
 func GetInt64Value(rec DASRecord, key string) (int64, error) {
-	keys := strings.Split(key, ".")
-	if len(keys) > 1 {
-		val := rec[keys[0]].(DASRecord)
-		if len(keys) == 2 {
-			return GetInt64Value(val, keys[1])
-		}
-		return GetInt64Value(val, strings.Join(keys[1:len(keys)], "."))
-	}
-	value := rec[key]
-	val, ok := value.(int64)
+	value := GetValue(rec, key)
+	out, ok := value.(int64)
 	if ok {
-		return val, nil
+		return out, nil
 	}
 	return 0, fmt.Errorf("Unable to cast value for key '%s'", key)
 }
