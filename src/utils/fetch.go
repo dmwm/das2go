@@ -134,7 +134,9 @@ func Fetch(url string, ch chan<- ResponseType) {
 	startTime := time.Now()
 	response := FetchResponse(url)
 	endTime := time.Now()
-	log.Println("DAS fetch", url, endTime.Sub(startTime))
+	if VERBOSE {
+		log.Println("DAS fetch", url, endTime.Sub(startTime))
+	}
 	ch <- response
 }
 

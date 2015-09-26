@@ -12,6 +12,10 @@ import (
 	"time"
 )
 
+// global variable for this module which we're going to use across
+// many modules
+var VERBOSE bool
+
 func FindInList(a string, arr []string) bool {
 	for _, e := range arr {
 		if e == a {
