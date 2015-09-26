@@ -285,9 +285,9 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	// loop over services and fetch data
 	for _, dmap := range maps {
 		furl := formUrlCall(dasquery, dmap)
-		if furl == "local_api" {
+		if furl == "local_api" && !dasmaps.MapInList(dmap, local_apis) {
 			local_apis = append(local_apis, dmap)
-		} else if furl != "" {
+		} else if furl != "" && !utils.InList(furl, urls) {
 			urls = append(urls, furl)
 		}
 		srv := fmt.Sprintf("%s:%s", dmap["system"], dmap["urn"])
