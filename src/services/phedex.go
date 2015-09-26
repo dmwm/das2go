@@ -50,7 +50,7 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	records := loadPhedexData(data)
 	for _, rec := range records {
-		if api == "fileReplicas4dataset" {
+		if api == "fileReplicas4dataset" || api == "fileReplicas" {
 			val := rec["phedex"].(map[string]interface{})
 			blocks := val["block"].([]interface{})
 			for _, item := range blocks {
