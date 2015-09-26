@@ -12,6 +12,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"mongo"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 	"utils"
@@ -19,8 +20,11 @@ import (
 
 type LocalAPIs struct{}
 
-func dbsurl() string {
+func dbsUrl() string {
 	return "https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
+}
+func phedexUrl() string {
+	return "https://cmsweb.cern.ch/phedex/datasvc/json/prod"
 }
 
 func DASLocalAPIs() []string {
@@ -54,7 +58,7 @@ func find_blocks(spec bson.M) []string {
 	}
 	dataset := spec["dataset"].(string)
 	api := "blocks"
-	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsurl(), api, dataset)
+	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
 	resp := utils.FetchResponse(furl)
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
@@ -65,7 +69,7 @@ func find_blocks(spec bson.M) []string {
 
 // helper function to process given set of urls and unmarshal results
 // from all url calls
-func processUrls(api string, urls []string) []mongo.DASRecord {
+func processUrls(system, api string, urls []string) []mongo.DASRecord {
 	var out_records []mongo.DASRecord
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
@@ -92,7 +96,12 @@ func processUrls(api string, urls []string) []mongo.DASRecord {
 				}
 			} else {
 				// process data
-				records := DBSUnmarshal(api, r.Data)
+				var records []mongo.DASRecord
+				if system == "dbs3" {
+					records = DBSUnmarshal(api, r.Data)
+				} else if system == "phedex" {
+					records = PhedexUnmarshal(api, r.Data)
+				}
 				for _, r := range records {
 					out_records = append(out_records, r)
 				}
@@ -134,7 +143,7 @@ func dbs_urls(spec bson.M, api string) []string {
 	// find all blocks for given dataset or block
 	var urls []string
 	for _, blk := range find_blocks(spec) {
-		myurl := fmt.Sprintf("%s/%s?block_name=%s", dbsurl(), api, url.QueryEscape(blk))
+		myurl := fmt.Sprintf("%s/%s?block_name=%s", dbsUrl(), api, url.QueryEscape(blk))
 		if len(runs_args) > 0 {
 			myurl += runs_args // append run arguments
 		}
@@ -151,7 +160,7 @@ func file_run_lumi(spec bson.M, fields []string) []mongo.DASRecord {
 	// run_num, logical_file_name, lumi_secion_num from provided fields
 	api := "filelumis"
 	urls := dbs_urls(spec, api)
-	filelumis := processUrls(api, urls)
+	filelumis := processUrls("dbs3", api, urls)
 	for _, rec := range filelumis {
 		row := make(mongo.DASRecord)
 		for _, key := range fields {
@@ -236,22 +245,58 @@ func (LocalAPIs) L_combined_lumi4dataset(spec bson.M) []mongo.DASRecord {
 	return out
 }
 
-func file4db_runs_site(spec bson.M) []mongo.DASRecord {
+// helper function to filter files which belong to given site
+func filterFiles(files []string, site string) []string {
+	var out, urls []string
+	api := "fileReplicas"
+	var node string
+	nodeMatch, _ := regexp.MatchString("^T[0-9]_[A-Z]+(_)[A-Z]+", site)
+	seMatch, _ := regexp.MatchString("^[a-z]+(\\.)[a-z]+(\\.)", site)
+	if nodeMatch {
+		node = fmt.Sprintf("node=%s", site)
+	} else if seMatch {
+		node = fmt.Sprintf("se=%s", site)
+	} else {
+		panic(fmt.Sprintf("ERROR: unable to match site name %s", site))
+	}
+	for _, fname := range files {
+		furl := fmt.Sprintf("%s/%s?lfn=%s&%s", phedexUrl(), api, fname, node)
+		urls = append(urls, furl)
+	}
+	for _, rec := range processUrls("phedex", api, urls) {
+		fname := rec["name"].(string)
+		out = append(out, fname)
+	}
+	return out
+}
+
+// helper function to get list of files for given dataset/block and run/site
+func files4db_runs_site(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	api := "files"
 	urls := dbs_urls(spec, api)
-	files := processUrls(api, urls)
-	// TODO: I need to add here check files in Phedex for give site (should take it form spec)
+	files := processUrls("dbs3", api, urls)
+	var fileList []string
 	for _, rec := range files {
+		fname := rec["logical_file_name"].(string)
+		fileList = append(fileList, fname)
+	}
+	// check files in Phedex for give site (should take it form spec)
+	site := spec["site"].(string)
+	for _, fname := range filterFiles(fileList, site) {
 		row := make(mongo.DASRecord)
-		row["file"] = mongo.DASRecord{"name": rec["logical_file_name"].(string)}
+		row["file"] = mongo.DASRecord{"name": fname}
 		out = append(out, row)
 	}
 	return out
 }
+
+// combined APIs to lookup file list for give dataset/run/site
 func (LocalAPIs) L_combined_files4dataset_runs_site(spec bson.M) []mongo.DASRecord {
-	return file4db_runs_site(spec)
+	return files4db_runs_site(spec)
 }
+
+// combined APIs to lookup file list for give block/run/site
 func (LocalAPIs) L_combined_files4block_runs_site(spec bson.M) []mongo.DASRecord {
-	return file4db_runs_site(spec)
+	return files4db_runs_site(spec)
 }
