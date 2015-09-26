@@ -160,7 +160,6 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	lkeys := dasquery.Fields
 	pkey := das["primary_key"].(string)
 	mkey := strings.Split(pkey, ".")[0]
-	akey := strings.Split(pkey, ".")[1]
 	// get DAS data record sorted by primary key
 	spec = bson.M{"qhash": dasquery.Qhash, "das.record": 1}
 	var skeys []string
@@ -181,27 +180,30 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	var expire int64
 	expire = time.Now().Unix() * 2
 	var out []mongo.DASRecord
-	var oldrec, newrec, rec mongo.DASRecord
+	var oldrec, rec mongo.DASRecord
 	oldrec = records[0] // init with first record
-	newrec = records[0] // init with first record
-	for _, rec = range records {
+	for idx, rec := range records {
+		if idx == 0 { // we need to advance to new record because of init conditions above
+			continue
+		}
 		das := rec["das"].(mongo.DASRecord)
 		dasexpire := das["expire"].(int64)
 		if expire > dasexpire {
 			expire = dasexpire
 		}
-		data1, err1 := mongo.GetStringValue(oldrec, akey)
-		data2, err2 := mongo.GetStringValue(rec, akey)
+		data1, err1 := mongo.GetStringValue(oldrec, pkey)
+		data2, err2 := mongo.GetStringValue(rec, pkey)
 		if err1 == nil && err2 == nil && data1 != data2 {
+			out = append(out, oldrec)
 			oldrec = rec
-			out = append(out, newrec)
 		} else {
-			newrec = mergeRecords(rec, oldrec, mkey, dasquery.Qhash)
+			rec = mergeRecords(rec, oldrec, mkey, dasquery.Qhash)
 		}
 	}
 	// we still left with last oldrec which should be merged with last record from the loop
-	newrec = mergeRecords(rec, oldrec, mkey, dasquery.Qhash)
-	out = append(out, newrec)
+	if rec[mkey] == nil {
+		out = append(out, oldrec)
+	}
 	return out, expire
 }
 
