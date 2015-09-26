@@ -195,10 +195,10 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 		data2, err2 := mongo.GetStringValue(rec, pkey)
 		if err1 == nil && err2 == nil && data1 != data2 {
 			out = append(out, oldrec)
-			oldrec = rec
 		} else {
 			rec = mergeRecords(rec, oldrec, mkey, dasquery.Qhash)
 		}
+		oldrec = rec
 	}
 	// we still left with last oldrec which should be merged with last record from the loop
 	if rec[mkey] == nil {
@@ -210,29 +210,55 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 // function to merge DAS data records on given key
 func mergeRecords(oldrec, newrec mongo.DASRecord, key, qhash string) mongo.DASRecord {
 	var rec []mongo.DASRecord
+	// oldrec is always a DASRecord
 	rec = append(rec, oldrec[key].(mongo.DASRecord))
-	rec = append(rec, newrec[key].(mongo.DASRecord))
+	// newrec can be DASRecord or list of DASRecord's
+	switch elem := newrec[key].(type) {
+	case mongo.DASRecord:
+		rec = append(rec, elem)
+	case []mongo.DASRecord:
+		for _, r := range elem {
+			rec = append(rec, r)
+		}
+	}
 	das := mergeDASparts(oldrec["das"].(mongo.DASRecord), newrec["das"].(mongo.DASRecord))
 	return mongo.DASRecord{key: rec, "qhash": qhash, "das": das}
+}
+
+// helper function to extract services from das record
+func services(das mongo.DASRecord) []string {
+	var srvs []string
+	switch services := das["services"].(type) {
+	case []string:
+		for _, srv := range services {
+			srvs = append(srvs, srv)
+		}
+	case []interface{}:
+		for _, srv := range services {
+			srvs = append(srvs, srv.(string))
+		}
+
+	}
+	return srvs
 }
 
 // helper function to merge das parts of DAS records
 func mergeDASparts(das1, das2 mongo.DASRecord) mongo.DASRecord {
 	das := make(mongo.DASRecord)
 	var srvs []string
-	srvs1 := das1["services"].([]interface{})
-	srvs2 := das2["services"].([]interface{})
+	srvs1 := services(das1)
+	srvs2 := services(das2)
 	for _, srv := range srvs1 {
-		srvs = append(srvs, srv.(string))
+		srvs = append(srvs, srv)
 	}
 	for _, srv := range srvs2 {
-		srvs = append(srvs, srv.(string))
+		srvs = append(srvs, srv)
 	}
 	das["services"] = srvs
 	var expire int64
 	expire = time.Now().Unix() * 2
 	ex1, err1 := mongo.GetInt64Value(das1, "expire")
-	ex2, err2 := mongo.GetInt64Value(das1, "expire")
+	ex2, err2 := mongo.GetInt64Value(das2, "expire")
 	if err1 == nil && ex1 < expire {
 		expire = ex1
 	}
