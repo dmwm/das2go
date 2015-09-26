@@ -383,7 +383,10 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 	if len(data) == 0 {
 		return fmt.Sprintf("No data in DAS cache"), empty_data
 	}
-	status, err := mongo.GetStringValue(data[0], "das.status")
+	// Get DAS status from cache collection
+	spec = bson.M{"qhash": pid, "das.record": 0}
+	das_data := mongo.Get("das", "cache", spec, 0, 1)
+	status, err := mongo.GetStringValue(das_data[0], "das.status")
 	if err != nil {
 		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), empty_data
 	}
