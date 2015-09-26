@@ -38,7 +38,7 @@ var _dbses []string
 
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
 	//     log.Println("DAS WEB", dasquery, "FIELDS", dasquery.Fields, "SPEC", dasquery.Spec, "FILTERS", dasquery.Filters, "AGGRS", dasquery.Aggregators)
-	log.Println("DAS WEB", dasquery)
+	log.Println("DAS WEB", dasquery, "readiness", das.CheckDataReadiness(pid))
 	response := make(map[string]interface{})
 	if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
 		status, data := das.GetData(dasquery, "merge", idx, limit)
