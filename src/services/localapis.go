@@ -10,6 +10,7 @@ package services
 import (
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
+	"log"
 	"mongo"
 	"net/url"
 	"regexp"
@@ -28,10 +29,16 @@ func phedexUrl() string {
 }
 
 func DASLocalAPIs() []string {
-	out := []string{"file_run_lumi4dataset", "file_run_lumi4block",
+	out := []string{
+		// dbs3 local APIs
+		"file_run_lumi4dataset", "file_run_lumi4block",
 		"file_lumi4dataset", "file_lumi4block", "run_lumi4dataset", "run_lumi4block",
 		"block_run_lumi4dataset", "file4dataset_run_lumi", "blocks4tier_dates",
-		"dataset4block", "lumi4block_run"}
+		"dataset4block", "lumi4block_run",
+		// combined local APIs
+		"dataset4site_release", "dataset4site_release_parent", "child4site_release_dataset",
+		"site4dataset", "lumi4dataset",
+		"files4dataset_runs_site", "files4block_runs_site"}
 	return out
 }
 
@@ -102,8 +109,9 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 				} else if system == "phedex" {
 					records = PhedexUnmarshal(api, r.Data)
 				}
-				for _, r := range records {
-					out_records = append(out_records, r)
+				for _, rec := range records {
+					rec["url"] = r.Url
+					out_records = append(out_records, rec)
 				}
 				// remove from umap, indicate that we processed it
 				delete(umap, r.Url) // remove Url from map
@@ -209,40 +217,75 @@ func (LocalAPIs) L_dbs3_file_run_lumi4block(spec bson.M) []mongo.DASRecord {
 // TODO: APIs below needs to be implemented
 func (LocalAPIs) L_dbs3_block_run_lumi4dataset(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	fields := []string{"block_name", "run_num", "lumi_section_num"}
+	// use filelumis DBS API output to get
+	// run_num, logical_file_name, lumi_secion_num from provided fields
+	api := "filelumis"
+	urls := dbs_urls(spec, api)
+	filelumis := processUrls("dbs3", api, urls)
+	for _, rec := range filelumis {
+		row := make(mongo.DASRecord)
+		for _, key := range fields {
+			// put into file das record, internal type must be list
+			if key == "run_num" {
+				row["run"] = []mongo.DASRecord{mongo.DASRecord{"run_number": rec[key]}}
+			} else if key == "lumi_section_num" {
+				row["lumi"] = []mongo.DASRecord{mongo.DASRecord{"number": rec[key]}}
+			} else if key == "block_name" {
+				rurl, err := url.QueryUnescape(rec["url"].(string))
+				if err != nil {
+					log.Println("DAS ERROR, unable to parse url", rec)
+					panic(err)
+				}
+				arr := strings.Split(rurl, "block_name=")
+				blk := arr[1]
+				row["block"] = []mongo.DASRecord{mongo.DASRecord{"name": blk}}
+			}
+		}
+		out = append(out, row)
+	}
 	return out
 }
 func (LocalAPIs) L_dbs3_file4dataset_run_lumi(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	panic("Not implemented")
 	return out
 }
 func (LocalAPIs) L_dbs3_blocks4tier_dates(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	panic("Not implemented")
 	return out
 }
 func (LocalAPIs) L_dbs3_lumi4block_run(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	panic("Not implemented")
 	return out
 }
 
 // Combined APIs
 func (LocalAPIs) L_combined_dataset4site_release(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	panic("Not implemented")
 	return out
 }
 func (LocalAPIs) L_combined_dataset4site_release_parent(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	panic("Not implemented")
 	return out
 }
 func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	panic("Not implemented")
 	return out
 }
 func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	panic("Not implemented")
 	return out
 }
 func (LocalAPIs) L_combined_lumi4dataset(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	panic("Not implemented")
 	return out
 }
 
