@@ -30,6 +30,12 @@ func GetValue(rec DASRecord, key string) interface{} {
 			val = v
 		case []DASRecord:
 			val = v[0]
+		case []interface{}:
+			vvv := v[0]
+			val = vvv.(DASRecord)
+		default:
+			msg := fmt.Errorf("DAS ERROR GetValue unknown type=%T, data=%v", v, v)
+			panic(msg)
 		}
 		if len(keys) == 2 {
 			return GetValue(val, keys[1])
