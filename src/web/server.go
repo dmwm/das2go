@@ -104,6 +104,23 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		// Remove expire records from cache
 		das.RemoveExpired(dasquery.Qhash)
+		// defer function will be fired when following processRequest will panic
+		defer func() {
+			if err := recover(); err != nil {
+				response := make(map[string]interface{})
+				response["status"] = "fail"
+				response["reason"] = err
+				response["pid"] = pid
+				log.Println("DAS ERROR", err)
+				js, err := json.Marshal(&response)
+				if err != nil {
+					http.Error(w, err.Error(), http.StatusInternalServerError)
+					return
+				}
+				w.Header().Set("Content-Type", "application/json")
+				w.Write(js)
+			}
+		}()
 		// process given query
 		response := processRequest(dasquery, pid, idx, limit)
 		if path == "/das/cache" {
