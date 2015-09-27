@@ -61,8 +61,6 @@ func DASHeader() mongo.DASRecord {
 	das["record"] = 1  // by default it is a data record (1 vs das record 0)
 	das["primary_key"] = ""
 	das["instance"] = ""
-	//     das["api"] = []string{}
-	//     das["system"] = []string{}
 	das["services"] = []string{}
 	return das
 
@@ -73,19 +71,16 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 	var out []mongo.DASRecord
 	fields := dasquery.Fields
 	qhash := dasquery.Qhash
-	spec := dasquery.Spec
-	//     if len(fields) > 1 {
-	//         return records
-	//     }
+	//     spec := dasquery.Spec
 	skey := fields[0]
 	for _, rec := range records {
 		// Check that spec key:values are presented in a record
-		prim_key := strings.Split(pkeys[0], ".")
-		for key, val := range spec {
-			if key == prim_key[0] {
-				rec[prim_key[1]] = val
-			}
-		}
+		//         prim_key := strings.Split(pkeys[0], ".")
+		//         for key, val := range spec {
+		//             if key == prim_key[0] {
+		//                 rec[prim_key[1]] = val
+		//             }
+		//         }
 		// DAS header for records
 		dasheader := DASHeader()
 		srvs := dasheader["services"].([]string)
@@ -103,7 +98,7 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 			out = append(out, rec)
 		} else {
 			newrec := make(mongo.DASRecord)
-			newrec[skey] = rec
+			newrec[skey] = []mongo.DASRecord{rec} // record internal type must be list
 			newrec["qhash"] = qhash
 			newrec["das"] = dasheader
 			out = append(out, newrec)
@@ -207,22 +202,36 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	return out, expire
 }
 
-// function to merge DAS data records on given key
-func mergeRecords(oldrec, newrec mongo.DASRecord, key, qhash string) mongo.DASRecord {
-	var rec []mongo.DASRecord
-	// oldrec is always a DASRecord
-	rec = append(rec, oldrec[key].(mongo.DASRecord))
-	// newrec can be DASRecord or list of DASRecord's
-	switch elem := newrec[key].(type) {
-	case mongo.DASRecord:
-		rec = append(rec, elem)
+// helper function to get DAS records from different interfaces
+func getRecords(rec mongo.DASRecord, pkey string) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	switch records := rec[pkey].(type) {
 	case []mongo.DASRecord:
-		for _, r := range elem {
-			rec = append(rec, r)
+		for _, r := range records {
+			out = append(out, r)
+		}
+	case []interface{}:
+		for _, r := range records {
+			out = append(out, r.(mongo.DASRecord))
 		}
 	}
+	return out
+}
+
+// function to merge DAS data records on given key
+func mergeRecords(oldrec, newrec mongo.DASRecord, pkey, qhash string) mongo.DASRecord {
+	var rec, records []mongo.DASRecord
+	// when we look-up via primary key we always should get list of DAS records
+	records = getRecords(oldrec, pkey)
+	for _, r := range records {
+		rec = append(rec, r)
+	}
+	records = getRecords(newrec, pkey)
+	for _, r := range records {
+		rec = append(rec, r)
+	}
 	das := mergeDASparts(oldrec["das"].(mongo.DASRecord), newrec["das"].(mongo.DASRecord))
-	return mongo.DASRecord{key: rec, "qhash": qhash, "das": das}
+	return mongo.DASRecord{pkey: rec, "qhash": qhash, "das": das}
 }
 
 // helper function to extract services from das record
