@@ -43,7 +43,7 @@ func (LocalAPIs) L_dbs3_dataset4block(spec bson.M) []mongo.DASRecord {
 	rec := make(mongo.DASRecord)
 	row := make(mongo.DASRecord)
 	row["name"] = dataset
-	rec["dataset"] = row
+	rec["dataset"] = []mongo.DASRecord{row}
 	out = append(out, rec)
 	return out
 }
@@ -164,12 +164,13 @@ func file_run_lumi(spec bson.M, fields []string) []mongo.DASRecord {
 	for _, rec := range filelumis {
 		row := make(mongo.DASRecord)
 		for _, key := range fields {
+			// put into file das record, internal type must be list
 			if key == "run_num" {
-				row["run"] = mongo.DASRecord{"run_number": rec[key]}
+				row["run"] = []mongo.DASRecord{mongo.DASRecord{"run_number": rec[key]}}
 			} else if key == "lumi_section_num" {
-				row["lumi"] = mongo.DASRecord{"number": rec[key]}
+				row["lumi"] = []mongo.DASRecord{mongo.DASRecord{"number": rec[key]}}
 			} else if key == "logical_file_name" {
-				row["file"] = mongo.DASRecord{"name": rec[key]}
+				row["file"] = []mongo.DASRecord{mongo.DASRecord{"name": rec[key]}}
 			}
 		}
 		out = append(out, row)
@@ -285,7 +286,8 @@ func files4db_runs_site(spec bson.M) []mongo.DASRecord {
 	site := spec["site"].(string)
 	for _, fname := range filterFiles(fileList, site) {
 		row := make(mongo.DASRecord)
-		row["file"] = mongo.DASRecord{"name": fname}
+		// put into file das record, internal type must be list
+		row["file"] = []mongo.DASRecord{mongo.DASRecord{"name": fname}}
 		out = append(out, row)
 	}
 	return out
