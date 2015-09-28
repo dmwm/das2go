@@ -279,15 +279,90 @@ func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASR
 	return out
 }
 func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
+	// DBS part, find total number of blocks and files for given dataset
+	dataset := spec["dataset"].(string)
+	api := "filesummaries"
+	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
+	resp := utils.FetchResponse(furl)
+	records := DBSUnmarshal(api, resp.Data)
+	var totblocks, totfiles float64
+	totblocks = records[0]["num_block"].(float64)
+	totfiles = records[0]["num_file"].(float64)
+	// Phedex part find block replicas for given dataset
+	api = "blockReplicas"
+	furl = fmt.Sprintf("%s/%s?dataset=%s", phedexUrl(), api, dataset)
+	resp = utils.FetchResponse(furl)
+	records = PhedexUnmarshal(api, resp.Data)
+	siteInfo := make(mongo.DASRecord)
+	var b_complete, nfiles, nblks, bfiles float64
+	bfiles = 0
+	for _, rec := range records {
+		bfiles += rec["files"].(float64)
+		replicas := rec["replica"].([]interface{})
+		for _, val := range replicas {
+			row := val.(map[string]interface{})
+			node := row["node"].(string)
+			se := row["se"].(string)
+			complete := row["complete"].(string)
+			if complete == "y" {
+				b_complete = 1
+			} else {
+				b_complete = 0
+			}
+			nfiles = row["files"].(float64)
+			skeys := utils.MapKeys(siteInfo)
+			if utils.InList(node, skeys) {
+				nfiles += siteInfo["files"].(float64)
+				nblks = siteInfo["blocks"].(float64) + 1
+				bc := siteInfo["block_complete"].(float64)
+				if complete == "y" {
+					b_complete = bc + 1
+				} else {
+					b_complete = bc
+				}
+			} else {
+				nblks = 1
+			}
+			siteInfo[node] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "block_complete": b_complete, "se": se}
+		}
+	}
+	var pfiles, pblks string
 	var out []mongo.DASRecord
-	panic("Not implemented")
+	for key, val := range siteInfo {
+		row := val.(mongo.DASRecord)
+		if totfiles > 0 {
+			nfiles := row["files"].(float64)
+			pfiles = fmt.Sprintf("%5.2f%%", 100*nfiles/totfiles)
+		} else {
+			pfiles = "N/A"
+			pblks = "N/A"
+		}
+		if totblocks > 0 {
+			nblks := row["blocks"].(float64)
+			pblks = fmt.Sprintf("%5.2f%%", 100*nblks/totblocks)
+		} else {
+			pfiles = "N/A"
+			pblks = "N/A"
+		}
+		ratio := row["block_complete"].(float64) / row["blocks"].(float64)
+		bc := fmt.Sprintf("%5.2f%%", 100*ratio)
+		rf := fmt.Sprintf("%5.2f%%", 100*nfiles/bfiles)
+		// put into file das record, internal type must be list
+		rec := make(mongo.DASRecord)
+		rec["site"] = []mongo.DASRecord{mongo.DASRecord{"name": key,
+			"dataset_fraction": pfiles, "block_fraction": pblks, "block_completion": bc,
+			"se": row["se"].(string), "replica_fraction": rf}}
+		out = append(out, rec)
+	}
 	return out
 }
-func (LocalAPIs) L_combined_lumi4dataset(spec bson.M) []mongo.DASRecord {
-	var out []mongo.DASRecord
-	panic("Not implemented")
-	return out
-}
+
+// Seems to me it is too much to look-up, user can use file,lumi or block,run,lumi for dataset APIs
+// func (LocalAPIs) L_combined_lumi4dataset(spec bson.M) []mongo.DASRecord {
+//     var out []mongo.DASRecord
+//     panic("Not implemented")
+//     return out
+// }
 
 // helper function to filter files which belong to given site
 func filterFiles(files []string, site string) []string {
