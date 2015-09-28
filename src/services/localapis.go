@@ -14,6 +14,7 @@ import (
 	"mongo"
 	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 	"utils"
@@ -134,8 +135,15 @@ func run_args(spec bson.M) string {
 	runs := spec["run"]
 	runs_args := ""
 	if runs != nil {
-		for _, val := range runs.([]string) {
-			runs_args = fmt.Sprintf("%s&run_num=%s", runs_args, val)
+		switch value := runs.(type) {
+		case []string:
+			for _, val := range value {
+				runs_args = fmt.Sprintf("%s&run_num=%s", runs_args, val)
+			}
+		case string:
+			runs_args = fmt.Sprintf("%s&run_num=%s", runs_args, value)
+		default:
+			panic(fmt.Sprintf("Unknown type for runs=%s, type=%T", runs, runs))
 		}
 	}
 	return runs_args
@@ -211,8 +219,6 @@ func (LocalAPIs) L_dbs3_file_run_lumi4block(spec bson.M) []mongo.DASRecord {
 	fields := []string{"logical_file_name", "run_num", "lumi_section_num"}
 	return file_run_lumi(spec, fields)
 }
-
-// TODO: APIs below needs to be implemented
 func (LocalAPIs) L_dbs3_block_run_lumi4dataset(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	fields := []string{"block_name", "run_num", "lumi_section_num"}
@@ -246,9 +252,24 @@ func (LocalAPIs) L_dbs3_block_run_lumi4dataset(spec bson.M) []mongo.DASRecord {
 }
 func (LocalAPIs) L_dbs3_file4dataset_run_lumi(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	panic("Not implemented")
+	lumi, _ := strconv.ParseFloat(spec["lumi"].(string), 64)
+	fields := []string{"logical_file_name", "lumi_section_num"}
+	records := file_run_lumi(spec, fields)
+	for _, rec := range records {
+		for _, row := range rec["lumi"].([]mongo.DASRecord) {
+			lumis := row["number"].([]interface{})
+			for _, val := range lumis {
+				if lumi == val.(float64) {
+					row := make(mongo.DASRecord)
+					row["file"] = rec["file"]
+					out = append(out, row)
+				}
+			}
+		}
+	}
 	return out
 }
+
 func (LocalAPIs) L_dbs3_blocks4tier_dates(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	panic("Not implemented")
