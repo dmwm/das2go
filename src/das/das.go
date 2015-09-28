@@ -84,6 +84,7 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	}
 	dasmaps := dasmaps.GetDASMaps(dasmap["das_map"])
 	vals := url.Values{}
+	system, _ := dasmap["system"].(string)
 	for _, dmap := range dasmaps {
 		dkey, rkey, arg, pat := getApiParams(dmap)
 		if utils.InList(dkey, skeys) {
@@ -91,9 +92,14 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 			if ok {
 				matched, _ := regexp.MatchString(pat, val)
 				if matched || pat == "" {
-					vals.Add(arg, val)
+					// exception for lumi_list input parameter, files DBS3 API accept only lists of lumis
+					if system == "dbs3" && arg == "lumi_list" {
+						vals.Add(arg, fmt.Sprintf("[%s]", val))
+					} else {
+						vals.Add(arg, val)
+					}
 				}
-			} else { // let try array of strings
+			} else { // let's try array of strings
 				arr, ok := spec[dkey].([]string)
 				if !ok {
 					log.Println("WARNING, unable to get value(s) for daskey=", dkey,
@@ -387,15 +393,15 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 	} else {
 		data = mongo.Get("das", coll, spec, idx, limit)
 	}
-	if len(data) == 0 {
-		return fmt.Sprintf("No data in DAS cache"), empty_data
-	}
 	// Get DAS status from cache collection
 	spec = bson.M{"qhash": pid, "das.record": 0}
 	das_data := mongo.Get("das", "cache", spec, 0, 1)
 	status, err := mongo.GetStringValue(das_data[0], "das.status")
 	if err != nil {
 		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), empty_data
+	}
+	if len(data) == 0 {
+		return status, empty_data
 	}
 	return status, data
 }
