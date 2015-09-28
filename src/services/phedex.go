@@ -61,6 +61,13 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 					out = append(out, frec)
 				}
 			}
+		} else if api == "blockReplicas" {
+			val := rec["phedex"].(map[string]interface{})
+			blocks := val["block"].([]interface{})
+			for _, item := range blocks {
+				brec := item.(map[string]interface{})
+				out = append(out, brec)
+			}
 		} else {
 			out = append(out, rec)
 		}
