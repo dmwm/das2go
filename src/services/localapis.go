@@ -28,17 +28,15 @@ func phedexUrl() string {
 	return "https://cmsweb.cern.ch/phedex/datasvc/json/prod"
 }
 
+// Here I list __ONLY__ exceptional apis due to mistake in DAS maps
 func DASLocalAPIs() []string {
 	out := []string{
-		// dbs3 local APIs
+		// dbs3 APIs which should be treated as local_api, but they have
+		// url: http://.... in their map instead of local_api
 		"file_run_lumi4dataset", "file_run_lumi4block",
 		"file_lumi4dataset", "file_lumi4block", "run_lumi4dataset", "run_lumi4block",
 		"block_run_lumi4dataset", "file4dataset_run_lumi", "blocks4tier_dates",
-		"dataset4block", "lumi4block_run",
-		// combined local APIs
-		"dataset4site_release", "dataset4site_release_parent", "child4site_release_dataset",
-		"site4dataset", "lumi4dataset",
-		"files4dataset_runs_site", "files4block_runs_site"}
+		"lumi4block_run"}
 	return out
 }
 

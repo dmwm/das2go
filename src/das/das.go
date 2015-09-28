@@ -64,10 +64,14 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
-	urn, _ := dasmap["urn"].(string)
 	if !strings.HasPrefix(base, "http") {
 		return "local_api"
 	}
+	// Exception block, current DAS maps contains APIs which should be treated
+	// as local apis, e.g. file_run_lumi4dataset in DBS3 maps. In a future
+	// I'll need to fix DBS3 maps to make it local_api
+	// For time being I'll list those exceptional APIs in DASLocalAPIs list
+	urn, _ := dasmap["urn"].(string)
 	if utils.InList(urn, services.DASLocalAPIs()) {
 		return "local_api"
 	}
@@ -123,6 +127,9 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		system := dasmaps.GetString(dmap, "system")
 		expire := dasmaps.GetInt(dmap, "expire")
 		api := fmt.Sprintf("L_%s_%s", system, urn)
+		if utils.VERBOSE {
+			log.Println("### call local API", api)
+		}
 		// we use reflection to look-up api from our services/localapis.go functions
 		// for details on reflection see
 		// http://stackoverflow.com/questions/12127585/go-lookup-function-by-name
