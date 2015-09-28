@@ -176,9 +176,9 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	expire = time.Now().Unix() * 2
 	var out []mongo.DASRecord
 	var oldrec, rec mongo.DASRecord
-	oldrec = records[0] // init with first record
 	for idx, rec := range records {
 		if idx == 0 { // we need to advance to new record because of init conditions above
+			oldrec = rec
 			continue
 		}
 		das := rec["das"].(mongo.DASRecord)
