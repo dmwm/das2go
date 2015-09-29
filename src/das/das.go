@@ -84,6 +84,7 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	}
 	dasmaps := dasmaps.GetDASMaps(dasmap["das_map"])
 	vals := url.Values{}
+	var use_args []string
 	system, _ := dasmap["system"].(string)
 	for _, dmap := range dasmaps {
 		dkey, rkey, arg, pat := getApiParams(dmap)
@@ -98,6 +99,7 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 					} else {
 						vals.Add(arg, val)
 					}
+					use_args = append(use_args, arg)
 				}
 			} else { // let's try array of strings
 				arr, ok := spec[dkey].([]string)
@@ -109,11 +111,24 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 					matched, _ := regexp.MatchString(pat, val)
 					if matched || pat == "" {
 						vals.Add(arg, val)
+						use_args = append(use_args, arg)
 					}
 				}
 			}
 		}
 	}
+	// loop over params in DAS maps and add additional arguments which have
+	// non empty, non optional and non required values
+	skipList := []string{"optional", "required"}
+	params := dasmap["params"].(mongo.DASRecord)
+	for key, val := range params {
+		vvv := val.(string)
+		if !utils.InList(key, use_args) && !utils.InList(vvv, skipList) {
+			vals.Add(key, vvv)
+		}
+	}
+
+	// Encode all arguments for url
 	args := vals.Encode()
 	if len(vals) < len(skeys) {
 		return "" // number of arguments should be equal or more number of spec key values
