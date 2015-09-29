@@ -85,6 +85,17 @@ func Expire(expire int) int64 {
 	return int64(time.Now().Unix() + int64(expire))
 }
 
+// convert given time into Unix timestamp
+func UnixTime(ts string) int64 {
+	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
+	const layout = "20060102"
+	t, err := time.Parse(layout, ts)
+	if err != nil {
+		panic(err)
+	}
+	return int64(t.Unix())
+}
+
 // helper function to convert input list into set
 func List2Set(arr []string) []string {
 	var out []string
