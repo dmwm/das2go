@@ -272,7 +272,31 @@ func (LocalAPIs) L_dbs3_file4dataset_run_lumi(spec bson.M) []mongo.DASRecord {
 
 func (LocalAPIs) L_dbs3_blocks4tier_dates(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	panic("Not implemented")
+	tier := spec["tier"].(string)
+	dates := spec["date"].([]string)
+	mind := utils.UnixTime(dates[0])
+	maxd := utils.UnixTime(dates[1])
+	api := "blocks"
+	furl := fmt.Sprintf("%s/%s?data_tier_name=%s&min_cdate=%d&max_cdate=%d", dbsUrl(), api, tier, mind, maxd)
+	log.Println(furl)
+	resp := utils.FetchResponse(furl)
+	records := DBSUnmarshal(api, resp.Data)
+	var blocks []string
+	for _, rec := range records {
+		blk := rec["block_name"].(string)
+		dataset := strings.Split(blk, "#")[0]
+		tierName := strings.Split(dataset, "/")[3]
+		if tierName == tier && !utils.InList(blk, blocks) {
+			blocks = append(blocks, blk)
+		}
+	}
+	for _, name := range blocks {
+		rec := make(mongo.DASRecord)
+		row := make(mongo.DASRecord)
+		row["name"] = name
+		rec["block"] = []mongo.DASRecord{row}
+		out = append(out, rec)
+	}
 	return out
 }
 func (LocalAPIs) L_dbs3_lumi4block_run(spec bson.M) []mongo.DASRecord {
