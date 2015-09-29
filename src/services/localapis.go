@@ -276,21 +276,79 @@ func (LocalAPIs) L_dbs3_blocks4tier_dates(spec bson.M) []mongo.DASRecord {
 	return out
 }
 func (LocalAPIs) L_dbs3_lumi4block_run(spec bson.M) []mongo.DASRecord {
-	var out []mongo.DASRecord
-	panic("Not implemented")
+	fields := []string{"lumi_section_num"}
+	return file_run_lumi(spec, fields)
+}
+
+// helper function to get dataset for release
+func dataset4release(spec bson.M) []string {
+	var out []string
+	api := "datasets"
+	release := spec["release"].(string)
+	furl := fmt.Sprintf("%s/%s?release_version=%s&dataset_access_type=VALID", dbsUrl(), api, release)
+	parent := spec["parent"]
+	if parent != nil {
+		furl = fmt.Sprintf("%s&parent_dataset=%s", furl, parent.(string))
+	}
+	resp := utils.FetchResponse(furl)
+	records := DBSUnmarshal(api, resp.Data)
+	for _, rec := range records {
+		dataset := rec["name"].(string)
+		if !utils.InList(dataset, out) {
+			out = append(out, dataset)
+		}
+	}
 	return out
 }
 
-// Combined APIs
-func (LocalAPIs) L_combined_dataset4site_release(spec bson.M) []mongo.DASRecord {
+// helper function to construct Phedex node API argument from given site
+func phedexNode(site string) string {
+	var node string
+	nodeMatch, _ := regexp.MatchString("^T[0-9]_[A-Z]+(_)[A-Z]+", site)
+	seMatch, _ := regexp.MatchString("^[a-z]+(\\.)[a-z]+(\\.)", site)
+	if nodeMatch {
+		node = fmt.Sprintf("node=%s", site)
+	} else if seMatch {
+		node = fmt.Sprintf("se=%s", site)
+	} else {
+		panic(fmt.Sprintf("ERROR: unable to match site name %s", site))
+	}
+	return node
+}
+
+// helper function to find datasets for given site and release
+func dataset4site_release(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	panic("Not implemented")
+	var urls, datasets []string
+	api := "blockReplicas"
+	node := phedexNode(spec["site"].(string))
+	for _, dataset := range dataset4release(spec) {
+		furl := fmt.Sprintf("%s/%s?dataset=%s&%s", phedexUrl(), api, dataset, node)
+		urls = append(urls, furl)
+	}
+	for _, rec := range processUrls("phedex", api, urls) {
+		block := rec["name"].(string)
+		dataset := strings.Split(block, "#")[0]
+		if !utils.InList(dataset, datasets) {
+			datasets = append(datasets, dataset)
+		}
+	}
+	for _, name := range datasets {
+		rec := make(mongo.DASRecord)
+		row := make(mongo.DASRecord)
+		row["name"] = name
+		rec["dataset"] = []mongo.DASRecord{row}
+		out = append(out, rec)
+	}
 	return out
 }
+
+// combined service APIs
+func (LocalAPIs) L_combined_dataset4site_release(spec bson.M) []mongo.DASRecord {
+	return dataset4site_release(spec)
+}
 func (LocalAPIs) L_combined_dataset4site_release_parent(spec bson.M) []mongo.DASRecord {
-	var out []mongo.DASRecord
-	panic("Not implemented")
-	return out
+	return dataset4site_release(spec)
 }
 func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
@@ -387,16 +445,7 @@ func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
 func filterFiles(files []string, site string) []string {
 	var out, urls []string
 	api := "fileReplicas"
-	var node string
-	nodeMatch, _ := regexp.MatchString("^T[0-9]_[A-Z]+(_)[A-Z]+", site)
-	seMatch, _ := regexp.MatchString("^[a-z]+(\\.)[a-z]+(\\.)", site)
-	if nodeMatch {
-		node = fmt.Sprintf("node=%s", site)
-	} else if seMatch {
-		node = fmt.Sprintf("se=%s", site)
-	} else {
-		panic(fmt.Sprintf("ERROR: unable to match site name %s", site))
-	}
+	node := phedexNode(site)
 	for _, fname := range files {
 		furl := fmt.Sprintf("%s/%s?lfn=%s&%s", phedexUrl(), api, fname, node)
 		urls = append(urls, furl)
