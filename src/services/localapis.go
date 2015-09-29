@@ -435,11 +435,11 @@ func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
 }
 
 // Seems to me it is too much to look-up, user can use file,lumi or block,run,lumi for dataset APIs
-// func (LocalAPIs) L_combined_lumi4dataset(spec bson.M) []mongo.DASRecord {
-//     var out []mongo.DASRecord
-//     panic("Not implemented")
-//     return out
-// }
+func (LocalAPIs) L_combined_lumi4dataset(spec bson.M) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	panic("Not implemented")
+	return out
+}
 
 // helper function to filter files which belong to given site
 func filterFiles(files []string, site string) []string {
