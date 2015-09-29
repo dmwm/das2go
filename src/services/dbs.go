@@ -27,7 +27,7 @@ func loadDBSData(api string, data []byte) []mongo.DASRecord {
 func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadDBSData(api, data)
 	var out []mongo.DASRecord
-	if api == "dataset_info" {
+	if api == "dataset_info" || api == "datasets" {
 		for _, rec := range records {
 			rec["name"] = rec["dataset"]
 			delete(rec, "dataset")
