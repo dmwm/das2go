@@ -149,7 +149,7 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		expire := dasmaps.GetInt(dmap, "expire")
 		api := fmt.Sprintf("L_%s_%s", system, urn)
 		if utils.VERBOSE {
-			log.Println("### call local API", api)
+			log.Println("DAS local API", api)
 		}
 		// we use reflection to look-up api from our services/localapis.go functions
 		// for details on reflection see
