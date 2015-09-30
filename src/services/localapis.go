@@ -130,7 +130,7 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 
 // helper function to get run arguments for given spec
 // we extract run parameter from spec and construct run_num arguments for DBS
-func run_args(spec bson.M) string {
+func runArgs(spec bson.M) string {
 	// get runs from spec
 	runs := spec["run"]
 	runs_args := ""
@@ -149,10 +149,23 @@ func run_args(spec bson.M) string {
 	return runs_args
 }
 
+// helper function to get file status from the spec
+func fileStatus(spec bson.M) bool {
+	status := spec["status"]
+	if status != nil {
+		val := status.(string)
+		if strings.ToLower(val) == "valid" {
+			return true
+		}
+	}
+	return false
+}
+
 // helper function to get DBS urls for given spec and api
 func dbs_urls(spec bson.M, api string) []string {
 	// get runs from spec
-	runs_args := run_args(spec)
+	runs_args := runArgs(spec)
+	valid_file := fileStatus(spec)
 
 	// find all blocks for given dataset or block
 	var urls []string
@@ -160,6 +173,9 @@ func dbs_urls(spec bson.M, api string) []string {
 		myurl := fmt.Sprintf("%s/%s?block_name=%s", dbsUrl(), api, url.QueryEscape(blk))
 		if len(runs_args) > 0 {
 			myurl += runs_args // append run arguments
+		}
+		if valid_file {
+			myurl += fmt.Sprintf("&validFileOnly=1") // append validFileOnly=1
 		}
 		urls = append(urls, myurl)
 	}
