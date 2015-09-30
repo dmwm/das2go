@@ -143,6 +143,9 @@ type DASRecords []mongo.DASRecord
 
 // helper function to process given set of URLs associted with dasquery
 func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []string) {
+	// defer function will propagate panic message to higher level
+	defer utils.ErrPropagate("processLocalApis")
+
 	for _, dmap := range dmaps {
 		urn := dasmaps.GetString(dmap, "urn")
 		system := dasmaps.GetString(dmap, "system")
@@ -207,6 +210,9 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 
 // helper function to process given set of URLs associted with dasquery
 func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps, pkeys []string) {
+	// defer function will propagate panic message to higher level
+	defer utils.ErrPropagate("processUrls")
+
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
 	rmax := 3 // maximum number of retries
@@ -306,6 +312,9 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 
 // Process DAS query
 func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
+	// defer function will propagate panic message to higher level
+	defer utils.ErrPropagate("Process")
+
 	// find out list of APIs/CMS services which can process this query request
 	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
 	var urls, srvs, pkeys []string
@@ -340,13 +349,30 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	mongo.Insert("das", "cache", records)
 
 	// process local_api calls
+	ch := make(chan interface{})
 	if len(local_apis) > 0 {
-		go processLocalApis(dasquery, local_apis, pkeys)
+		go func() {
+			defer utils.ErrPropagate2Channel("go processLocalApis", ch)
+			processLocalApis(dasquery, local_apis, pkeys)
+			ch <- "ok" // send to channel that we can read it later
+		}()
+	}
+	err := <-ch
+	if err != nil && err != "ok" {
+		panic(err)
 	}
 
 	// process URLs which will insert records into das cache and merge them into das merge collection
 	if len(urls) > 0 {
-		go processURLs(dasquery, urls, maps, dmaps, pkeys)
+		go func() {
+			defer utils.ErrPropagate2Channel("go processURLs", ch)
+			processURLs(dasquery, urls, maps, dmaps, pkeys)
+			ch <- "ok" // send to channel that we can read it later
+		}()
+	}
+	err = <-ch
+	if err != nil && err != "ok" {
+		panic(err)
 	}
 	return dasquery.Qhash
 }
