@@ -10,28 +10,8 @@ package services
 import (
 	"encoding/json"
 	"mongo"
+	"strings"
 )
-
-/*
-type filereplicas struct {
-	file    interface{} `xml:file`
-	replica interface{} `xml:replica`
-}
-
-func PhedexUnmarshal(data []byte, api string) mongo.DASRecord {
-	var rec mongo.DASRecord
-	var freplica filereplicas
-	log.Println("### call", api)
-	if api == "filereplicas" || api == "fileReplicas4dataset" {
-		err := xml.Unmarshal(data, &freplica)
-		if err != nil {
-			log.Println("ERROR", api, "unable to unmarshal the data")
-		}
-		log.Println(freplica)
-	}
-	return rec
-}
-*/
 
 // helper function to load data stream and return DAS records
 func loadPhedexData(data []byte) []mongo.DASRecord {
@@ -67,6 +47,15 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 			for _, item := range blocks {
 				brec := item.(map[string]interface{})
 				out = append(out, brec)
+			}
+		} else if api == "dataset4site" || api == "dataset4site_group" || api == "dataset4se" || api == "dataset4se_group" {
+			val := rec["phedex"].(map[string]interface{})
+			blocks := val["block"].([]interface{})
+			for _, item := range blocks {
+				brec := item.(map[string]interface{})
+				dataset := strings.Split(brec["name"].(string), "#")[0]
+				rec = mongo.DASRecord{"name": dataset}
+				out = append(out, rec)
 			}
 		} else {
 			out = append(out, rec)
