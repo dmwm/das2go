@@ -325,10 +325,14 @@ func dataset4release(spec bson.M) []string {
 	var out []string
 	api := "datasets"
 	release := spec["release"].(string)
-	furl := fmt.Sprintf("%s/%s?release_version=%s&dataset_access_type=VALID", dbsUrl(), api, release)
+	furl := fmt.Sprintf("%s/%s?release_version=%s", dbsUrl(), api, release)
 	parent := spec["parent"]
 	if parent != nil {
 		furl = fmt.Sprintf("%s&parent_dataset=%s", furl, parent.(string))
+	}
+	status := spec["status"]
+	if status != nil {
+		furl = fmt.Sprintf("%s&dataset_access_type=%s", furl, status.(string))
 	}
 	resp := utils.FetchResponse(furl)
 	records := DBSUnmarshal(api, resp.Data)
@@ -364,7 +368,9 @@ func dataset4site_release(spec bson.M) []mongo.DASRecord {
 	node := phedexNode(spec["site"].(string))
 	for _, dataset := range dataset4release(spec) {
 		furl := fmt.Sprintf("%s/%s?dataset=%s&%s", phedexUrl(), api, dataset, node)
-		urls = append(urls, furl)
+		if !utils.InList(furl, urls) {
+			urls = append(urls, furl)
+		}
 	}
 	for _, rec := range processUrls("phedex", api, urls) {
 		block := rec["name"].(string)
