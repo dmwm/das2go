@@ -26,6 +26,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"utils"
 )
 
 // profiler
@@ -37,7 +38,9 @@ var _tdir, _top, _bottom, _search, _cards, _base string
 var _dbses []string
 
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
-	//     log.Println("DAS WEB", dasquery, "FIELDS", dasquery.Fields, "SPEC", dasquery.Spec, "FILTERS", dasquery.Filters, "AGGRS", dasquery.Aggregators)
+	// defer function will propagate panic message to higher level
+	defer utils.ErrPropagate("processRequest")
+
 	log.Println("DAS WEB", dasquery, "ready", das.CheckDataReadiness(pid))
 	response := make(map[string]interface{})
 	if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
