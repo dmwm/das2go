@@ -8,6 +8,7 @@ package utils
 
 import (
 	"fmt"
+	"log"
 	"strconv"
 	"time"
 )
@@ -15,6 +16,27 @@ import (
 // global variable for this module which we're going to use across
 // many modules
 var VERBOSE bool
+
+// error helper function which can be used in defer ErrPropagate()
+func ErrPropagate(api string) {
+	if err := recover(); err != nil {
+		log.Println("DAS ERROR", api, "error", err)
+		panic(fmt.Sprintf("%s:%s", api, err))
+	}
+}
+
+// error helper function which can be used in goroutines as
+// ch := make(chan interface{})
+// go func() {
+//    defer ErrPropagate2Channel(api, ch)
+//    someFunction()
+// }()
+func ErrPropagate2Channel(api string, ch chan interface{}) {
+	if err := recover(); err != nil {
+		log.Println("DAS ERROR", api, "error", err)
+		ch <- fmt.Sprintf("%s:%s", api, err)
+	}
+}
 
 func FindInList(a string, arr []string) bool {
 	for _, e := range arr {
