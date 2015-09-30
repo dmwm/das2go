@@ -348,31 +348,14 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	records = append(records, dasrecord)
 	mongo.Insert("das", "cache", records)
 
-	// process local_api calls
-	ch := make(chan interface{})
+	// process local_api calls, we use GoFunc to run processLocalApis as goroutine in defer/silent mode
+	// panic errors will be captured in GoFunc and passed again into this local function
 	if len(local_apis) > 0 {
-		go func() {
-			defer utils.ErrPropagate2Channel("go processLocalApis", ch)
-			processLocalApis(dasquery, local_apis, pkeys)
-			ch <- "ok" // send to channel that we can read it later
-		}()
+		utils.GoFunc("go processLocalApis", func() { processLocalApis(dasquery, local_apis, pkeys) })
 	}
-	err := <-ch
-	if err != nil && err != "ok" {
-		panic(err)
-	}
-
 	// process URLs which will insert records into das cache and merge them into das merge collection
 	if len(urls) > 0 {
-		go func() {
-			defer utils.ErrPropagate2Channel("go processURLs", ch)
-			processURLs(dasquery, urls, maps, dmaps, pkeys)
-			ch <- "ok" // send to channel that we can read it later
-		}()
-	}
-	err = <-ch
-	if err != nil && err != "ok" {
-		panic(err)
+		utils.GoFunc("go processURLs", func() { processURLs(dasquery, urls, maps, dmaps, pkeys) })
 	}
 	return dasquery.Qhash
 }
