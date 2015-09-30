@@ -96,6 +96,10 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 					// exception for lumi_list input parameter, files DBS3 API accept only lists of lumis
 					if system == "dbs3" && arg == "lumi_list" {
 						vals.Add(arg, fmt.Sprintf("[%s]", val))
+					} else if system == "dbs3" && arg == "min_cdate" {
+						vals.Add(arg, fmt.Sprintf("%d", utils.UnixTime(val)))
+						maxd := utils.UnixTime(val) + 24*60*60
+						vals.Add("max_cdate", fmt.Sprintf("%d", maxd))
 					} else {
 						vals.Add(arg, val)
 					}
@@ -107,11 +111,17 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 					log.Println("WARNING, unable to get value(s) for daskey=", dkey,
 						", reckey=", rkey, " from spec=", spec, " das map=", dmap)
 				}
-				for _, val := range arr {
-					matched, _ := regexp.MatchString(pat, val)
-					if matched || pat == "" {
-						vals.Add(arg, val)
-						use_args = append(use_args, arg)
+				if dkey == "date" && system == "dbs3" {
+					vals.Add("min_cdate", fmt.Sprintf("%d", utils.UnixTime(arr[0])))
+					vals.Add("max_cdate", fmt.Sprintf("%d", utils.UnixTime(arr[1])))
+					use_args = append(use_args, arg)
+				} else {
+					for _, val := range arr {
+						matched, _ := regexp.MatchString(pat, val)
+						if matched || pat == "" {
+							vals.Add(arg, val)
+							use_args = append(use_args, arg)
+						}
 					}
 				}
 			}
