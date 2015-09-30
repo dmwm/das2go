@@ -38,6 +38,21 @@ func ErrPropagate2Channel(api string, ch chan interface{}) {
 	}
 }
 
+// Helper function to run any given function in defered go routine
+func GoFunc(api string, f func()) {
+	ch := make(chan interface{})
+	go func() {
+		defer ErrPropagate2Channel(api, ch)
+		f()
+		ch <- "ok" // send to channel that we can read it later in case of success of f()
+	}()
+	err := <-ch
+	if err != nil && err != "ok" {
+		panic(err)
+	}
+}
+
+// helper function to find item in a list
 func FindInList(a string, arr []string) bool {
 	for _, e := range arr {
 		if e == a {
@@ -47,6 +62,7 @@ func FindInList(a string, arr []string) bool {
 	return false
 }
 
+// helper function to check item in a list
 func InList(a string, list []string) bool {
 	check := 0
 	for _, b := range list {
@@ -60,6 +76,7 @@ func InList(a string, list []string) bool {
 	return false
 }
 
+// helper function to return keys from a map
 func MapKeys(rec map[string]interface{}) []string {
 	keys := make([]string, 0, len(rec))
 	for k := range rec {
@@ -68,6 +85,7 @@ func MapKeys(rec map[string]interface{}) []string {
 	return keys
 }
 
+// helper function to compare list of strings
 func EqualLists(list1, list2 []string) bool {
 	count := 0
 	for _, k := range list1 {
@@ -83,7 +101,7 @@ func EqualLists(list1, list2 []string) bool {
 	return false
 }
 
-// check that entries from list1 are all appear in list2
+// helper function to check that entries from list1 are all appear in list2
 func CheckEntries(list1, list2 []string) bool {
 	var out []string
 	for _, k := range list1 {
@@ -98,7 +116,7 @@ func CheckEntries(list1, list2 []string) bool {
 	return false
 }
 
-// convert expire timestamp (int) into seconds since epoch
+// helper function to convert expire timestamp (int) into seconds since epoch
 func Expire(expire int) int64 {
 	tstamp := strconv.Itoa(expire)
 	if len(tstamp) == 10 {
@@ -107,7 +125,7 @@ func Expire(expire int) int64 {
 	return int64(time.Now().Unix() + int64(expire))
 }
 
-// convert given time into Unix timestamp
+// helper funtiont to convert given time into Unix timestamp
 func UnixTime(ts string) int64 {
 	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
 	const layout = "20060102"
