@@ -51,6 +51,8 @@ func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []m
 		out = PhedexUnmarshal(api, data)
 	case system == "dbs3":
 		out = DBSUnmarshal(api, data)
+	case system == "reqmgr":
+		out = ReqMgrUnmarshal(api, data)
 	}
 	return remap(api, out, notations)
 }
