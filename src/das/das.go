@@ -123,6 +123,11 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 					vals.Add("min_cdate", fmt.Sprintf("%d", utils.UnixTime(arr[0])))
 					vals.Add("max_cdate", fmt.Sprintf("%d", utils.UnixTime(arr[1])))
 					use_args = append(use_args, arg)
+				} else if system == "conddb" && arg == "Runs" {
+					if len(arr) > 0 {
+						vals.Add(arg, strings.Join(arr, ","))
+						use_args = append(use_args, arg)
+					}
 				} else {
 					for _, val := range arr {
 						matched, _ := regexp.MatchString(pat, val)
