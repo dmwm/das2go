@@ -18,66 +18,67 @@ import "crypto/rsa"
 
 // Helper function to append bytes to existing slice
 func AppendByte(slice []byte, data []byte) []byte {
-    m := len(slice)
-    n := m + len(data)
-    if n > cap(slice) { // if necessary, reallocate
-        // allocate double what's needed, for future growth.
-        newSlice := make([]byte, (n+1)*2)
-        copy(newSlice, slice)
-        slice = newSlice
-    }
-    slice = slice[0:n]
-    copy(slice[m:n], data)
-    return slice
+	m := len(slice)
+	n := m + len(data)
+	if n > cap(slice) { // if necessary, reallocate
+		// allocate double what's needed, for future growth.
+		newSlice := make([]byte, (n+1)*2)
+		copy(newSlice, slice)
+		slice = newSlice
+	}
+	slice = slice[0:n]
+	copy(slice[m:n], data)
+	return slice
 }
 
 // Helper function to get specific part of certificate/key file specified by
 // mkey, e.g. CERTIFICATE or KEY
 func getData(mkey string, block []byte) (keyBlock []byte) {
-    newline := []byte("\n")
-    out := []byte{}
-    start := 0
-    keyMatch := 0
-    for i:=0; i<len(block); i++ {
-        out = block[start:i]
-        if  string(block[i]) == "\n" {
-            test, _ := regexp.MatchString(mkey, string(out))
-            if  test {
-                keyMatch += 1
-            }
-            if  keyMatch > 0 {
-                keyBlock = AppendByte(keyBlock, out)
-                keyBlock = AppendByte(keyBlock, newline)
-                if  keyMatch == 2 {
-                    keyMatch = 0
-                }
-            }
-            out = []byte{}
-            start = i+1
-        }
-    }
-    return
+	newline := []byte("\n")
+	out := []byte{}
+	start := 0
+	keyMatch := 0
+	for i := 0; i < len(block); i++ {
+		out = block[start:i]
+		if string(block[i]) == "\n" {
+			test, _ := regexp.MatchString(mkey, string(out))
+			if test {
+				keyMatch += 1
+			}
+			if keyMatch > 0 {
+				keyBlock = AppendByte(keyBlock, out)
+				keyBlock = AppendByte(keyBlock, newline)
+				if keyMatch == 2 {
+					keyMatch = 0
+				}
+			}
+			out = []byte{}
+			start = i + 1
+		}
+	}
+	return
 }
+
 // LoadX509Proxy reads and parses a chained proxy file
 // which contains PEM encoded data. It returns X509KeyPair.
 // It is slightly modified version of tls.LoadX509Proxy function with addition
 // of custom parse function (getData) for provided proxy file
 func LoadX509Proxy(proxyFile string) (cert tls.Certificate, err error) {
-        // read CERTIFICATE blocks
-        certBlock, err := ioutil.ReadFile(proxyFile)
-        if err != nil {
-            return
-        }
-        certPEMBlock := getData("CERTIFICATE", certBlock)
+	// read CERTIFICATE blocks
+	certBlock, err := ioutil.ReadFile(proxyFile)
+	if err != nil {
+		return
+	}
+	certPEMBlock := getData("CERTIFICATE", certBlock)
 
-        // read KEY block
-        keyBlock, err := ioutil.ReadFile(proxyFile)
-        if err != nil {
-            return
-        }
-        keyPEMBlock := getData("KEY", keyBlock)
+	// read KEY block
+	keyBlock, err := ioutil.ReadFile(proxyFile)
+	if err != nil {
+		return
+	}
+	keyPEMBlock := getData("KEY", keyBlock)
 
-        return X509KeyPair(certPEMBlock, keyPEMBlock)
+	return X509KeyPair(certPEMBlock, keyPEMBlock)
 }
 
 // X509KeyPair parses a public/private key pair from a pair of PEM encoded
@@ -90,15 +91,15 @@ func X509KeyPair(certPEMBlock, keyPEMBlock []byte) (cert tls.Certificate, err er
 		if certDERBlock == nil {
 			break
 		}
-        // parse certificates
-        certs, err2 := x509.ParseCertificates(certDERBlock.Bytes)
-        if  err2 == nil {
-            // assign the Leaf
-            cert.Leaf = certs[0]
-        }
-        if certDERBlock.Type == "CERTIFICATE" {
-            cert.Certificate = append(cert.Certificate, certDERBlock.Bytes)
-        }
+		// parse certificates
+		certs, err2 := x509.ParseCertificates(certDERBlock.Bytes)
+		if err2 == nil {
+			// assign the Leaf
+			cert.Leaf = certs[0]
+		}
+		if certDERBlock.Type == "CERTIFICATE" {
+			cert.Certificate = append(cert.Certificate, certDERBlock.Bytes)
+		}
 	}
 
 	if len(cert.Certificate) == 0 {
