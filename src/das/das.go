@@ -96,6 +96,14 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 					// exception for lumi_list input parameter, files DBS3 API accept only lists of lumis
 					if system == "dbs3" && arg == "lumi_list" {
 						vals.Add(arg, fmt.Sprintf("[%s]", val))
+					} else if system == "dbs3" && arg == "status" {
+						// This may need revision, probably better to properly
+						// adjust DAS maps
+						if strings.ToLower(val) == "valid" {
+							vals.Add("validFileOnly", "1")
+						} else {
+							vals.Add("validFileOnly", "0")
+						}
 					} else if system == "dbs3" && arg == "min_cdate" {
 						vals.Add(arg, fmt.Sprintf("%d", utils.UnixTime(val)))
 						maxd := utils.UnixTime(val) + 24*60*60
