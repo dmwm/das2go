@@ -9,17 +9,19 @@ package services
 
 import (
 	"encoding/json"
+	"fmt"
 	"mongo"
 	"strings"
 )
 
 // helper function to load data stream and return DAS records
-func loadPhedexData(data []byte) []mongo.DASRecord {
+func loadPhedexData(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	var rec mongo.DASRecord
 	err := json.Unmarshal(data, &rec)
 	if err != nil {
-		panic(err)
+		msg := fmt.Sprintf("Phedex unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
+		panic(msg)
 	}
 	out = append(out, rec)
 	return out
@@ -28,7 +30,7 @@ func loadPhedexData(data []byte) []mongo.DASRecord {
 // Unmarshal Phedex data stream and return DAS records based on api
 func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	records := loadPhedexData(data)
+	records := loadPhedexData(api, data)
 	for _, rec := range records {
 		if api == "fileReplicas4dataset" || api == "fileReplicas" || api == "fileReplicas4file" {
 			val := rec["phedex"].(map[string]interface{})
