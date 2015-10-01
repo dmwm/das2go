@@ -53,6 +53,8 @@ func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []m
 		out = DBSUnmarshal(api, data)
 	case system == "reqmgr":
 		out = ReqMgrUnmarshal(api, data)
+	case system == "mcm":
+		out = McMUnmarshal(api, data)
 	}
 	return remap(api, out, notations)
 }
