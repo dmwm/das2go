@@ -157,6 +157,43 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	return base
 }
 
+// Form appropriate URL from given dasquery and dasmap, the final URL
+// contains all parameters
+func formRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
+	spec := dasquery.Spec
+	skeys := utils.MapKeys(spec)
+	base, ok := dasmap["url"].(string)
+	if !ok {
+		log.Fatal("Unable to extract url from DAS map", dasmap)
+	}
+	if !strings.HasPrefix(base, "http") {
+		return "local_api"
+	}
+	// Exception block, current DAS maps contains APIs which should be treated
+	// as local apis, e.g. reqmgr_config_cache
+	urn, _ := dasmap["urn"].(string)
+	if utils.InList(urn, services.DASLocalAPIs()) {
+		return "local_api"
+	}
+	dasmaps := dasmaps.GetDASMaps(dasmap["das_map"])
+	for _, dmap := range dasmaps {
+		dkey, _, _, pat := getApiParams(dmap)
+		if utils.InList(dkey, skeys) {
+			val, ok := spec[dkey].(string)
+			if ok {
+				matched, _ := regexp.MatchString(pat, val)
+				if matched || pat == "" {
+					return base + val
+				}
+			} else {
+				msg := fmt.Sprintf("Invalid '%T' type for '%s' DAS key", spec[dkey], dkey)
+				panic(msg)
+			}
+		}
+	}
+	return ""
+}
+
 type DASRecords []mongo.DASRecord
 
 // helper function to process given set of URLs associted with dasquery
@@ -257,7 +294,6 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 				}
 			} else {
 				system := ""
-				//                 format := ""
 				expire := 0
 				urn := ""
 				for _, dmap := range maps {
@@ -266,11 +302,12 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 					if strings.Contains(surl, "phedex") {
 						surl = strings.Replace(surl, "xml", "json", -1)
 					}
-					if strings.Split(r.Url, "?")[0] == surl {
+					// here we check that request Url match DAS map one either by splitting
+					// base from parameters or making a match for REST based urls
+					if strings.Split(r.Url, "?")[0] == surl || strings.HasPrefix(r.Url, surl) {
 						urn = dasmaps.GetString(dmap, "urn")
 						system = dasmaps.GetString(dmap, "system")
 						expire = dasmaps.GetInt(dmap, "expire")
-						//                         format = dasmaps.GetString(dmap, "format")
 					}
 				}
 				// process data records
@@ -337,9 +374,15 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
 	var urls, srvs, pkeys []string
 	var local_apis []mongo.DASRecord
+	var furl string
 	// loop over services and fetch data
 	for _, dmap := range maps {
-		furl := formUrlCall(dasquery, dmap)
+		system, _ := dmap["system"].(string)
+		if system == "reqmgr" {
+			furl = formRESTUrl(dasquery, dmap)
+		} else {
+			furl = formUrlCall(dasquery, dmap)
+		}
 		if furl == "local_api" && !dasmaps.MapInList(dmap, local_apis) {
 			local_apis = append(local_apis, dmap)
 		} else if furl != "" && !utils.InList(furl, urls) {
