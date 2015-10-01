@@ -11,6 +11,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
+	"strconv"
 	"strings"
 	"utils"
 )
@@ -94,7 +95,28 @@ func parseArray(rquery string, odx int, oper string, val string) ([]string, int,
 	query := strings.Join(arr[odx:len(arr)], " ")
 	idx := strings.Index(query, "[")
 	jdx := strings.Index(query, "]")
-	values := strings.Split(string(query[idx+1:jdx]), ",")
+	vals := strings.Split(string(query[idx+1:jdx]), ",")
+	var values []string
+	if oper == "in" {
+		values = vals
+	} else if oper == "between" {
+		minr, e1 := strconv.Atoi(strings.TrimSpace(vals[0]))
+		if e1 != nil {
+			qlerr = qlError(rquery, odx, fmt.Sprintf("%v", e1))
+			return out, -1, qlerr
+		}
+		maxr, e2 := strconv.Atoi(strings.TrimSpace(vals[1]))
+		if e2 != nil {
+			qlerr = qlError(rquery, odx, fmt.Sprintf("%v", e2))
+			return out, -1, qlerr
+		}
+		for v := minr; v <= maxr; v++ {
+			values = append(values, fmt.Sprintf("%d", v))
+		}
+	} else {
+		qlerr = qlError(rquery, odx, "Invalid operator '"+oper+"' for DAS array")
+		return out, -1, qlerr
+	}
 	for _, v := range values {
 		// here we had originally conversion of input value string into integer
 		// turns out it is not required since these parameters will be passed
@@ -173,9 +195,9 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		} else {
 			nnval = nan
 		}
-		if utils.VERBOSE {
-			fmt.Printf("Process idx='%d', val='%s', nval='%s', nnval='%s'\n", idx, val, nval, nnval)
-		}
+		//         if utils.VERBOSE {
+		//             fmt.Printf("Process idx='%d', val='%s', nval='%s', nnval='%s'\n", idx, val, nval, nnval)
+		//         }
 		if nval != nan && (nval == "," || utils.InList(nval, daskeys) == true) {
 			if utils.InList(val, daskeys) {
 				fields = append(fields, val)
@@ -240,7 +262,6 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	rec.Instance = inst
 	rec.Filters = filters
 	rec.Aggregators = aggregators
-	//     fmt.Printf("DAS QUERY parser output, spec=%v, fields=%v query=%v\n", spec, fields, rec)
 	return rec, qlerror
 }
 
