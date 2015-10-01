@@ -9,6 +9,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"runtime"
 	"strconv"
 	"time"
 )
@@ -17,10 +18,17 @@ import (
 // many modules
 var VERBOSE bool
 
+// helper function to return Stack
+func Stack() string {
+	trace := make([]byte, 2048)
+	count := runtime.Stack(trace, false)
+	return fmt.Sprintf("\nStack of %d bytes: %s\n", count, trace)
+}
+
 // error helper function which can be used in defer ErrPropagate()
 func ErrPropagate(api string) {
 	if err := recover(); err != nil {
-		log.Println("DAS ERROR", api, "error", err)
+		log.Println("DAS ERROR", api, "error", err, Stack())
 		panic(fmt.Sprintf("%s:%s", api, err))
 	}
 }
@@ -33,7 +41,7 @@ func ErrPropagate(api string) {
 // }()
 func ErrPropagate2Channel(api string, ch chan interface{}) {
 	if err := recover(); err != nil {
-		log.Println("DAS ERROR", api, "error", err)
+		log.Println("DAS ERROR", api, "error", err, Stack())
 		ch <- fmt.Sprintf("%s:%s", api, err)
 	}
 }
