@@ -352,6 +352,9 @@ func phedexNode(site string) string {
 	seMatch, _ := regexp.MatchString("^[a-z]+(\\.)[a-z]+(\\.)", site)
 	if nodeMatch {
 		node = fmt.Sprintf("node=%s", site)
+		if !strings.HasSuffix(node, "*") {
+			node += "*"
+		}
 	} else if seMatch {
 		node = fmt.Sprintf("se=%s", site)
 	} else {
