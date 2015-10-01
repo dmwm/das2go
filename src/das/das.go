@@ -183,7 +183,11 @@ func formRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 			if ok {
 				matched, _ := regexp.MatchString(pat, val)
 				if matched || pat == "" {
-					return base + val
+					if !(strings.HasSuffix(base, "/") && strings.HasPrefix(val, "/")) {
+						return base + "/" + val
+					} else {
+						return base + val
+					}
 				}
 			} else {
 				msg := fmt.Sprintf("Invalid '%T' type for '%s' DAS key", spec[dkey], dkey)
@@ -378,7 +382,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	// loop over services and fetch data
 	for _, dmap := range maps {
 		system, _ := dmap["system"].(string)
-		if system == "reqmgr" {
+		if system == "reqmgr" || system == "mcm" {
 			furl = formRESTUrl(dasquery, dmap)
 		} else {
 			furl = formUrlCall(dasquery, dmap)
