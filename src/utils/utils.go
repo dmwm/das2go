@@ -47,7 +47,7 @@ func ErrPropagate2Channel(api string, ch chan interface{}) {
 }
 
 // Helper function to run any given function in defered go routine
-func GoFunc(api string, f func()) {
+func GoDeferFunc(api string, f func()) {
 	ch := make(chan interface{})
 	go func() {
 		defer ErrPropagate2Channel(api, ch)

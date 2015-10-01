@@ -154,7 +154,7 @@ type DASRecords []mongo.DASRecord
 // helper function to process given set of URLs associted with dasquery
 func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []string) {
 	// defer function will propagate panic message to higher level
-	defer utils.ErrPropagate("processLocalApis")
+	//     defer utils.ErrPropagate("processLocalApis")
 
 	for _, dmap := range dmaps {
 		urn := dasmaps.GetString(dmap, "urn")
@@ -221,7 +221,7 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 // helper function to process given set of URLs associted with dasquery
 func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps, pkeys []string) {
 	// defer function will propagate panic message to higher level
-	defer utils.ErrPropagate("processUrls")
+	//     defer utils.ErrPropagate("processUrls")
 
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
@@ -323,7 +323,7 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 // Process DAS query
 func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	// defer function will propagate panic message to higher level
-	defer utils.ErrPropagate("Process")
+	//     defer utils.ErrPropagate("Process")
 
 	// find out list of APIs/CMS services which can process this query request
 	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
@@ -358,14 +358,14 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	records = append(records, dasrecord)
 	mongo.Insert("das", "cache", records)
 
-	// process local_api calls, we use GoFunc to run processLocalApis as goroutine in defer/silent mode
-	// panic errors will be captured in GoFunc and passed again into this local function
+	// process local_api calls, we use GoDeferFunc to run processLocalApis as goroutine in defer/silent mode
+	// panic errors will be captured in GoDeferFunc and passed again into this local function
 	if len(local_apis) > 0 {
-		utils.GoFunc("go processLocalApis", func() { processLocalApis(dasquery, local_apis, pkeys) })
+		utils.GoDeferFunc("go processLocalApis", func() { processLocalApis(dasquery, local_apis, pkeys) })
 	}
 	// process URLs which will insert records into das cache and merge them into das merge collection
 	if len(urls) > 0 {
-		utils.GoFunc("go processURLs", func() { processURLs(dasquery, urls, maps, dmaps, pkeys) })
+		utils.GoDeferFunc("go processURLs", func() { processURLs(dasquery, urls, maps, dmaps, pkeys) })
 	}
 	return dasquery.Qhash
 }
