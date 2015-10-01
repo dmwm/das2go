@@ -48,6 +48,19 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
 			out = append(out, rec)
 		}
 		return out
+	} else if api == "outputdataset" {
+		for _, rec := range records {
+			row := rec["WMCore.RequestManager.DataStructs.Request.Request"].(map[string]interface{})
+			val := row["OutputDatasets"].([]interface{})
+			if val != nil {
+				for _, vvv := range val {
+					dset := vvv.([]interface{}) // OutputDatasets is a [[name], [name]] in reqmgr record
+					rec["name"] = dset[0].(string)
+					out = append(out, rec)
+				}
+			}
+		}
+		return out
 	} else if api == "configIDs" {
 		for _, rec := range records {
 			for key, val := range rec {
