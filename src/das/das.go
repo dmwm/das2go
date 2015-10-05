@@ -279,9 +279,8 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
-	rmax := 3 // maximum number of retries
 	for _, furl := range urls {
-		umap[furl] = 0 // number of retries per url
+		umap[furl] = 1 // keep track of processed urls below
 		go utils.Fetch(furl, out)
 	}
 
@@ -290,65 +289,52 @@ func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord,
 	for {
 		select {
 		case r := <-out:
-			if r.Error != nil {
-				retry := umap[r.Url]
-				if retry < rmax {
-					retry += 1
-					// incremenet sleep duration with every retry
-					sleep := time.Duration(retry) * time.Second
-					time.Sleep(sleep)
-					umap[r.Url] = retry
-				} else {
-					delete(umap, r.Url) // remove Url from map
+			system := ""
+			expire := 0
+			urn := ""
+			for _, dmap := range maps {
+				surl := dasmaps.GetString(dmap, "url")
+				// TMP fix, until we fix Phedex data to use JSON
+				if strings.Contains(surl, "phedex") {
+					surl = strings.Replace(surl, "xml", "json", -1)
 				}
-			} else {
-				system := ""
-				expire := 0
-				urn := ""
-				for _, dmap := range maps {
-					surl := dasmaps.GetString(dmap, "url")
-					// TMP fix, until we fix Phedex data to use JSON
-					if strings.Contains(surl, "phedex") {
-						surl = strings.Replace(surl, "xml", "json", -1)
-					}
-					// here we check that request Url match DAS map one either by splitting
-					// base from parameters or making a match for REST based urls
-					if strings.Split(r.Url, "?")[0] == surl || strings.HasPrefix(r.Url, surl) {
-						urn = dasmaps.GetString(dmap, "urn")
-						system = dasmaps.GetString(dmap, "system")
-						expire = dasmaps.GetInt(dmap, "expire")
-					}
+				// here we check that request Url match DAS map one either by splitting
+				// base from parameters or making a match for REST based urls
+				if strings.Split(r.Url, "?")[0] == surl || strings.HasPrefix(r.Url, surl) {
+					urn = dasmaps.GetString(dmap, "urn")
+					system = dasmaps.GetString(dmap, "system")
+					expire = dasmaps.GetInt(dmap, "expire")
 				}
-				// process data records
-				notations := dmaps.FindNotations(system)
-				records := services.Unmarshal(system, urn, r.Data, notations)
-				records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
-
-				// get DAS record and adjust its settings
-				dasrecord := services.GetDASRecord(dasquery)
-				dasstatus := fmt.Sprintf("process %s:%s", system, urn)
-				dasexpire := services.GetExpire(dasrecord)
-				if len(records) != 0 {
-					rec := records[0]
-					recexpire := services.GetExpire(rec)
-					if dasexpire > recexpire {
-						dasexpire = recexpire
-					}
-				}
-				das := dasrecord["das"].(mongo.DASRecord)
-				das["expire"] = dasexpire
-				das["status"] = dasstatus
-				dasrecord["das"] = das
-				services.UpdateDASRecord(dasquery.Qhash, dasrecord)
-
-				// fix all records expire values based on lowest one
-				records = services.UpdateExpire(dasquery.Qhash, records, dasexpire)
-
-				// insert records into DAS cache collection
-				mongo.Insert("das", "cache", records)
-				// remove from umap, indicate that we processed it
-				delete(umap, r.Url) // remove Url from map
 			}
+			// process data records
+			notations := dmaps.FindNotations(system)
+			records := services.Unmarshal(system, urn, r.Data, notations)
+			records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
+
+			// get DAS record and adjust its settings
+			dasrecord := services.GetDASRecord(dasquery)
+			dasstatus := fmt.Sprintf("process %s:%s", system, urn)
+			dasexpire := services.GetExpire(dasrecord)
+			if len(records) != 0 {
+				rec := records[0]
+				recexpire := services.GetExpire(rec)
+				if dasexpire > recexpire {
+					dasexpire = recexpire
+				}
+			}
+			das := dasrecord["das"].(mongo.DASRecord)
+			das["expire"] = dasexpire
+			das["status"] = dasstatus
+			dasrecord["das"] = das
+			services.UpdateDASRecord(dasquery.Qhash, dasrecord)
+
+			// fix all records expire values based on lowest one
+			records = services.UpdateExpire(dasquery.Qhash, records, dasexpire)
+
+			// insert records into DAS cache collection
+			mongo.Insert("das", "cache", records)
+			// remove from umap, indicate that we processed it
+			delete(umap, r.Url) // remove Url from map
 		default:
 			if len(umap) == 0 { // no more requests, merge data records
 				records, expire := services.MergeDASRecords(dasquery)

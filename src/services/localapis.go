@@ -79,9 +79,8 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 	var out_records []mongo.DASRecord
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
-	rmax := 3 // maximum number of retries
 	for _, furl := range urls {
-		umap[furl] = 0 // number of retries per url
+		umap[furl] = 1 // keep track of processed urls below
 		go utils.Fetch(furl, out)
 	}
 	// collect all results from out channel
@@ -89,32 +88,19 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 	for {
 		select {
 		case r := <-out:
-			if r.Error != nil {
-				retry := umap[r.Url]
-				if retry < rmax {
-					retry += 1
-					// incremenet sleep duration with every retry
-					sleep := time.Duration(retry) * time.Second
-					time.Sleep(sleep)
-					umap[r.Url] = retry
-				} else {
-					delete(umap, r.Url) // remove Url from map
-				}
-			} else {
-				// process data
-				var records []mongo.DASRecord
-				if system == "dbs3" {
-					records = DBSUnmarshal(api, r.Data)
-				} else if system == "phedex" {
-					records = PhedexUnmarshal(api, r.Data)
-				}
-				for _, rec := range records {
-					rec["url"] = r.Url
-					out_records = append(out_records, rec)
-				}
-				// remove from umap, indicate that we processed it
-				delete(umap, r.Url) // remove Url from map
+			// process data
+			var records []mongo.DASRecord
+			if system == "dbs3" {
+				records = DBSUnmarshal(api, r.Data)
+			} else if system == "phedex" {
+				records = PhedexUnmarshal(api, r.Data)
 			}
+			for _, rec := range records {
+				rec["url"] = r.Url
+				out_records = append(out_records, rec)
+			}
+			// remove from umap, indicate that we processed it
+			delete(umap, r.Url) // remove Url from map
 		default:
 			if len(umap) == 0 { // no more requests, merge data records
 				exit = true
