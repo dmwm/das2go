@@ -113,6 +113,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		// defer function will be fired when following processRequest will panic
 		defer func() {
 			if err := recover(); err != nil {
+				log.Println("DAS ERROR, web server error", err, utils.Stack())
 				response := make(map[string]interface{})
 				response["status"] = "fail"
 				response["reason"] = err
