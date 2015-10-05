@@ -109,11 +109,15 @@ func Worker(in <-chan string, out chan<- ResponseType, quit <-chan bool) {
 func FetchResponse(url string) ResponseType {
 	var response ResponseType
 	response.Url = url
+	response.Data = []byte{}
 	if validate_url(url) == false {
 		response.Error = errors.New("Invalid URL")
 		return response
 	}
-	resp, err := client.Get(url)
+	//     resp, err := client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	req.Header.Add("Accept-Encoding", "identity")
+	resp, err := client.Do(req)
 	if err != nil {
 		response.Error = err
 		return response
@@ -131,13 +135,31 @@ func FetchResponse(url string) ResponseType {
 // Fetch data for provided URL and redirect results to given channel
 func Fetch(url string, ch chan<- ResponseType) {
 	//    log.Println("Receive", url)
+	var resp, r ResponseType
+	retry := 3 // how many times we'll retry given url
 	startTime := time.Now()
-	response := FetchResponse(url)
+	resp = FetchResponse(url)
+	if resp.Error != nil {
+		log.Println("DAS WARNING, fail to fetch data", url, "error", resp.Error)
+		for i := 1; i <= retry; i++ {
+			sleep := time.Duration(i) * time.Second
+			time.Sleep(sleep)
+			r = FetchResponse(url)
+			if r.Error == nil {
+				break
+			}
+			log.Println("DAS WARNING", url, "retry", i, "error", r.Error)
+		}
+		resp = r
+	}
+	if resp.Error != nil {
+		log.Println("DAS ERROR, fail to fetch data", url, "retries", retry, "error", resp.Error)
+	}
 	endTime := time.Now()
 	if VERBOSE {
 		log.Println("DAS fetch", url, endTime.Sub(startTime))
 	}
-	ch <- response
+	ch <- resp
 }
 
 // Helper function which validates given URL
