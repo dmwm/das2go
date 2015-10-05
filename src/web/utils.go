@@ -136,7 +136,9 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 						values = append(values, row)
 					}
 				}
-				out = append(out, strings.Join(values, ", "))
+				// Join attribute fields, e.g. in file dataset=/a/b/c query it is
+				// File size: N GB File Type: EDM
+				out = append(out, strings.Join(values, " "))
 			}
 			out = append(out, dasLinks(path, inst, pval, links))
 		}
@@ -175,8 +177,14 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 			}
 		case []interface{}:
 			for _, rec := range value {
-				value := ExtractValue(rec.(mongo.DASRecord), strings.Join(keys[count:len(keys)], "."))
-				out = append(out, fmt.Sprintf("%v", value))
+				var value string
+				switch vvv := rec.(type) {
+				case mongo.DASRecord:
+					value = ExtractValue(vvv, strings.Join(keys[count:len(keys)], "."))
+				default:
+					value = fmt.Sprintf("%v", vvv)
+				}
+				out = append(out, value)
 			}
 			break
 		default:
