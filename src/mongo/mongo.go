@@ -16,9 +16,18 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"strings"
+	"utils"
 )
 
 type DASRecord map[string]interface{}
+
+func (r DASRecord) ToString() string {
+	var out []string
+	for _, k := range utils.MapKeys(r) {
+		out = append(out, fmt.Sprintf("%s:%v", k, r[k]))
+	}
+	return strings.Join(out, "\n")
+}
 
 // function to get int value from DAS record for given key
 func GetValue(rec DASRecord, key string) interface{} {
