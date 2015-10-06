@@ -5,6 +5,7 @@ import (
 	"dasql"
 	"encoding/hex"
 	"fmt"
+	"gopkg.in/mgo.v2/bson"
 	"mongo"
 	"strings"
 	"utils"
@@ -85,6 +86,30 @@ func dasLinks(path, inst, val string, links []interface{}) string {
 	return "<br/>" + strings.Join(out, ", ")
 }
 
+// helper function to show|hide DAS record on web UI
+func showRecord(data mongo.DASRecord) string {
+	var out []string
+	oid := data["_id"].(bson.ObjectId)
+	rid := oid.Hex()
+	das := data["das"].(mongo.DASRecord)
+	pkey := strings.Split(das["primary_key"].(string), ".")[0]
+	for i, v := range das["services"].([]interface{}) {
+		srv := v.(string)
+		arr := strings.Split(srv, ":")
+		system := arr[0]
+		dasapi := arr[1]
+		bkg, col := genColor(system)
+		srvval := fmt.Sprintf("<span style=\"background-color:%s;color:%s;padding:2px\">%s</span>", bkg, col, system)
+		out = append(out, fmt.Sprintf("DAS service: %v DAS api: %s", srvval, dasapi))
+		vvv := data[pkey].([]interface{})
+		rec := vvv[i].(mongo.DASRecord)
+		out = append(out, fmt.Sprintf("<pre style=\"background-color:%s;color:white;\"><div class=\"code\"><pre>%s</pre></div></pre><br/>", bkg, rec.ToString()))
+	}
+	val := fmt.Sprintf("<div class=\"hide\" id=\"id_%s\"><div class=\"code\">%s</div></div>", rid, strings.Join(out, "\n"))
+	wrap := fmt.Sprintf("<a href=\"javascript:ToggleTag('id_%s', 'link_%s')\" id=\"link_%s\">show</a>", rid, rid, rid)
+	return wrap + val
+}
+
 // Represent DAS records for web UI
 func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord) string {
 	var out []string
@@ -143,6 +168,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			out = append(out, dasLinks(path, inst, pval, links))
 		}
 		out = append(out, colServices(services))
+		out = append(out, showRecord(item))
 		if jdx != len(data) {
 			out = append(out, line)
 		}
