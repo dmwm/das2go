@@ -34,7 +34,7 @@ import _ "net/http/pprof"
 
 // global variables used in this module
 var _dasmaps dasmaps.DASMaps
-var _tdir, _top, _bottom, _search, _cards, _base string
+var _tdir, _top, _bottom, _search, _cards, _hiddenCards, _base string
 var _dbses []string
 
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
@@ -161,7 +161,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				page = parseTmpl(_tdir, "check_pid.tmpl", tmplData)
 			}
 			if ajax == "" {
-				w.Write([]byte(_top + _search + _cards + page + _bottom))
+				w.Write([]byte(_top + _search + _hiddenCards + page + _bottom))
 			} else {
 				w.Write([]byte(page))
 			}
@@ -202,11 +202,14 @@ func Server(port string) {
 	tmplData["DBSinstance"] = _dbses[0]
 	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
 	tmplData["DBSes"] = _dbses
+	tmplData["CardClass"] = "show"
 	var templates DASTemplates
 	_top = templates.Top(_tdir, tmplData)
 	_bottom = templates.Bottom(_tdir, tmplData)
 	_search = templates.SearchForm(_tdir, tmplData)
 	_cards = templates.Cards(_tdir, tmplData)
+	tmplData["CardClass"] = "hide"
+	_hiddenCards = templates.Cards(_tdir, tmplData)
 
 	// load DAS Maps if neccessary
 	if len(_dasmaps.Services()) == 0 {
