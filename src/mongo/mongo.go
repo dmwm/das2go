@@ -24,7 +24,20 @@ type DASRecord map[string]interface{}
 func (r DASRecord) ToString() string {
 	var out []string
 	for _, k := range utils.MapKeys(r) {
-		out = append(out, fmt.Sprintf("%s:%v", k, r[k]))
+		switch v := r[k].(type) {
+		case int:
+			out = append(out, fmt.Sprintf("%s:%d", k, v))
+		case float64:
+			d := int(v)
+			if float64(d) == v {
+				out = append(out, fmt.Sprintf("%s:%d", k, d))
+			} else {
+				out = append(out, fmt.Sprintf("%s:%f", k, v))
+			}
+		default:
+			s := fmt.Sprintf("%s:%#v", k, r[k])
+			out = append(out, strings.Replace(s, ", ", ",\n   ", -1))
+		}
 	}
 	return strings.Join(out, "\n")
 }
