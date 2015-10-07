@@ -110,10 +110,56 @@ func showRecord(data mongo.DASRecord) string {
 	return wrap + val
 }
 
+// helper function to provide proper url
+func makeUrl(url, urlType string, startIdx, limit, nres int) string {
+	var out string
+	var idx int
+	if urlType == "first" {
+		idx = 0
+	} else if urlType == "prev" {
+		if startIdx != 0 {
+			idx = startIdx - limit
+		} else {
+			idx = 0
+		}
+	} else if urlType == "next" {
+		idx = startIdx + limit
+	} else if urlType == "last" {
+		j := 0
+		for i := 0; i < nres; i = i + limit {
+			if i > nres {
+				break
+			}
+			j = i
+		}
+		idx = j
+	}
+	out = fmt.Sprintf("%s&amp;idx=%d&&amp;limit=%d", url, idx, limit)
+	return out
+}
+
+// helper function to provide pagination
+func pagination(base, query string, nres, startIdx, limit int) string {
+	var templates DASTemplates
+	url := fmt.Sprintf("%s?input=%s", base, query)
+	tmplData := make(map[string]interface{})
+	tmplData["StartIndex"] = fmt.Sprintf("%d", startIdx)
+	tmplData["EndIndex"] = fmt.Sprintf("%d", limit)
+	tmplData["Total"] = fmt.Sprintf("%d", nres)
+	tmplData["FirstUrl"] = makeUrl(url, "first", startIdx, limit, nres)
+	tmplData["PrevUrl"] = makeUrl(url, "prev", startIdx, limit, nres)
+	tmplData["NextUrl"] = makeUrl(url, "next", startIdx, limit, nres)
+	tmplData["LastUrl"] = makeUrl(url, "last", startIdx, limit, nres)
+	page := templates.Pagination(_tdir, tmplData) // _tdir defined in web/server.go
+	line := "<hr class=\"line\" />"
+	return fmt.Sprintf("%s%s<br/>", page, line)
+}
+
 // Represent DAS records for web UI
-func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord) string {
+func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int) string {
 	var out []string
 	line := "<hr class=\"line\" />"
+	out = append(out, pagination(path, dasquery.Query, nres, startIdx, limit))
 	//     br := "<br/>"
 	fields := dasquery.Fields
 	var services []string
