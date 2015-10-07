@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
 	"mongo"
+	"sort"
 	"strings"
 	"utils"
 )
@@ -62,15 +63,29 @@ func genColor(system string) (string, string) {
 	return bkg, col
 }
 
+// implement sort for []string type
+type StringList []string
+
+func (s StringList) Len() int           { return len(s) }
+func (s StringList) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s StringList) Less(i, j int) bool { return s[i] < s[j] }
+
 // helper function to show services
 func colServices(services []string) string {
 	out := make(map[string]interface{})
 	for _, val := range services {
 		bkg, col := genColor(val)
 		srv := fmt.Sprintf("<span style=\"background-color:%s;color:%s;padding:2px\">%s</span>", bkg, col, val)
-		out[srv] = 1
+		out[val] = srv
 	}
-	return "Sources: " + strings.Join(utils.MapKeys(out), "")
+	var srvs []string
+	keys := utils.MapKeys(out)
+	sort.Sort(StringList(keys))
+	for _, k := range keys {
+		srvs = append(srvs, out[k].(string))
+	}
+	return "Sources: " + strings.Join(srvs, "")
+	//     return "Sources: " + strings.Join(utils.MapKeys(out), "")
 }
 
 // helper function to create links
@@ -144,7 +159,7 @@ func pagination(base, query string, nres, startIdx, limit int) string {
 	url := fmt.Sprintf("%s?input=%s", base, query)
 	tmplData := make(map[string]interface{})
 	tmplData["StartIndex"] = fmt.Sprintf("%d", startIdx)
-	tmplData["EndIndex"] = fmt.Sprintf("%d", limit)
+	tmplData["EndIndex"] = fmt.Sprintf("%d", startIdx+limit)
 	tmplData["Total"] = fmt.Sprintf("%d", nres)
 	tmplData["FirstUrl"] = makeUrl(url, "first", startIdx, limit, nres)
 	tmplData["PrevUrl"] = makeUrl(url, "prev", startIdx, limit, nres)
@@ -178,9 +193,9 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			uiRows := pmap[key].([]interface{})
 			var links []interface{}
 			var pval string
+			var values []string
 			for idx, elem := range records {
 				rec := elem.(mongo.DASRecord)
-				var values []string
 				for _, uir := range uiRows {
 					uirow := uir.(mongo.DASRecord)
 					daskey := uirow["das"].(string)
@@ -207,10 +222,10 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 						values = append(values, row)
 					}
 				}
-				// Join attribute fields, e.g. in file dataset=/a/b/c query it is
-				// File size: N GB File Type: EDM
-				out = append(out, strings.Join(values, " "))
 			}
+			// Join attribute fields, e.g. in file dataset=/a/b/c query it is
+			// File size: N GB File Type: EDM
+			out = append(out, strings.Join(utils.List2Set(values), " "))
 			out = append(out, dasLinks(path, inst, pval, links))
 		}
 		out = append(out, colServices(services))
