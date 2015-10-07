@@ -64,3 +64,11 @@ func (q DASTemplates) Cards(tdir string, tmplData map[string]interface{}) string
 	q.cards = parseTmpl(_tdir, "cards.tmpl", tmplData)
 	return q.cards
 }
+
+func (q DASTemplates) Pagination(tdir string, tmplData map[string]interface{}) string {
+	if q.searchForm != "" {
+		return q.searchForm
+	}
+	q.searchForm = parseTmpl(_tdir, "pagination.tmpl", tmplData)
+	return q.searchForm
+}
