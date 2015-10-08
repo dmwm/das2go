@@ -34,7 +34,7 @@ import _ "net/http/pprof"
 
 // global variables used in this module
 var _dasmaps dasmaps.DASMaps
-var _tdir, _top, _bottom, _search, _cards, _hiddenCards, _base string
+var _thkey, _tdir, _top, _bottom, _search, _cards, _hiddenCards, _base string
 var _dbses []string
 
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
@@ -70,6 +70,17 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
  * RequestHandler is used by web server to handle incoming requests
  */
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
+	https := r.Header["Https"]
+	// check request permission
+	if https != nil && https[0] == "on" {
+		status := checkAuthnAuthz(r.Header)
+		if !status {
+			msg := "You are not allowed to access this resource"
+			http.Error(w, msg, http.StatusForbidden)
+			return
+		}
+	}
+
 	query := r.FormValue("input")
 	pid := r.FormValue("pid")
 	ajax := r.FormValue("ajax")
@@ -90,7 +101,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		idx = 0
 	}
 	path := r.URL.Path
-	//     log.Println("CALL", path, query, pid)
 	tmplData := make(map[string]interface{})
 
 	// process requests based on the path
@@ -189,6 +199,8 @@ func Server(port string) {
 			tcss = val[1]
 		} else if val[0] == "DAS_IMAGESPATH" {
 			timg = val[1]
+		} else if val[0] == "DAS_HKEY_FILE" {
+			_thkey = val[1]
 		}
 	}
 
