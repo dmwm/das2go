@@ -13,12 +13,6 @@ import (
 
 // helper function which checks Authentication
 func checkAuthentication(headers http.Header) bool {
-	// TMP
-	//     headers := make(http.Header)
-	//     headers["Cms-Authn-Name"] = []string{"Server Monitor"}
-	//     headers["Cms-Authn-Login"] = []string{"server-monitor"}
-	//     headers["Cms-Authn-Method"] = []string{"ServerMonitor"}
-
 	var val interface{}
 	val = headers["cms-auth-status"]
 	if val == nil {
@@ -50,8 +44,8 @@ func checkAuthentication(headers http.Header) bool {
 		}
 	}
 	value := []byte(fmt.Sprintf("%s#%s", prefix, suffix))
-	fmt.Println("### value", fmt.Sprintf("%s#%s", prefix, suffix))
-	fmt.Println(headers)
+	//     fmt.Println("### value", fmt.Sprintf("%s#%s", prefix, suffix))
+	//     fmt.Println(headers)
 	var sha1hex hash.Hash
 	if len(_thkey) != 0 {
 		hkey, err := ioutil.ReadFile(_thkey)
@@ -65,8 +59,8 @@ func checkAuthentication(headers http.Header) bool {
 	}
 	sha1hex.Write(value)
 	hmacFound := fmt.Sprintf("%x", sha1hex.Sum(nil))
-	fmt.Println("### cms-authn-hmac", hmacValue)
-	fmt.Println("### found     hmac", hmacFound)
+	//     fmt.Println("### cms-authn-hmac", hmacValue)
+	//     fmt.Println("### found     hmac", hmacFound)
 	if hmacFound != hmacValue {
 		return false
 	}
