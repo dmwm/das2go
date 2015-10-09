@@ -71,8 +71,8 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
  */
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	https := r.Header["Https"]
-	// check request permission
-	if https != nil && https[0] == "on" {
+	// check if DAS server started with hkey file (auth is required)
+	if len(_thkey) > 0 {
 		status := checkAuthnAuthz(r.Header)
 		if !status {
 			msg := "You are not allowed to access this resource"
