@@ -273,15 +273,15 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 }
 
 // helper function to process given set of URLs associted with dasquery
-func processURLs(dasquery dasql.DASQuery, urls []string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps, pkeys []string) {
+func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps, pkeys []string) {
 	// defer function will propagate panic message to higher level
 	//     defer utils.ErrPropagate("processUrls")
 
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
-	for _, furl := range urls {
+	for furl, args := range urls {
 		umap[furl] = 1 // keep track of processed urls below
-		go utils.Fetch(furl, out)
+		go utils.Fetch(furl, args, out)
 	}
 
 	// collect all results from out channel
@@ -367,21 +367,33 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 
 	// find out list of APIs/CMS services which can process this query request
 	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
-	var urls, srvs, pkeys []string
+	var srvs, pkeys []string
+	urls := make(map[string]string)
 	var local_apis []mongo.DASRecord
 	var furl string
 	// loop over services and fetch data
 	for _, dmap := range maps {
+		args := ""
 		system, _ := dmap["system"].(string)
-		if system == "reqmgr" || system == "mcm" {
+		if system == "runregistry" {
+			switch v := dasquery.Spec["run"].(type) {
+			case string:
+				args = fmt.Sprintf("{\"filter\": {\"number\": \">= %s and <= %s\"}}", v, v)
+			case []string:
+				args = fmt.Sprintf("{\"filter\": {\"number\": \">= %s and <= %s\"}}", v[0], v[len(v)])
+			}
+			furl, _ = dmap["url"].(string)
+		} else if system == "reqmgr" || system == "mcm" {
 			furl = formRESTUrl(dasquery, dmap)
 		} else {
 			furl = formUrlCall(dasquery, dmap)
 		}
 		if furl == "local_api" && !dasmaps.MapInList(dmap, local_apis) {
 			local_apis = append(local_apis, dmap)
-		} else if furl != "" && !utils.InList(furl, urls) {
-			urls = append(urls, furl)
+		} else if furl != "" {
+			if _, ok := urls[furl]; !ok {
+				urls[furl] = args
+			}
 		}
 		srv := fmt.Sprintf("%s:%s", dmap["system"], dmap["urn"])
 		srvs = append(srvs, srv)
@@ -410,7 +422,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 		utils.GoDeferFunc("go processLocalApis", func() { processLocalApis(dasquery, local_apis, pkeys) })
 	}
 	// process URLs which will insert records into das cache and merge them into das merge collection
-	if len(urls) > 0 {
+	if urls != nil {
 		utils.GoDeferFunc("go processURLs", func() { processURLs(dasquery, urls, maps, dmaps, pkeys) })
 	}
 	return dasquery.Qhash
