@@ -70,7 +70,6 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
  * RequestHandler is used by web server to handle incoming requests
  */
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
-	https := r.Header["Https"]
 	// check if DAS server started with hkey file (auth is required)
 	if len(_thkey) > 0 {
 		status := checkAuthnAuthz(r.Header)
