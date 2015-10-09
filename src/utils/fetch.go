@@ -92,9 +92,9 @@ type ResponseType struct {
 func Worker(in <-chan string, out chan<- ResponseType, quit <-chan bool) {
 	for {
 		select {
-		case url := <-in:
+		case rurl := <-in:
 			//            log.Println("Receive", url)
-			go Fetch(url, out)
+			go Fetch(rurl, "", out)
 		case <-quit:
 			//            log.Println("Quit Worker")
 			return
@@ -106,17 +106,23 @@ func Worker(in <-chan string, out chan<- ResponseType, quit <-chan bool) {
 }
 
 // Fetch data for provided URL
-func FetchResponse(url string) ResponseType {
+func FetchResponse(rurl, args string) ResponseType {
 	var response ResponseType
-	response.Url = url
+	response.Url = rurl
 	response.Data = []byte{}
-	if validate_url(url) == false {
+	if validate_url(rurl) == false {
 		response.Error = errors.New("Invalid URL")
 		return response
 	}
-	//     resp, err := client.Get(url)
-	req, err := http.NewRequest("GET", url, nil)
-	req.Header.Add("Accept-Encoding", "identity")
+	var req *http.Request
+	if len(args) > 0 {
+		var jsonStr = []byte(args)
+		req, _ = http.NewRequest("POST", rurl, bytes.NewBuffer(jsonStr))
+		req.Header.Set("Content-Type", "application/json")
+	} else {
+		req, _ = http.NewRequest("GET", rurl, nil)
+		req.Header.Add("Accept-Encoding", "identity")
+	}
 	resp, err := client.Do(req)
 	if err != nil {
 		response.Error = err
@@ -133,55 +139,55 @@ func FetchResponse(url string) ResponseType {
 }
 
 // Fetch data for provided URL and redirect results to given channel
-func Fetch(url string, ch chan<- ResponseType) {
-	//    log.Println("Receive", url)
+func Fetch(rurl string, args string, ch chan<- ResponseType) {
+	//    log.Println("Receive", rurl)
 	var resp, r ResponseType
 	retry := 3 // how many times we'll retry given url
 	startTime := time.Now()
-	resp = FetchResponse(url)
+	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
-		log.Println("DAS WARNING, fail to fetch data", url, "error", resp.Error)
+		log.Println("DAS WARNING, fail to fetch data", rurl, "error", resp.Error)
 		for i := 1; i <= retry; i++ {
 			sleep := time.Duration(i) * time.Second
 			time.Sleep(sleep)
-			r = FetchResponse(url)
+			r = FetchResponse(rurl, args)
 			if r.Error == nil {
 				break
 			}
-			log.Println("DAS WARNING", url, "retry", i, "error", r.Error)
+			log.Println("DAS WARNING", rurl, "retry", i, "error", r.Error)
 		}
 		resp = r
 	}
 	if resp.Error != nil {
-		log.Println("DAS ERROR, fail to fetch data", url, "retries", retry, "error", resp.Error)
+		log.Println("DAS ERROR, fail to fetch data", rurl, "retries", retry, "error", resp.Error)
 	}
 	endTime := time.Now()
 	if VERBOSE {
-		log.Println("DAS fetch", url, endTime.Sub(startTime))
+		log.Println("DAS fetch", rurl, endTime.Sub(startTime))
 	}
 	ch <- resp
 }
 
 // Helper function which validates given URL
-func validate_url(url string) bool {
-	if len(url) > 0 {
+func validate_url(rurl string) bool {
+	if len(rurl) > 0 {
 		pat := "(https|http)://[-A-Za-z0-9_+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]"
-		matched, err := regexp.MatchString(pat, url)
+		matched, err := regexp.MatchString(pat, rurl)
 		if err == nil {
 			if matched == true {
 				return true
 			}
 		}
-		log.Println("ERROR invalid URL:", url)
+		log.Println("ERROR invalid URL:", rurl)
 	}
 	return false
 }
 
 // represent final response in a form of JSON structure
 // we use custorm representation
-func Response(url string, data []byte) []byte {
+func Response(rurl string, data []byte) []byte {
 	b := []byte(`{"url":`)
-	u := []byte(url)
+	u := []byte(rurl)
 	c := []byte(",")
 	d := []byte(`"data":`)
 	e := []byte(`}`)
