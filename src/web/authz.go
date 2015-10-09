@@ -7,11 +7,18 @@ import (
 	"hash"
 	"io/ioutil"
 	"net/http"
+	"sort"
 	"strings"
 )
 
 // helper function which checks Authentication
 func checkAuthentication(headers http.Header) bool {
+	// TMP
+	//     headers := make(http.Header)
+	//     headers["Cms-Authn-Name"] = []string{"Server Monitor"}
+	//     headers["Cms-Authn-Login"] = []string{"server-monitor"}
+	//     headers["Cms-Authn-Method"] = []string{"ServerMonitor"}
+
 	var val interface{}
 	val = headers["cms-auth-status"]
 	if val == nil {
@@ -22,12 +29,18 @@ func checkAuthentication(headers http.Header) bool {
 		// user authentication is optional
 		return true
 	}
+	var hkeys []string
+	for kkk, _ := range headers {
+		hkeys = append(hkeys, kkk)
+	}
+	sort.Sort(StringList(hkeys))
 	var prefix, suffix, hmacValue string
-	for kkk, values := range headers {
+	for _, kkk := range hkeys {
+		values := headers[kkk]
 		key := strings.ToLower(kkk)
 		if (strings.HasPrefix(key, "cms-authn") || strings.HasPrefix(key, "cms-authz")) && key != "cms-authn-hmac" {
-			prefix += fmt.Sprintf("h%xv%x", len(key), len(values))
-			suffix += fmt.Sprintf("%s%s", key, values)
+			prefix += fmt.Sprintf("h%xv%x", len(key), len(values[0]))
+			suffix += fmt.Sprintf("%s%s", key, values[0])
 			if strings.HasPrefix(key, "cms-authn") {
 				headers[strings.Replace(key, "cms-authn-", "", 1)] = values
 			}
@@ -37,6 +50,8 @@ func checkAuthentication(headers http.Header) bool {
 		}
 	}
 	value := []byte(fmt.Sprintf("%s#%s", prefix, suffix))
+	fmt.Println("### value", fmt.Sprintf("%s#%s", prefix, suffix))
+	fmt.Println(headers)
 	var sha1hex hash.Hash
 	if len(_thkey) != 0 {
 		hkey, err := ioutil.ReadFile(_thkey)
