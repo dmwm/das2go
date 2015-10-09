@@ -65,7 +65,7 @@ func find_blocks(spec bson.M) []string {
 	dataset := spec["dataset"].(string)
 	api := "blocks"
 	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
-	resp := utils.FetchResponse(furl)
+	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
 		out = append(out, rec["block_name"].(string))
@@ -80,8 +80,8 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
 	for _, furl := range urls {
-		umap[furl] = 1 // keep track of processed urls below
-		go utils.Fetch(furl, out)
+		umap[furl] = 1                // keep track of processed urls below
+		go utils.Fetch(furl, "", out) // "" specify optional args
 	}
 	// collect all results from out channel
 	exit := false
@@ -281,7 +281,7 @@ func (LocalAPIs) L_dbs3_blocks4tier_dates(spec bson.M) []mongo.DASRecord {
 	api := "blocks"
 	furl := fmt.Sprintf("%s/%s?data_tier_name=%s&min_cdate=%d&max_cdate=%d", dbsUrl(), api, tier, mind, maxd)
 	log.Println(furl)
-	resp := utils.FetchResponse(furl)
+	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var blocks []string
 	for _, rec := range records {
@@ -320,7 +320,7 @@ func dataset4release(spec bson.M) []string {
 	if status != nil {
 		furl = fmt.Sprintf("%s&dataset_access_type=%s", furl, status.(string))
 	}
-	resp := utils.FetchResponse(furl)
+	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
 		dataset := rec["name"].(string)
@@ -395,7 +395,7 @@ func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
 	dataset := spec["dataset"].(string)
 	api := "filesummaries"
 	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
-	resp := utils.FetchResponse(furl)
+	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var totblocks, totfiles float64
 	totblocks = records[0]["num_block"].(float64)
@@ -403,7 +403,7 @@ func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
 	// Phedex part find block replicas for given dataset
 	api = "blockReplicas"
 	furl = fmt.Sprintf("%s/%s?dataset=%s", phedexUrl(), api, dataset)
-	resp = utils.FetchResponse(furl)
+	resp = utils.FetchResponse(furl, "") // "" specify optional args
 	records = PhedexUnmarshal(api, resp.Data)
 	siteInfo := make(mongo.DASRecord)
 	var b_complete, nfiles, nblks, bfiles float64
