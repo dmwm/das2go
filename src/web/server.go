@@ -34,7 +34,7 @@ import _ "net/http/pprof"
 
 // global variables used in this module
 var _dasmaps dasmaps.DASMaps
-var _thkey, _tdir, _top, _bottom, _search, _cards, _hiddenCards, _base string
+var _afile, _tdir, _top, _bottom, _search, _cards, _hiddenCards, _base string
 var _dbses []string
 
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
@@ -71,7 +71,7 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
  */
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// check if DAS server started with hkey file (auth is required)
-	if len(_thkey) > 0 {
+	if len(_afile) > 0 {
 		status := checkAuthnAuthz(r.Header)
 		if !status {
 			msg := "You are not allowed to access this resource"
@@ -183,7 +183,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // proxy server. It defines /fetch public interface
-func Server(port string) {
+func Server(port, afile string) {
 	log.Printf("Start server localhost:%s/das", port)
 	var tcss, tjs, timg, tyui string
 	for _, item := range os.Environ() {
@@ -198,10 +198,9 @@ func Server(port string) {
 			tcss = val[1]
 		} else if val[0] == "DAS_IMAGESPATH" {
 			timg = val[1]
-		} else if val[0] == "DAS_HKEY_FILE" {
-			_thkey = val[1]
 		}
 	}
+	_afile = afile
 
 	// DAS templates
 	_base = "/das"

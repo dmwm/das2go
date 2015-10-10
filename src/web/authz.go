@@ -47,10 +47,10 @@ func checkAuthentication(headers http.Header) bool {
 	//     fmt.Println("### value", fmt.Sprintf("%s#%s", prefix, suffix))
 	//     fmt.Println(headers)
 	var sha1hex hash.Hash
-	if len(_thkey) != 0 {
-		hkey, err := ioutil.ReadFile(_thkey)
+	if len(_afile) != 0 {
+		hkey, err := ioutil.ReadFile(_afile)
 		if err != nil {
-			fmt.Println("DAS ERROR, unable to read DAS_HKEY_FILE", _thkey)
+			fmt.Println("DAS ERROR, unable to read DAS_HKEY_FILE", _afile)
 			return false
 		}
 		sha1hex = hmac.New(sha1.New, hkey)
