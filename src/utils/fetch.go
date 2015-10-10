@@ -163,7 +163,11 @@ func Fetch(rurl string, args string, ch chan<- ResponseType) {
 	}
 	endTime := time.Now()
 	if VERBOSE {
-		log.Println("DAS fetch", rurl, endTime.Sub(startTime))
+		if args == "" {
+			log.Println("DAS GET", rurl, endTime.Sub(startTime))
+		} else {
+			log.Println("DAS POST", rurl, args, endTime.Sub(startTime))
+		}
 	}
 	ch <- resp
 }
