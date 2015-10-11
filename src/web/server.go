@@ -107,18 +107,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(_top + _search + _cards + _bottom))
 		return
 	} else {
-		dasquery, err := dasql.Parse(query, inst, _dasmaps.DASKeys())
-		if err != "" {
-			w.Write([]byte(err))
-		}
-		if pid == "" {
-			pid = dasquery.Qhash
-		}
-		if len(pid) != 32 {
-			http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
-		}
-		// Remove expire records from cache
-		das.RemoveExpired(dasquery.Qhash)
 		// defer function will be fired when following processRequest will panic
 		defer func() {
 			if err := recover(); err != nil {
@@ -146,6 +134,18 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				w.Write(js)
 			}
 		}()
+		dasquery, err := dasql.Parse(query, inst, _dasmaps.DASKeys())
+		if err != "" {
+			panic(err)
+		}
+		if pid == "" {
+			pid = dasquery.Qhash
+		}
+		if len(pid) != 32 {
+			http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
+		}
+		// Remove expire records from cache
+		das.RemoveExpired(dasquery.Qhash)
 		// process given query
 		response := processRequest(dasquery, pid, idx, limit)
 		if path == "/das/cache" {
