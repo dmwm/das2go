@@ -124,7 +124,11 @@ func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRec
 	dasheader["record"] = 0           // DAS record type, zero for DAS record
 	dasheader["status"] = "requested" // initial status
 	dasheader["services"] = srvs
-	dasheader["primary_key"] = pkeys[0]
+	if len(pkeys) > 0 {
+		dasheader["primary_key"] = pkeys[0]
+	} else {
+		dasheader["primary_key"] = ""
+	}
 	dasheader["expire"] = utils.Expire(60) // initial expire, 60 seconds from now
 	dasheader["ts"] = time.Now().Unix()
 	dasheader["instance"] = dasquery.Instance

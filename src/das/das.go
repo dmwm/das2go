@@ -411,6 +411,9 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 		}
 	}
 
+	if len(srvs) == 0 {
+		panic("Unable to find any CMS service to serve your request")
+	}
 	dasrecord := services.CreateDASRecord(dasquery, srvs, pkeys)
 	var records []mongo.DASRecord
 	records = append(records, dasrecord)

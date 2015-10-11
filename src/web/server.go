@@ -124,10 +124,19 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			if err := recover(); err != nil {
 				log.Println("DAS ERROR, web server error", err, utils.Stack())
 				response := make(map[string]interface{})
+				accept := r.Header["Accept"][0]
+				if !strings.Contains(strings.ToLower(accept), "json") {
+					response["Status"] = "fail"
+					response["Reason"] = err
+					response["PID"] = pid
+					var templates DASTemplates
+					errTmp := templates.DASError(_tdir, response)
+					w.Write([]byte(_top + _search + _hiddenCards + errTmp + _bottom))
+					return
+				}
 				response["status"] = "fail"
 				response["reason"] = err
 				response["pid"] = pid
-				log.Println("DAS ERROR", err)
 				js, err := json.Marshal(&response)
 				if err != nil {
 					http.Error(w, err.Error(), http.StatusInternalServerError)

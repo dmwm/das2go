@@ -29,7 +29,7 @@ func parseTmpl(tdir, tmpl string, data interface{}) string {
 
 // Templates interface
 type DASTemplates struct {
-	top, bottom, searchForm, cards string
+	top, bottom, searchForm, cards, dasError string
 }
 
 func (q DASTemplates) Top(tdir string, tmplData map[string]interface{}) string {
@@ -71,4 +71,12 @@ func (q DASTemplates) Pagination(tdir string, tmplData map[string]interface{}) s
 	}
 	q.searchForm = parseTmpl(_tdir, "pagination.tmpl", tmplData)
 	return q.searchForm
+}
+
+func (q DASTemplates) DASError(tdir string, tmplData map[string]interface{}) string {
+	if q.dasError != "" {
+		return q.dasError
+	}
+	q.dasError = parseTmpl(_tdir, "error.tmpl", tmplData)
+	return q.dasError
 }
