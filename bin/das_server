@@ -1,17 +1,12 @@
 #!/bin/sh
-# Here we can set all settings, e.g. X509 proxy and start das2go executable
-export DAS_TMPLPATH=$PWD/src/templates
-export DAS_JSPATH=$PWD/src/js
-export DAS_CSSPATH=$PWD/src/css
-export DAS_IMAGESPATH=$PWD/src/images
-export YUI_ROOT=/Users/vk/CMS/yui/
-export DAS2GO_ROOT=/Users/vk/Work/Languages/Go/GIT/das2go
+# on Linux take advantage of proc system to figure out number of availabel CPUs
+if [ -f /proc/cpuinfo ]; then
+    ncpus=`cat /proc/cpuinfo | grep processor | tail -1 | awk '{v=1+$3; print v}'`
+    export GOMAXPROCS=$ncpus
+fi
 
-# helper function to wait for MongoDB appearance
-# it will incrementally increase waiting time with 20 iterations (~3minute)
-monitor(){
-    local cmd=$DAS2GO_ROOT/das2go
-    $cmd
+# das2go server
+das2go_server(){
     # check if das2go is running
     for (( ; ; )); do
         local pid=`ps auxwww | egrep "$cmd" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
@@ -19,9 +14,9 @@ monitor(){
         if [ -z "$pid" ]; then
             local tstamp=`date "+%Y/%m/%d %H:%M:%S"`
             echo "$tstamp das2go is not running, restart"
-            $cmd
+            das2go
         fi
         sleep 10
     done
 }
-monitor
+das2go_server
