@@ -55,6 +55,8 @@ func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []m
 		out = ReqMgrUnmarshal(api, data)
 	case system == "mcm":
 		out = McMUnmarshal(api, data)
+	case system == "dashboard":
+		out = DashboardUnmarshal(api, data)
 	case system == "conddb":
 		out = CondDBUnmarshal(api, data)
 	case system == "runregistry":
