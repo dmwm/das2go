@@ -144,6 +144,17 @@ func UnixTime(ts string) int64 {
 	return int64(t.Unix())
 }
 
+// helper funtiont to convert given time into Dashboard timestamp
+func DashboardTime(ts string) string {
+	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
+	const layout = "20060102"
+	t, err := time.Parse(layout, ts)
+	if err != nil {
+		panic(err)
+	}
+	return t.Format("2006-01-02 15:04:05") // represent t in given format
+}
+
 // helper function to convert input list into set
 func List2Set(arr []string) []string {
 	var out []string
