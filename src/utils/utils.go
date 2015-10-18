@@ -9,6 +9,7 @@ package utils
 import (
 	"fmt"
 	"log"
+	"regexp"
 	"runtime"
 	"strconv"
 	"time"
@@ -177,4 +178,14 @@ func SizeFormat(val float64) string {
 		val = val / base
 	}
 	return fmt.Sprintf("%3.1f%s", val, xlist[len(xlist)])
+}
+
+// helper function to test if given value is integer
+func IsInt(val string) bool {
+	pat := "(^[0-9-]$|^[0-9-][0-9]*$)"
+	matched, _ := regexp.MatchString(pat, val)
+	if matched {
+		return true
+	}
+	return false
 }
