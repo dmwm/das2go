@@ -17,6 +17,7 @@ import (
 	"reflect"
 	"regexp"
 	"services"
+	"strconv"
 	"strings"
 	"time"
 	"utils"
@@ -437,30 +438,44 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 
 // helper function to modify spec with given filter
 func modSpec(spec bson.M, filter string) {
-	var key, val string
+	var key, val, op string
 	var vals []string
 	if strings.Index(filter, "<") > 0 {
 		if strings.Index(filter, "<=") > 0 {
 			vals = strings.Split(filter, "<=")
+			op = "$le"
 		} else {
 			vals = strings.Split(filter, "<")
+			op = "$lt"
 		}
 	} else if strings.Index(filter, "<") > 0 {
 		if strings.Index(filter, ">=") > 0 {
 			vals = strings.Split(filter, ">=")
+			op = "$ge"
 		} else {
 			vals = strings.Split(filter, ">")
+			op = "$gt"
 		}
 	} else if strings.Index(filter, "!=") > 0 {
 		vals = strings.Split(filter, "!=")
+		op = "$ne"
 	} else if strings.Index(filter, "=") > 0 {
 		vals = strings.Split(filter, "=")
+		op = "$eq"
 	} else {
 		return
 	}
 	key = vals[0]
 	val = vals[1]
-	spec[key] = val
+	var cond bson.M
+	if utils.IsInt(val) {
+		ival, _ := strconv.Atoi(val)
+		cond = bson.M{op: ival}
+	} else {
+		cond = bson.M{op: val}
+	}
+	log.Println(fmt.Sprintf("modSpec, cond=%v, val=%T", cond, val))
+	spec[key] = cond
 }
 
 // Get data for given pid (DAS Query qhash)
