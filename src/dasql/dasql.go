@@ -167,14 +167,15 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	parts := strings.SplitN(relaxed_query, "|", 2)
 	pipe := ""
 	if len(parts) > 1 {
-		pipe = parts[len(parts)-1]
+		relaxed_query = strings.Trim(parts[0], " ")
+		pipe = strings.Trim(parts[1], " ")
 	}
 	nan := "_NA_"
 	specials := []string{"date", "system", "instance"}
 	spec_ops := []string{"in", "between"}
 	fields := []string{}
 	spec := bson.M{}
-	arr := strings.Split(parts[0], " ")
+	arr := strings.Split(relaxed_query, " ")
 	qlen := len(arr)
 	nval := nan
 	nnval := nan
