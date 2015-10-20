@@ -474,7 +474,6 @@ func modSpec(spec bson.M, filter string) {
 	} else {
 		cond = bson.M{op: val}
 	}
-	log.Println(fmt.Sprintf("modSpec, cond=%v, val=%T", cond, val))
 	spec[key] = cond
 }
 
@@ -483,7 +482,11 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 	var empty_data, data []mongo.DASRecord
 	pid := dasquery.Qhash
 	filters := dasquery.Filters
-	//     aggrs := dasquery.Aggregators
+	aggrs := dasquery.Aggregators
+	if len(aggrs) > 0 { // if we need to aggregate we should ignore pagination
+		idx = 0
+		limit = -1
+	}
 	spec := bson.M{"qhash": pid}
 	skeys := filters["sort"]
 	if len(filters) > 0 {
@@ -507,6 +510,9 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 	} else {
 		data = mongo.Get("das", coll, spec, idx, limit)
 	}
+	if len(aggrs) > 0 {
+		data = aggregateAll(data, aggrs)
+	}
 	// Get DAS status from cache collection
 	spec = bson.M{"qhash": pid, "das.record": 0}
 	das_data := mongo.Get("das", "cache", spec, 0, 1)
@@ -518,6 +524,54 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 		return status, empty_data
 	}
 	return status, data
+}
+
+// helper function to aggregate results over provided aggregators
+// we'll use go routine to do this in parallel
+func aggregateAll(data []mongo.DASRecord, aggrs [][]string) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	ch := make(chan mongo.DASRecord)
+	for _, agg := range aggrs {
+		fagg := agg[0]
+		fval := agg[1]
+		go aggregate(data, fagg, fval, ch)
+	}
+	// collect results
+	for {
+		select {
+		case r := <-ch:
+			out = append(out, r)
+		default:
+			time.Sleep(time.Duration(10) * time.Millisecond) // wait for response
+		}
+		if len(out) == len(aggrs) {
+			break
+		}
+	}
+	return out
+}
+
+// helper function to aggregate results for given function and key
+func aggregate(data []mongo.DASRecord, fagg, key string, ch chan mongo.DASRecord) {
+	var rec mongo.DASRecord
+	var values []interface{}
+	for _, rec := range data {
+		val := mongo.GetValue(rec, key)
+		values = append(values, val)
+	}
+	switch fagg {
+	case "sum":
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Sum(values)}, "function": "sum"}
+	case "min":
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Min(values)}, "function": "min"}
+	case "max":
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Max(values)}, "function": "max"}
+	case "mean":
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Mean(values)}, "function": "mean"}
+	case "count":
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": len(values)}, "function": "count"}
+	}
+	ch <- rec
 }
 
 // Get number of records for given DAS query qhash
