@@ -276,6 +276,7 @@ func parsePipe(pipe string) (map[string][]string, [][]string, string) {
 	opers := []string{">", "<", ">=", "<=", "=", "!="}
 	idx := 0
 	arr := strings.Split(pipe, " ")
+	//     fmt.Println("### pipe", pipe)
 	qlen := len(arr)
 	if qlen == 0 {
 		return filters, aggregators, qlerr
@@ -297,6 +298,7 @@ func parsePipe(pipe string) (map[string][]string, [][]string, string) {
 		} else {
 			nnnext = nan
 		}
+		//         fmt.Println("### item", idx, item, next, nnext, nnnext, arr, cfilter)
 		if item == "grep" {
 			cfilter = item
 			filters["grep"] = append(filters[item], next)
@@ -310,8 +312,10 @@ func parsePipe(pipe string) (map[string][]string, [][]string, string) {
 				} else {
 					filters[cfilter] = append(filters[cfilter], next)
 				}
+				idx += 2
+			} else {
+				idx += 1
 			}
-			idx += 2
 		} else if item == "sort" {
 			cfilter = item
 			filters[item] = append(filters[item], next)
