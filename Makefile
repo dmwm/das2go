@@ -12,6 +12,7 @@ install:
 clean:
 	go clean; rm -rf pkg
 
-test:
-	cd test; go test
+test : test1
 
+test1:
+	cd test; go test
