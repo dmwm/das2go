@@ -552,14 +552,14 @@ func aggregateAll(data []mongo.DASRecord, aggrs [][]string) []mongo.DASRecord {
 }
 
 // helper function to aggregate results for given function and key
-func aggregate(data []mongo.DASRecord, fagg, key string, ch chan mongo.DASRecord) {
+func aggregate(data []mongo.DASRecord, agg, key string, ch chan mongo.DASRecord) {
 	var rec mongo.DASRecord
 	var values []interface{}
 	for _, rec := range data {
 		val := mongo.GetValue(rec, key)
 		values = append(values, val)
 	}
-	switch fagg {
+	switch agg {
 	case "sum":
 		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Sum(values)}, "function": "sum"}
 	case "min":
