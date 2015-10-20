@@ -189,3 +189,41 @@ func IsInt(val string) bool {
 	}
 	return false
 }
+
+// helper function to perform sum operation over provided array of values
+func Sum(data []interface{}) float64 {
+	out := 0.0
+	for _, val := range data {
+		out += val.(float64)
+	}
+	return out
+}
+
+// helper function to perform Max operation over provided array of values
+func Max(data []interface{}) float64 {
+	out := 0.0
+	for _, val := range data {
+		v := val.(float64)
+		if v > out {
+			out = v
+		}
+	}
+	return out
+}
+
+// helper function to perform Min operation over provided array of values
+func Min(data []interface{}) float64 {
+	out := 1e100
+	for _, val := range data {
+		v := val.(float64)
+		if v < out {
+			out = v
+		}
+	}
+	return out
+}
+
+// helper function to perform Mean operation over provided array of values
+func Mean(data []interface{}) float64 {
+	return Sum(data) / float64(len(data))
+}
