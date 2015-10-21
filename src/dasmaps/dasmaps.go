@@ -7,10 +7,12 @@
 package dasmaps
 
 import (
+	"fmt"
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"mongo"
 	//     "sort"
+	"regexp"
 	"strings"
 	"utils"
 )
@@ -201,8 +203,17 @@ func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 		dasmaps := GetDASMaps(rec["das_map"])
 		for _, dmap := range dasmaps {
 			das_key := dmap["das_key"].(string)
+			das_pat := dmap["pattern"]
 			if utils.InList(das_key, keys) {
-				cond_records = append(cond_records, rec)
+				if das_pat == nil {
+					cond_records = append(cond_records, rec)
+				} else {
+					das_val := fmt.Sprintf("%v", spec[das_key])
+					matched, _ := regexp.MatchString(das_pat.(string), das_val)
+					if matched {
+						cond_records = append(cond_records, rec)
+					}
+				}
 			}
 
 		}
