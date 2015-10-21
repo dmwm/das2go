@@ -265,6 +265,9 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 		}
 		// Join attribute fields, e.g. in file dataset=/a/b/c query it is
 		// File size: N GB File Type: EDM
+		if len(values) == 1 {
+			values[0] = strings.Replace(values[0], "<br/>", "", 1)
+		}
 		out = append(out, strings.Join(utils.List2Set(values), " "))
 		out = append(out, dasLinks(path, inst, pval, links))
 		out = append(out, colServices(services))
