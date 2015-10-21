@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
 	"mongo"
+	"strings"
 	"time"
 	"utils"
 )
@@ -192,9 +193,32 @@ func (LocalAPIs) L_reqmgr_configs(spec bson.M) []mongo.DASRecord {
 						urls = append(urls, rurl)
 					}
 				}
-				//                 if val != nil {
-				//                     urls = append(urls, val.(string))
-				//                 }
+				// look for configs in tasks
+				for _, key := range utils.MapKeys(data) {
+					if strings.HasPrefix(key, "Task") {
+						rec := data[key]
+						var vvv map[string]interface{}
+						switch r := rec.(type) {
+						case map[string]interface{}:
+							vvv = r
+						default:
+							continue
+						}
+						val := vvv["ConfigCacheID"]
+						if val != nil {
+							switch v := val.(type) {
+							case string:
+								rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/%s/configFile", base, v)
+								urls = append(urls, rurl)
+							case []string:
+								for _, u := range v {
+									rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/%s/configFile", base, u)
+									urls = append(urls, rurl)
+								}
+							}
+						}
+					}
+				}
 			}
 			delete(umap, r.Url) // remove Url from map
 		default:
