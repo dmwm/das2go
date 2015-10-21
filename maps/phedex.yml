@@ -5,7 +5,7 @@ format : XML
 urn : blockReplicas4dataset
 url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
 expire : 3600
-params : {"se":"optional", "node":"optional", "dataset":"dataset"}
+params : {"se":"optional", "node":"optional", "dataset":"required"}
 lookup : block
 das_map : [
         {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
@@ -21,6 +21,28 @@ lookup : block
 das_map : [
         {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
         {"das_key":"site", "rec_key":"site.name", "api_arg": "node", "pattern":"^T[0-3]_"},
+        {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
+]
+---
+urn : block4site
+url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockreplicasummary"
+expire : 3600
+params : {"node":"required", "dataset":"optional"}
+lookup: block
+das_map : [
+        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
+        {"das_key":"site", "rec_key":"site.name", "api_arg":"node", "pattern":"^T[0-3]_"},
+]
+---
+urn : block4se
+url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockreplicasummary"
+expire : 3600
+params : {"se":"required", "dataset":"optional"}
+lookup : block
+das_map : [
+        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
         {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
 ]
 ---
