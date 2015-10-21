@@ -1,0 +1,746 @@
+# DBS3 API mapping to DAS
+system : dbs3
+format : JSON
+instances: ["prod/global", "prod/phys01", "prod/phys02", "prod/phys03", "prod/caf",
+            "int/global", "int/phys01", "int/phys02", "int/phys03",
+            "dev/global", "dev/phys01", "dev/phys02", "dev/phys03"]
+---
+urn: acquisitioneras
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/acquisitioneras/"
+expire : 900
+params : {"era":"optional"}
+lookup : era
+das_map : [
+    {"das_key": "era", "rec_key":"era.name", "api_arg":"era"},
+]
+---
+urn: datatypes
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datatypes/"
+expire : 900
+params : {"dataset":"optional"}
+lookup : datatype
+das_map : [
+    {"das_key": "datatype", "rec_key":"datatype.name"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+urn: datatiers
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datatiers"
+expire : 900
+params : {}
+lookup : tier
+das_map : [
+    {"das_key": "tier", "rec_key":"tier.name"},
+]
+---
+urn: datasetaccesstypes
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasetaccesstypes"
+expire : 900
+params : {}
+lookup : status
+das_map : [
+    {"das_key": "status", "rec_key":"status.name"},
+]
+---
+urn: releaseversions
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/releaseversions/"
+expire : 900
+params : {
+        "release_version":"optional", "dataset":"optional",
+        "logical_file_name":"optional",
+}
+lookup : release
+das_map : [
+    {"das_key": "release", "rec_key":"release.name", "api_arg":"release_version"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "file", "rec_key":"file.name", "api_arg":"logical_file_name"},
+]
+---
+urn: primarydatasets
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/primarydatasets/"
+expire : 900
+params : {"primary_ds_name":""}
+lookup : primary_dataset
+das_map : [
+    {"das_key": "primary_dataset", "rec_key":"primary_dataset.name", "api_arg":"primary_ds_name"},
+]
+---
+urn: dataset4block
+# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+url : "local_api"
+expire : 86400
+params : {"block_name":"required"}
+lookup : dataset
+das_map : [
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+    {"das_key": "block", "rec_key":"block.name", "api_arg":"block_name",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+]
+---
+urn: dataset4parent_release
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+expire : 86400
+params : {"parent_dataset":"required", "release_version":"required", "detail":"True"}
+lookup : dataset
+das_map : [
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+    {"das_key": "parent", "rec_key":"parent.name", "api_arg":"parent_dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "release", "rec_key":"release.name", "api_arg":"release_version"},
+]
+---
+urn: datasets
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+expire : 900
+params : {
+        "dataset":"optional",
+        "primary_ds_name":"optional",
+        "primary_ds_type":"optional",
+        "detail":"True",
+        "dataset_access_type": "VALID",
+        "data_tier_name":"optional",
+        "release_version": "optional",
+        "run_num": "optional",
+        "logical_file_name": "optional",
+        "acquisition_era_name": "optional",
+        "physics_group_name": "optional",
+        "min_cdate": "optional",
+        "create_by": "optional",
+        "prep_id": "optional",
+}
+lookup : dataset
+das_map : [
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+    {"das_key": "primary_dataset", "rec_key":"primary_dataset.name", "api_arg":"primary_ds_name"},
+    {"das_key": "datatype", "rec_key":"datatype.name", "api_arg":"primary_ds_type"},
+    {"das_key": "tier", "rec_key":"tier.name", "api_arg":"data_tier_name", "pattern":".*[A-Z].*"},
+    {"das_key": "release", "rec_key":"release.name", "api_arg":"release_version"},
+    {"das_key": "run", "rec_key":"run.run_number", "api_arg":"run_num"},
+    {"das_key": "file", "rec_key":"file.name", "api_arg":"logical_file_name"},
+    {"das_key": "era", "rec_key":"era", "api_arg":"acquisition_era_name"},
+    {"das_key": "group", "rec_key":"group.name", "api_arg":"physics_group_name"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"dataset_access_type"},
+    {"das_key": "date", "rec_key":"date", "api_arg":"min_cdate"},
+    {"das_key": "user", "rec_key":"user.name", "api_arg":"create_by"},
+    {"das_key": "prepid", "rec_key":"prepid", "api_arg":"prep_id"},
+]
+---
+urn: dataset_info
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+expire : 900
+params : {
+        "dataset":"optional",
+        "detail":"True",
+        "dataset_access_type": "VALID",
+}
+lookup : dataset
+das_map : [
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"dataset_access_type"},
+]
+---
+urn: filesummaries
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filesummaries/"
+expire : 900
+params : {"dataset":"required", "validFileOnly":"1"}
+lookup : dataset
+das_map : [
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"validFileOnly"},
+]
+---
+urn: summary4dataset_run
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filesummaries/"
+expire : 900
+params : {"dataset":"required", "run_num":"optional", "validFileOnly":"1"}
+lookup : summary
+das_map : [
+    {"das_key": "summary", "rec_key": "summary"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+]
+---
+urn: summary4block_run
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filesummaries/"
+expire : 900
+params : {"run_num":"optional", "block_name":"required"}
+lookup : summary
+das_map : [
+    {"das_key": "summary", "rec_key": "summary"},
+    {"das_key":"block", "rec_key":"block.name", "api_arg": "block_name",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+    {"das_key": "run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+]
+---
+urn: datasetparents
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasetparents/"
+expire : 900
+params : {"dataset":"required"}
+lookup : parent
+das_map : [
+    {"das_key": "parent", "rec_key":"parent.name"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+urn: datasetchildren
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasetchildren/"
+expire : 900
+params : {"dataset":"required"}
+lookup : child
+das_map : [
+    {"das_key": "child", "rec_key":"child.name"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+urn: outputconfigs
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/outputconfigs/"
+expire : 900
+params : {"dataset":"required"}
+lookup : config
+das_map : [
+    {"das_key": "config", "rec_key":"config.name"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+urn: site4dataset
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocks/"
+expire : 900
+params : {
+        "detail":"True",
+        "dataset":"required",
+        "dataset_access_type": "optional",
+}
+lookup : site
+das_map : [
+    {"das_key": "site", "rec_key":"site.name"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+urn: site4block
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocks/"
+expire : 900
+params : {
+        "detail":"True",
+        "block_name":"required",
+        "dataset_access_type": "optional",
+}
+lookup : site
+das_map : [
+    {"das_key": "site", "rec_key":"site.name"},
+    {"das_key": "block", "rec_key":"block.name", "api_arg":"block_name",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+]
+---
+urn: blocks
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocks/"
+expire : 900
+params : {
+        "block_name":"optional",
+        "detail":"True",
+        "dataset":"optional",
+        "dataset_access_type": "optional",
+        "run_num": "optional",
+        "logical_file_name": "optional"
+}
+lookup : block
+das_map : [
+    {"das_key": "block", "rec_key":"block.name", "api_arg":"block_name"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key": "file", "rec_key":"file.name", "api_arg":"logical_file_name"},
+]
+---
+urn: blockorigin
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blockorigin/"
+expire : 900
+params : {
+        "origin_site_name":"required",
+        "dataset":"required",
+}
+lookup : dataset
+das_map : [
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "site", "rec_key":"site.se", "api_arg":"origin_site_name",
+     "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
+]
+# NOTE: blocksummaries is a subset of filesummaries output, so we really don't
+# need this API
+# ---
+# urn: blocksummaries4dataset
+# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocksummaries/"
+# expire : 900
+# params : {"dataset":"required"}
+# lookup : summary
+# das_map : [
+#     {"das_key": "summary", "rec_key": "summary"},
+#     {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+#      "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+# ]
+# ---
+# urn: blocksummaries4block
+# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocksummaries/"
+# expire : 900
+# params : {"block_name":"required"}
+# lookup : summary
+# das_map : [
+#     {"das_key": "summary", "rec_key": "summary"},
+#     {"das_key":"block", "rec_key":"block.name", "api_arg":"block_name",
+#      "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+# ]
+---
+urn: blockparents
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blockparents/"
+expire : 900
+params : {"block_name":"required"}
+lookup : parent
+das_map : [
+    {"das_key": "parent", "rec_key":"parent.name"},
+    {"das_key": "block", "rec_key":"block.name", "api_arg":"block_name"},
+]
+---
+urn: blockchildren
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blockchildren/"
+expire : 900
+params : {"block_name":"required"}
+lookup : child
+das_map : [
+    {"das_key": "child", "rec_key":"child.name"},
+    {"das_key": "block", "rec_key":"block.name", "api_arg":"block_name"},
+]
+---
+urn: files
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/files/"
+expire : 900
+params : {
+        "logical_file_name":"required",
+        "detail":"True",
+        "status": "optional",
+}
+lookup : file
+das_map : [
+    {"das_key": "file", "rec_key":"file.name", "api_arg":"logical_file_name"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"status"},
+]
+---
+### NOTE: we don't use run parameter here since it is covered by
+### file4DatasetRunLumi API
+urn: files_via_dataset
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/files/"
+expire : 900
+params : {
+        "dataset":"required",
+        "detail":"True",
+        "release_version": "optional",
+        "status": "optional",
+}
+lookup : file
+das_map : [
+    {"das_key": "file", "rec_key":"file.name"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "release", "rec_key":"release.name", "api_arg":"release_version"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"status"},
+]
+---
+urn: files_via_block
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/files/"
+expire : 900
+params : {
+        "block_name":"required",
+        "detail":"True",
+        "run_num": "optional",
+        "release_version": "optional",
+        "status": "optional",
+}
+lookup : file
+das_map : [
+    {"das_key": "file", "rec_key":"file.name"},
+    {"das_key": "block", "rec_key":"block.name", "api_arg":"block_name",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+    {"das_key": "run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key": "release", "rec_key":"release.name", "api_arg":"release_version"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"status"},
+]
+---
+urn: fileparents
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/fileparents/"
+expire : 900
+params : {"logical_file_name":"required"}
+lookup : parent
+das_map : [
+    {"das_key": "parent", "rec_key":"parent.name"},
+    {"das_key": "file", "rec_key":"file.name", "api_arg":"logical_file_name"},
+]
+---
+urn: filechildren
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filechildren/"
+expire : 900
+params : {"logical_file_name":"required"}
+lookup : child
+das_map : [
+    {"das_key": "child", "rec_key":"child.name"},
+    {"das_key": "file", "rec_key":"file.name", "api_arg":"logical_file_name"},
+]
+---
+urn: filelumis
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis/"
+expire : 900
+params : {"logical_file_name":"required", "run_num":"optional"}
+lookup : lumi
+das_map : [
+    {"das_key":"lumi", "rec_key":"lumi.number"},
+    {"das_key": "file", "rec_key":"file.name", "api_arg":"logical_file_name"},
+    {"das_key": "run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+]
+---
+urn: file4DatasetRunLumi
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/files/"
+expire : 900
+params : {"dataset":"required", "run_num":"required", "lumi_list":"optional"}
+lookup : file
+das_map : [
+    {"das_key":"file", "rec_key":"file.name"},
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi_list"},
+]
+---
+urn: runs
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runs/"
+expire : 900
+params : {"run_num":"required"}
+lookup : run
+das_map : [
+    {"das_key": "run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+]
+---
+urn: runsummaries
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runsummaries/"
+expire : 900
+params : {"run_num":"required", "dataset":"optional"}
+lookup : lumi
+das_map : [
+    {"das_key": "lumi", "rec_key":"lumi.number"},
+    {"das_key": "run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+urn: runs_via_dataset
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runs/"
+expire : 900
+params : {"dataset":"required"}
+lookup : run
+das_map : [
+    {"das_key": "run", "rec_key":"run.run_number"},
+    {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+urn: runs_via_block
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runs/"
+expire : 900
+params : {"block_name":"required"}
+lookup : run
+das_map : [
+    {"das_key": "run", "rec_key":"run.run_number"},
+    {"das_key": "block", "rec_key":"block.name", "api_arg":"block_name"},
+]
+---
+urn: runs_via_file
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runs/"
+expire : 900
+params : {"logical_file_name":"required"}
+lookup : run
+das_map : [
+    {"das_key": "run", "rec_key":"run.run_number"},
+    {"das_key": "file", "rec_key":"file.name", "api_arg":"logical_file_name"},
+]
+---
+urn: physicsgroup
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/physicsgroups/"
+expire : 900
+params : {"physics_group_name":"optional"}
+lookup : group
+das_map : [
+    {"das_key": "group", "rec_key":"group.name", "api_arg":"physics_group_name"},
+]
+---
+urn : run_lumi4dataset
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+format : JSON
+expire : 3600
+params : {"dataset":"required", "run_num": "optional"}
+lookup : run,lumi
+das_map : [
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+# FIXME: this is aggregated API and I should pass block_name since this is what
+# filelumis API expect
+urn : run_lumi4block
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+format : JSON
+expire : 3600
+params : {"block_name":"required", "run_num": "optional"}
+lookup : run,lumi
+das_map : [
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"block", "rec_key":"block.name", "api_arg":"block_name",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+]
+---
+urn : file_lumi4dataset
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+format : JSON
+expire : 3600
+params : {"dataset":"required", "run_num": "optional", "validFileOnly": "optional"}
+lookup : file,lumi
+das_map : [
+    {"das_key":"file", "rec_key":"file.name"},
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"validFileOnly"},
+]
+---
+urn : file_lumi4block
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+format : JSON
+expire : 3600
+params : {"block_name":"required", "run_num": "optional", "ValidFileOnly": "optional"}
+lookup : file,lumi
+das_map : [
+    {"das_key":"file", "rec_key":"file.name"},
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"block", "rec_key":"block.name", "api_arg":"block_name",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"validFileOnly"},
+]
+---
+urn : file_run_lumi4dataset
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+format : JSON
+expire : 3600
+params : {"dataset":"required", "run_num": "optional", "validFileOnly": "optional"}
+lookup : file,run,lumi
+das_map : [
+    {"das_key":"file", "rec_key":"file.name"},
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"validFileOnly"},
+]
+---
+urn : file_run_lumi4block
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+format : JSON
+expire : 3600
+params : {"block_name":"required", "run_num": "optional", "validFileOnly": "optional"}
+lookup : file,run,lumi
+das_map : [
+    {"das_key":"file", "rec_key":"file.name"},
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"block", "rec_key":"block.name", "api_arg":"block_name",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"validFileOnly"},
+]
+---
+urn : block_run_lumi4dataset
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+format : JSON
+expire : 3600
+params : {"dataset":"required", "run_num": "optional"}
+lookup : block,run,lumi
+das_map : [
+    {"das_key":"block", "rec_key":"block.name"},
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+urn : lumi4block_run
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+format : JSON
+expire : 3600
+params : {"block_name":"required", "run_num": "optional"}
+lookup : lumi
+das_map : [
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"block", "rec_key":"block.name", "api_arg":"block_name",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+]
+---
+urn : file4dataset_run_lumi
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+format : JSON
+expire : 3600
+params : {"dataset":"required", "run_num": "required", "lumi": "required", "validFileOnly": "optional"}
+lookup : file
+das_map : [
+    {"das_key":"file", "rec_key":"file.name"},
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+    {"das_key": "status", "rec_key":"status.name", "api_arg":"validFileOnly"},
+]
+---
+urn : blocks4tier_dates
+url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocks"
+format : JSON
+expire : 3600
+params : {"tier":"required", "date": "required"}
+lookup : block
+das_map : [
+    {"das_key": "block", "rec_key":"block.name"},
+    {"das_key": "tier", "rec_key":"tier.name", "api_arg":"tier", "pattern":".*[A-Z].*"},
+    {"das_key": "date", "rec_key":"date", "api_arg":"date"},
+]
+---
+notations : [
+    {"api_output": "dataset", "rec_key": "name", "api": "blockorigin"},
+    {"api_output": "creation_date", "rec_key":"creation_time", "api":""},
+    {"api_output": "last_modification_date", "rec_key":"modification_time", "api":""},
+    {"api_output": "create_by", "rec_key":"created_by", "api":""},
+    {"api_output": "last_modified_by", "rec_key":"modified_by", "api":""},
+    {"api_output": "primary_ds_name", "rec_key": "name", "api": "primarydatasets"},
+    {"api_output": "primary_ds_name", "rec_key": "primary_dataset.name", "api": ""},
+    {"api_output": "primary_ds_type", "rec_key": "datatype", "api": ""},
+    {"api_output": "primary_ds_id", "rec_key": "id", "api": "primarydatasets"},
+    {"api_output": "primary_ds_id", "rec_key": "primary_dataset.id", "api": ""},
+    {"api_output": "child_dataset", "rec_key": "name", "api": ""},
+    {"api_output": "parent_dataset", "rec_key": "name", "api": ""},
+    {"api_output": "parent_block_name", "rec_key": "name", "api": ""},
+    {"api_output": "child_logical_file_name", "rec_key": "name", "api": ""},
+    {"api_output": "parent_logical_file_name", "rec_key": "name", "api": ""},
+    {"api_output": "block_name", "rec_key": "name", "api": "blocks"},
+    {"api_output": "block_name", "rec_key": "name", "api": "blockchildren"},
+    {"api_output": "block_size", "rec_key": "size", "api": "blocks"},
+    {"api_output": "block_name", "rec_key": "block.name", "api": ""},
+    {"api_output": "block_size", "rec_key": "block.size", "api": ""},
+    {"api_output": "num_block", "rec_key": "nblocks", "api": ""},
+    {"api_output": "num_event", "rec_key": "nevents", "api": ""},
+    {"api_output": "logical_file_name", "rec_key": "name", "api": "files"},
+    {"api_output": "logical_file_name", "rec_key": "name", "api": "files_via_dataset"},
+    {"api_output": "logical_file_name", "rec_key": "name", "api": "files_via_block"},
+    {"api_output": "logical_file_name", "rec_key": "file", "api": "filelumis"},
+    {"api_output": "logical_file_name", "rec_key": "file", "api": "filelumis4block"},
+    {"api_output": "logical_file_name", "rec_key": "name", "api": "file4DatasetRunLumi"},
+    {"api_output": "file.logical_file_name", "rec_key": "file.name", "api": ""},
+    {"api_output": "file_type", "rec_key": "type", "api": "files"},
+    {"api_output": "file_type", "rec_key": "type", "api": "files_via_dataset"},
+    {"api_output": "file_type", "rec_key": "type", "api": "files_via_block"},
+    {"api_output": "file.file_type", "rec_key": "file.type", "api": ""},
+    {"api_output": "file.block_name", "rec_key": "file.block.name", "api": ""},
+    {"api_output": "file_size", "rec_key": "size", "api": "files"},
+    {"api_output": "file_size", "rec_key": "size", "api": "filesummaries"},
+    {"api_output": "file_size", "rec_key": "size", "api": "files_via_dataset"},
+    {"api_output": "file_size", "rec_key": "size", "api": "files_via_block"},
+    {"api_output": "file.file_size", "rec_key": "file.size", "api": ""},
+    {"api_output": "event_count", "rec_key": "nevents", "api": "files"},
+    {"api_output": "event_count", "rec_key": "nevents", "api": "files_via_dataset"},
+    {"api_output": "event_count", "rec_key": "nevents", "api": "files_via_block"},
+    {"api_output": "num_event", "rec_key": "nevents", "api": "filesummaries"},
+    {"api_output": "num_block", "rec_key": "nblocks", "api": "filesummaries"},
+    {"api_output": "file.event_count", "rec_key": "file.nevents", "api": ""},
+    {"api_output": "file_count", "rec_key": "nfiles", "api": ""},
+    {"api_output": "run_num", "rec_key": "run_number", "api": "runs"},
+    {"api_output": "run_num", "rec_key": "run_number", "api": "runs_via_dataset"},
+    {"api_output": "run_num", "rec_key": "run_number", "api": "runs_via_block"},
+    {"api_output": "run_num", "rec_key": "run_number", "api": "runs_via_file"},
+    {"api_output": "run_num", "rec_key": "run_number", "api": "filelumis"},
+    {"api_output": "run_num", "rec_key": "run_number", "api": "filelumis4block"},
+    {"api_output": "run_num", "rec_key": "run.run_number", "api": ""},
+    {"api_output": "num_file", "rec_key": "nfiles", "api": ""},
+    {"api_output": "num_lumi", "rec_key": "nlumis", "api": ""},
+    {"api_output": "event_count", "rec_key": "nevents", "api": ""},
+    {"api_output": "lumi_section_num", "rec_key": "number", "api": ""},
+    {"api_output": "data_type", "rec_key": "name", "api": ""},
+    {"api_output": "output_module_label", "rec_key": "module_label", "api": ""},
+    {"api_output": "acquisition_era_name", "rec_key": "name", "api": "acquisitioneras"},
+    {"api_output": "physics_group_name", "rec_key": "name", "api": "physicsgroups"},
+    {"api_output": "release_version", "rec_key": "name", "api": "releaseversions"},
+    {"api_output": "app_name", "rec_key": "name", "api": "outputconfigs"},
+    {"api_output": "dataset_access_type", "rec_key": "name", "api": "datasetaccesstypes"},
+    {"api_output": "dataset_access_type", "rec_key": "status", "api": ""},
+    {"api_output": "data_tier_name", "rec_key": "name", "api": "datatiers"},
+]
+---
+input_values: [
+    {
+        "input": "tier.name",
+        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datatiers",
+        "jsonpath_selector": "$[*].data_tier_name",
+        "test": "*RECO*"
+    },
+    {
+        "input": "datatype.name",
+        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datatypes",
+        "jsonpath_selector": "$[*].data_type",
+        "test": "mc"
+    },
+    {
+        "input": "status.name",
+        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasetaccesstypes",
+        "jsonpath_selector": "$[0]['dataset_access_type'][*]",
+        "test": "valid"
+    },
+    {
+        "input": "release.name",
+        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/releaseversions",
+        "jsonpath_selector": "$[0]['release_version'][*]",
+        "test": "CMSSW_4_*"
+    },
+    {
+        "input": "primary_dataset.name",
+        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/primarydatasets",
+        "jsonpath_selector": "$[*].primary_ds_name",
+        "test": "RelVal160pre4Z-TT"
+    },
+    {
+        "input": "group.name",
+        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/physicsgroups",
+        "jsonpath_selector": "$[*].physics_group_name",
+        "test": "analysis"
+    }
+]

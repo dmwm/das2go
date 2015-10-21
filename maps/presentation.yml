@@ -1,0 +1,447 @@
+# DAS presentation map, it applies to all systems and all urls
+# to create uniform representation of meta-data.
+# 
+# There are two optional keys, e.g. link and diff.
+#
+# The link key is optional and used by web UI to make a hyperlink
+# for DAS key in question. For instance, we set link to be True
+# for all primary DAS keys, e.g. dataset, block, run, etc.
+#
+# The diff key is optional and used by DAS core framework to
+# perform a diff action on given list of keys. For example we can
+# compare that block.size returned by DBS/Phedex services is identical
+# among them.
+#
+# Please note, the order of dicts represents the order of UI fields
+# shown on the web page. For example primary_dataset re-presentation has
+# ui:Primary dataset first, therefore Primary Dataset will show up first
+# on a web page
+presentation: {
+primary_dataset : [
+        {"das":"primary_dataset.name", "ui":"Primary dataset", 
+         "link":[
+                 {"name":"Datasets", "query":"dataset primary_dataset=%s"},
+                ],
+         "description":"is a name of primary dataset defined in DBS system",
+         "examples":[
+         "primary_dataset=Cosmics",
+         ]
+        },
+        {"das":"primary_dataset.type", "ui":"Type"},
+        {"das":"primary_dataset.create_by", "ui":"Created by:"},
+        ],
+summary : [
+        {"das":"summary", "ui":"Summary",
+         "diff":["summary.nlumis", "summary.file_size",
+                 "summary.nevents", "summary.nblocks", "summary.nfiles"],
+         "link":[],
+         "description":"is a DAS keyword to get summary information for certain queries, \
+right now it is only used for summary information about dataset/run pairs and include \
+information about number of files/lumis/blocks/events and file size",
+         "examples":[
+         "summary dataset=/a/b/c run=123",
+         ]
+        },
+        {"das":"summary.nfiles", "ui":"Number of files"},
+        {"das":"summary.nlumis", "ui":"Number of lumis"},
+        {"das":"summary.nblocks", "ui":"Number of blocks"},
+        {"das":"summary.nevents", "ui":"Number of events"}, 
+        {"das":"summary.file_size", "ui":"sum(file_size)"},
+        {"das":"summary.run", "ui":"Run"},
+        {"das":"summary.file", "ui":"File"},
+        {"das":"summary.dataset", "ui":"Dataset"},
+        {"das":"summary.era", "ui":"era"},
+        {"das":"summary.tier", "ui":"Data tier"},
+        {"das":"summary.custodial", "ui":"Custodial"},
+        {"das":"summary.size", "ui":"Size"},
+        {"das":"summary.release", "ui":"CMSSW release"},
+        {"das":"summary.notes", "ui":"Physics channel"},
+        {"das":"summary.pwg", "ui":"Physics group"},
+        {"das":"nfiles", "ui":"Number of files"},
+        {"das":"nlumis", "ui":"Number of lumis"},
+        {"das":"nblocks", "ui":"Number of blocks"},
+        {"das":"nevents", "ui":"Number of events"}, 
+        {"das":"file_size", "ui":"sum(file_size)"},
+        {"das":"run", "ui":"Run"},
+        {"das":"file", "ui":"File"},
+        {"das":"dataset", "ui":"Dataset"},
+        {"das":"era", "ui":"era"},
+        {"das":"tier", "ui":"Data tier"},
+        {"das":"custodial", "ui":"Custodial"},
+        {"das":"size", "ui":"Size"},
+        ],
+dataset : [
+        {"das":"dataset.name", "ui":"Dataset",
+         "diff":["dataset.datatype", "dataset.status", "dataset.size",
+                 "dataset.nevents", "dataset.nblocks", "dataset.nfiles"],
+         "link":[
+                 {"name":"Release", "query":"release dataset=%s"},
+                 {"name":"Blocks", "query":"block dataset=%s"},
+                 {"name":"Files", "query":"file dataset=%s"},
+                 {"name":"Runs", "query":"run dataset=%s"},
+                 {"name":"Configs", "query":"config dataset=%s"},
+                 {"name":"Parents", "query":"parent dataset=%s"},
+                 {"name":"Children", "query":"child dataset=%s"},
+                 {"name":"Sites", "query":"site dataset=%s"},
+                 {"name":"Physics Groups", "query":"group dataset=%s"},
+                ],
+         "description": "is a name of CMS dataset which represented as a path \
+/primary_dataset/processed_dataset/data_tier",
+         "examples":[
+         "dataset=/ZMM*/*/*",
+         ]
+        },
+        {"das":"dataset.mcm.prepid", "ui":"McM info",
+         "link":[{"name":"McM", "query":"mcm prepid=%s"}],
+         "description": "PrepID info provided by McM data-service",
+         "examples":["mcm prepid=HIG-Summer12-01312"]
+        },
+        {"das":"dataset.nfiles", "ui":"Number of files"},
+        {"das":"dataset.nblocks", "ui":"Number of blocks"},
+        {"das":"dataset.nevents", "ui":"Number of events"}, 
+        {"das":"dataset.size", "ui":"Dataset size"},
+        {"das":"dataset.datatype", "ui":"Type"},
+        {"das":"dataset.status", "ui":"Status"},
+        {"das":"dataset.custodial", "ui":"Custodial"},
+        {"das":"dataset.creation_time", "ui":"Creation time"},
+        {"das":"dataset.primary_datatset_name", "ui":"Primary dataset"},
+        {"das":"dataset.processed_datatset_name", "ui":"Processed dataset"},
+        {"das":"dataset.primary_dataset_name", "ui":"Primary dataset"},
+        {"das":"dataset.processed_dataset_name", "ui":"Processed dataset"},
+        {"das":"dataset.physics_group_name", "ui":"Physics group"},
+        {"das":"dataset.global_tag", "ui":"Tag"},
+        {"das":"dataset.xtcrosssection", "ui":"Cross section"},
+        {"das":"dataset.release_version", "ui":"Release"},
+        {"das":"dataset.error", "ui":"Error"},
+        {"das":"dataset.httperror", "ui":"Reason"},
+        ],
+block : [
+        {"das":"block.name", "ui":"Block name",
+         "diff":["block.size", "block.nevents", "block.nfiles"],
+         "link":[
+                {"name":"Dataset", "query":"dataset block=%s"},
+                {"name":"Files", "query":"file block=%s"},
+                {"name":"Runs", "query":"run block=%s"},
+                {"name":"Parents", "query":"parent block=%s"},
+                {"name":"Sites", "query":"site block=%s"},
+                ],
+         "description":"is a name used by DBS and Phedex systems to refer \
+set of files usually associated with data transfer. It consists \
+of dataset path followed by unique block id, e.g. /prim_dataset/proc_dataset/tier#123",
+         "examples":[
+         "block=/a/b/c#123",
+         ]
+        }, 
+        {"das":"block.size", "ui":"Block size"},
+        {"das":"block.nevents", "ui":"Number of events"},
+        {"das":"block.nfiles", "ui":"Number of files"},
+        {"das":"block.is_open", "ui":"Open"},
+        {"das":"block.replica.site", "ui":"Site"},
+        {"das":"block.error", "ui":"Error"},
+        {"das":"block.httperror", "ui":"Reason"},
+        ],
+file : [
+        {"das":"file.name", "ui":"File name",
+         "diff":["file.size", "file.nevents"],
+         "link":[
+                {"name": "Dataset", "query": "dataset file=%s"},
+                {"name": "Sites", "query":"site file=%s"},
+                {"name": "Runs", "query": "run file=%s"},
+                {"name": "Parents", "query": "parent file=%s"},
+                {"name": "Children", "query": "child file=%s"},
+                {"name": "Lumis", "query": "lumi file=%s"},
+                ],
+        "description":"is a logical file name used in DBS/Phedex systems",
+         "examples":[
+         "file=/lfn.root",
+         ]
+        },
+        {"das":"file.size", "ui":"File size"},
+        {"das":"file.status", "ui":"Status"},
+        {"das":"file.type", "ui":"File type"},
+        {"das":"file.nevents", "ui":"Number of events"},
+        {"das":"file.replica.site", "ui":"Site"},
+        {"das":"file.error", "ui":"Error"},
+        {"das":"file.httperror", "ui":"Reason"},
+        ],
+run : [
+        {"das":"run.run_number", "ui":"Run number",
+         "diff":["run.nevents"],
+         "link":[
+                {"name":"Datasets", "query": "dataset run=%s"},
+                ],
+        "description":"is run number (usually six digits) used by DBS/RunRegistry/CondDB/Tier-0 systems",
+         "examples":[
+         "run=160915",
+         ]
+        },
+        {"das":"run.nevents", "ui":"Number of events"},
+        {"das":"run.nlumis", "ui":"Number of lumis"},
+        {"das":"run.global_tag", "ui":"Global tag"},
+        {"das":"run.lhcFill", "ui":"LHC fill"},
+        {"das":"run.bfield", "ui":"Magnetic Field"},
+        {"das":"run.delivered_lumi", "ui":"Delivered lumi"},
+        {"das":"run.duration", "ui":"Duration"},
+        {"das":"run.error", "ui":"Error"},
+        {"das":"run.httperror", "ui":"Reason"},
+        ],
+run_status: [
+        {"das":"run_status", "ui":"Run status", "link":[],
+         "description":"is a value used by Tier-0 system for run identification",
+         "examples":[
+         "run run_status=Complete",
+         "run run_status=CloseOut",
+         ]
+        },
+        {"das":"run.run_number", "ui":"Run number"},
+        {"das":"run.start_time", "ui":"Start time"},
+        ],
+stream: [
+        {"das":"stream", "ui":"Stream name", "link":[],
+         "description":"is a value used by Tier-0 system for run identification",
+         "examples":[
+         "run stream=Express",
+         ]
+        },
+        {"das":"run.run_number", "ui":"Run number"},
+        {"das":"run.start_time", "ui":"Start time"},
+        ],
+lumi : [
+        {"das": "lumi.number", "ui": "Luminosity number", "link":[],
+         "description":"is used to identify luminosity block during run data-taking, it is \
+provided by DBS/CondDB/LumiDB systems",
+         "examples":[
+         "lumi file=/lfn.root",
+         "lumi file=/lfn.root run=160915",
+         "lumi block=/a/b/c#123",
+         "lumi block=/a/b/c#123 | count(lumi)",
+         ]
+        },
+        {"das": "lumi.delivered", "ui": "Delivered luminosiy"},
+        {"das": "lumi.integrated", "ui": "Integrated luminosiy"},
+        {"das": "lumi.run_number", "ui": "Run number"},
+        {"das": "lumi.start_event", "ui": "Start event"},
+        {"das": "lumi.end_event", "ui": "End event"},
+        ],
+tier : [
+        {"das":"tier.name", "ui":"Tier name",
+         "link":[
+                {"name":"Datasets", "query": "dataset tier=%s"},
+                ],
+         "description":"is a data tier used by DBS system to identify dataset meaning, there are different pre-defined data-tiers, such as GEN, SIM, RECO, ALCORECO, RAW and mixed one, e.g. GEN-SIM-RECO",
+         "examples":[
+         "dataset tier=*GEN*",
+         ]
+        },
+        {"das":"tier.error", "ui":"Error"},
+        {"das":"tier.httperror", "ui":"Reason"},
+        ],
+release: [
+        {"das":"release.name", "ui":"Release name",
+         "link":[
+                 {"name":"Datasets", "query":"dataset release=%s"},
+                ],
+         "description":"is a name of CMSSW release, e.g. CMSSW_6_0_1",
+         "examples":[
+         "release=CMSSW_6_0_1",
+         ]
+        },
+        {"das":"release.algorithm.executable", "ui":"Executable"},
+        {"das":"release.algorithm.name", "ui":"Algorithm name"},
+        {"das":"release.error", "ui":"Error"},
+        {"das":"release.httperror", "ui":"Reason"},
+        ],
+site : [
+        {"das":"site.name", "ui":"Site name",
+         "link":[
+                 {"name":"Datasets", "query":"dataset site=%s*"},
+                ],
+         "description": "is CMS site name used by Phedex and SiteDB systems",
+         "examples":[
+         "site=T3_US_Cornell",
+         ]
+        },
+        {"das":"site.se", "ui":"StorageElement",
+         "link":[
+                 {"name":"Site", "query":"site=%s"},
+                ],
+         "description": "is a name of storage element used by Phedex/SiteDB systems",
+         "examples":[
+         "site=osg-se.cac.cornell.edu",
+         ]
+        },
+        {"das":"site.dataset_fraction", "ui":"Dataset presence"},
+        {"das":"site.block_fraction", "ui":"Block presence"},
+        {"das":"site.block_completion", "ui":"Block completion"},
+        {"das":"site.replica_fraction", "ui":"File-replica presence"},
+        {"das":"site.kind", "ui":"Site type"},
+        {"das":"site.admin.email", "ui":"Admin Email(s)"},
+        {"das":"site.info.usage", "ui":"Usage"},
+        {"das":"site.node.name", "ui":"Node name"},
+        {"das":"site.node.cust_node_files", "ui":"Custodial files"},
+        {"das":"site.node.cust_node_bytes", "ui":"Custodial size"},
+        {"das":"site.node.nocust_node_files", "ui":"Non-custodial files"},
+        {"das":"site.node.nocust_node_bytes", "ui":"Non-custtoial size"},
+        {"das":"site.resources.fqdn", "ui":"CE/SE's"},
+        {"das":"site.error", "ui":"Error"},
+        {"das":"site.httperror", "ui":"HTTP error"},
+        {"das":"error", "ui":"Error"},
+        {"das":"reason", "ui":"Reason"},
+        ],
+monitor : [
+        {"das":"monitor", "ui":"Monitor", "link":[],
+         "description":"is a DAS keyword to find monitoring information about phedex for specific period of time",
+         "examples":[
+         "monitor date last 24h",
+         ]
+        },
+        {"das":"monitor.node", "ui":"Phedex Node"},
+        {"das":"monitor.rate", "ui":"Transfer rate"},
+        {"das":"monitor.country", "ui":"Country"},
+        {"das":"monitor.region", "ui":"Region"},
+        {"das":"monitor.time", "ui":"Time interval"},
+        ],
+group : [
+        {"das":"group.name", "ui":"Group name", "link":[],
+         "description":"is a CMS group name, e.g. Higgs, it can be used to identify CMS datasets or SiteDB groups",
+         "examples":[
+         "dataset group=Top",
+         "group=DataOps",
+         ]
+        },
+        {"das":"group.username", "ui":"Member(s)"},
+        {"das":"group.node_files", "ui":"# of files archived on this node"},
+        {"das":"group.dest_files", "ui":"# of approved files for this group"},
+        {"das":"group.dest_bytes", "ui":"# of approved bytes for this group"},
+        {"das":"group.node_bytes", "ui":"# of bytes archived on this node"},
+        ],
+jobsummary : [
+        {"das":"jobsummary.name", "ui":"Jobsummary", "link":[],
+         "description":"provides dashboard summary information for given conditions",
+         "examples":[
+         "jobsummary user=Oli",
+         "jobsummary date last 24h",
+         "jobsummary site=T1_DE_KIT date last 24h",
+         "jobsummary date between [20110208, 20110209]",
+         ]
+        },
+        {"das":"jobsummary.terminated", "ui":"Terminated"},
+        {"das":"jobsummary.running", "ui":"Running"},
+        {"das":"jobsummary.submitted", "ui":"Submitted"},
+        ],
+ip : [
+        {"das":"ip.City", "ui":"City"},
+        {"das":"ip.CountryName", "ui":"Country"},
+        {"das":"ip.Latitude", "ui":"Latitude"},
+        {"das":"ip.Longitude", "ui":"Longitude"},
+        ],
+city    : [
+        {"das":"city.name", "ui":"City"},
+        {"das":"city.Placemark.address", "ui":"Address"},
+        {"das":"city.Placemark.ExtendedData.LatLonBox.west", "ui":"Location west"},
+        {"das":"city.Placemark.ExtendedData.LatLonBox.east", "ui":"Location east"},
+        {"das":"city.Placemark.ExtendedData.LatLonBox.north", "ui":"Location north"},
+        {"das":"city.Placemark.ExtendedData.LatLonBox.south", "ui":"Location south"},
+        ],
+parent  : [
+        {"das":"parent.name", "ui":"Parent name", "link":[],
+         "description":"is a DAS key to lookup parent information of dataset/file",
+         "examples":[
+         "parent dataset=/a/b/c",
+         "parent file=/lnf.root"
+         ]
+        },
+        {"das":"parent.nevents", "ui":"Number of events"},
+        {"das":"parent.size", "ui":"Size"},
+        ],
+child : [
+        {"das":"child.name", "ui":"Child name", "link":[],
+         "description":"is a DAS key to lookup child information of dataset/file",
+         "examples":[
+         "child dataset=/a/b/c",
+         "child file=/lfn.root",
+         ]
+        },
+        {"das":"child.nevents", "ui":"Number of events"},
+        {"das":"child.size", "ui":"Size"},
+        ],
+config : [
+        {"das":"config.name", "ui":"Config name", "link":[],
+         "description":"is a DAS key to lookup CMS configuration information about dataset",
+         "examples":[
+         "config dataset=/a/b/c",
+         ]
+        },
+        {"das":"config.urls", "ui":"Config urls"},
+        {"das":"config.type", "ui":"Type"},
+        {"das":"config.version", "ui":"Version"},
+        {"das":"config.release_version", "ui":"Release"},
+        {"das":"config.global_tag", "ui":"Global Tag"},
+        {"das":"config.pset_hash", "ui":"Pset hash"},
+        {"das":"config.create_by", "ui":"Created by"},
+        {"das":"config.creation_time", "ui":"Creation time"},
+        ],
+user    : [
+        {"das":"user.name", "ui":"User name", "link":[],
+         "description":"is a DAS key to specify CMS user name used in SiteDB (you can use either alias or user email)",
+         "examples":[
+         "user=oli",
+         "user=oli@a.b.com"
+         ]
+        },
+        {"das":"user.forename", "ui":"Fist name"},
+        {"das":"user.surname", "ui":"Last name"},
+        {"das":"user.dn", "ui":"User DN"},
+        {"das":"user.email", "ui":"Email"},
+        {"das":"user.phone1", "ui":"Phone"},
+        {"das":"user.phone2", "ui":"Alternative Phone"},
+        ],
+mcm   : [
+        {"das":"mcm.prepid", "ui":"McM prepid",
+         "link":[{"name":"Dataset", "query":"dataset prepid=%s"}],
+         "description": "Most recent dataset for given prepid",
+         "examples":["dataset prepid=HIG-Summer12-01312"]
+        },
+        {"das":"mcm.release", "ui":"CMSSW release"},
+        {"das":"mcm.notes", "ui":"Physics channel"},
+        {"das":"mcm.pwg", "ui":"Physics group"},
+        {"das":"mcm.nevents", "ui":"Number of events"},
+        {"das":"mcm.generator_parameters.cross_section", "ui":"Generator cross-secion"},
+        ],
+status: [
+        {"das":"status.name", "ui":"Status", "link":[],
+         "description":"is a special DAS key to specify dataset status information",
+         "examples":[
+         "dataset status=valid",
+         ]
+        }
+        ],
+date: [
+        {"das":"date", "ui":"", "link":[],
+         "description":"is a special DAS key to specify date stamp in DAS queries, it can be used \
+in conjunction with dataset/run/jobsummary/monitor DAS keys. The date cane be specified either \
+using between clause or in form of last keyword",
+         "examples":[
+         "dataset date=20101103",
+         "dataset date between [20101001, 20101002]",
+         "run date = 20101009",
+         "run date between [20101001, 20101002]",
+         "jobsummary date last 24h",
+         "jobsummary date between [20110208, 20110209]",
+         "monitor date last 24h",
+         ]
+         }
+        ],
+das_query : [
+        {"das":"das_query.dasquery", "ui":"DAS query"},
+        {"das":"das_query.counter", "ui":"Number of calls"},
+        ],
+records: [
+        {"das":"records", "ui":"Records", "link":[],
+         "description":"is a special DAS key to look-up all records in DAS cache",
+         "examples":[
+         "records",
+         ]
+        }
+        ],
+}
