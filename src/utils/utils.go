@@ -134,7 +134,7 @@ func Expire(expire int) int64 {
 	return int64(time.Now().Unix() + int64(expire))
 }
 
-// helper funtiont to convert given time into Unix timestamp
+// helper function to convert given time into Unix timestamp
 func UnixTime(ts string) int64 {
 	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
 	const layout = "20060102"
@@ -145,7 +145,7 @@ func UnixTime(ts string) int64 {
 	return int64(t.Unix())
 }
 
-// helper funtiont to convert given time into Dashboard timestamp
+// helper function to convert given time into Dashboard timestamp
 func DashboardTime(ts string) string {
 	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
 	const layout = "20060102"
