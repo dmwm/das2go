@@ -294,6 +294,8 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 		case float64:
 			if key == "size" {
 				out = append(out, utils.SizeFormat(value))
+			} else if strings.HasSuffix(key, "time") {
+				out = append(out, utils.TimeFormat(value))
 			} else {
 				out = append(out, fmt.Sprintf("%v", value))
 			}
