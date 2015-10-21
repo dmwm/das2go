@@ -187,7 +187,11 @@ func pagination(base, query string, nres, startIdx, limit int) string {
 func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int) string {
 	var out []string
 	line := "<hr class=\"line\" />"
-	out = append(out, pagination(path, dasquery.Query, nres, startIdx, limit))
+	total := nres
+	if len(dasquery.Aggregators) > 0 {
+		total = len(dasquery.Aggregators)
+	}
+	out = append(out, pagination(path, dasquery.Query, total, startIdx, limit))
 	//     br := "<br/>"
 	fields := dasquery.Fields
 	var pkey, inst string
@@ -223,12 +227,12 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			continue
 		}
 		// record part
+		var links []interface{}
+		var pval string
+		var values []string
 		for _, key := range fields {
 			records := item[key].([]interface{})
 			uiRows := pmap[key].([]interface{})
-			var links []interface{}
-			var pval string
-			var values []string
 			for idx, elem := range records {
 				rec := elem.(mongo.DASRecord)
 				for _, uir := range uiRows {
@@ -258,11 +262,11 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					}
 				}
 			}
-			// Join attribute fields, e.g. in file dataset=/a/b/c query it is
-			// File size: N GB File Type: EDM
-			out = append(out, strings.Join(utils.List2Set(values), " "))
-			out = append(out, dasLinks(path, inst, pval, links))
 		}
+		// Join attribute fields, e.g. in file dataset=/a/b/c query it is
+		// File size: N GB File Type: EDM
+		out = append(out, strings.Join(utils.List2Set(values), " "))
+		out = append(out, dasLinks(path, inst, pval, links))
 		out = append(out, colServices(services))
 		out = append(out, showRecord(item))
 		if jdx != len(data) {
