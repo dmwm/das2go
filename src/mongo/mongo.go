@@ -247,14 +247,16 @@ func CreateIndexes(dbname, collname string, keys []string) {
 	s := _Mongo.Connect()
 	defer s.Close()
 	c := s.DB(dbname).C(collname)
-	index := mgo.Index{
-		Key:        keys,
-		Unique:     false,
-		Background: true,
-		Sparse:     true,
-	}
-	err := c.EnsureIndex(index)
-	if err != nil {
-		log.Println(err)
+	for _, key := range keys {
+		index := mgo.Index{
+			Key:        []string{key},
+			Unique:     false,
+			Background: true,
+			//             Sparse:     true,
+		}
+		err := c.EnsureIndex(index)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
