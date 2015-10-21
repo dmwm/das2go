@@ -11,6 +11,7 @@ import (
 	"log"
 	"regexp"
 	"runtime"
+	"sort"
 	"strconv"
 	"time"
 )
@@ -232,4 +233,28 @@ func Min(data []interface{}) float64 {
 // helper function to perform Mean operation over provided array of values
 func Mean(data []interface{}) float64 {
 	return Sum(data) / float64(len(data))
+}
+
+// helper function to perform Avg operation over provided array of values
+func Avg(data []interface{}) float64 {
+	return Mean(data)
+}
+
+// helper function to perform Median operation over provided array of values
+func Median(data []interface{}) float64 {
+	var input sort.Float64Slice
+	var median float64
+	for _, v := range data {
+		input = append(input, v.(float64))
+	}
+	input.Sort()
+	l := len(input)
+	if l == 0 {
+		return 0
+	} else if l%2 == 0 {
+		median = (input[l/2-1] + input[l/2+1]) / 2.
+	} else {
+		median = float64(input[l/2])
+	}
+	return median
 }
