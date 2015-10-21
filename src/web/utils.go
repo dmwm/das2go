@@ -64,6 +64,20 @@ func genColor(system string) (string, string) {
 	return bkg, col
 }
 
+// helper function to convert URLs into human readable form
+func urlsFormat(urls interface{}) string {
+	var out []string
+	rec := urls.(mongo.DASRecord)
+	for _, val := range rec {
+		output := val.([]interface{})
+		for i, v := range output {
+			url := fmt.Sprintf("<a href=\"%s\">output-config-%d</a>", v, i)
+			out = append(out, url)
+		}
+	}
+	return strings.Join(out, ", ")
+}
+
 // implement sort for []string type
 type StringList []string
 
@@ -322,7 +336,11 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 			if count != len(keys) {
 				return ExtractValue(value.(mongo.DASRecord), strings.Join(keys[count:len(keys)], "."))
 			}
-			out = append(out, fmt.Sprintf("%v", value))
+			if strings.HasSuffix(key, "urls") {
+				out = append(out, urlsFormat(value))
+			} else {
+				out = append(out, fmt.Sprintf("%v", value))
+			}
 		}
 		count = count + 1
 	}
