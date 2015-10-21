@@ -9,6 +9,7 @@ import (
 	"mongo"
 	"sort"
 	"strings"
+	"time"
 	"utils"
 )
 
@@ -104,8 +105,15 @@ func dasLinks(path, inst, val string, links []interface{}) string {
 // helper function to show|hide DAS record on web UI
 func showRecord(data mongo.DASRecord) string {
 	var out []string
-	oid := data["_id"].(bson.ObjectId)
-	rid := oid.Hex()
+	var rid string
+	did := data["_id"]
+	if did != nil {
+		oid := data["_id"].(bson.ObjectId)
+		rid = oid.Hex()
+	} else {
+		fun := data["function"].(string)
+		rid = fmt.Sprintf("%d-%s", int64(time.Now().Unix()), fun)
+	}
 	das := data["das"].(mongo.DASRecord)
 	pkey := strings.Split(das["primary_key"].(string), ".")[0]
 	for i, v := range das["services"].([]interface{}) {
@@ -116,8 +124,13 @@ func showRecord(data mongo.DASRecord) string {
 		bkg, col := genColor(system)
 		srvval := fmt.Sprintf("<span style=\"background-color:%s;color:%s;padding:2px\">%s</span>", bkg, col, system)
 		out = append(out, fmt.Sprintf("DAS service: %v DAS api: %s", srvval, dasapi))
-		vvv := data[pkey].([]interface{})
-		rec := vvv[i].(mongo.DASRecord)
+		var rec mongo.DASRecord
+		if data[pkey] != nil {
+			vvv := data[pkey].([]interface{})
+			rec = vvv[i].(mongo.DASRecord)
+		} else {
+			rec = data
+		}
 		out = append(out, fmt.Sprintf("<pre style=\"background-color:%s;color:white;\"><div class=\"code\"><pre>%s</pre></div></pre><br/>", bkg, rec.ToString()))
 	}
 	val := fmt.Sprintf("<div class=\"hide\" id=\"id_%s\"><div class=\"code\">%s</div></div>", rid, strings.Join(out, "\n"))
@@ -177,17 +190,39 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 	out = append(out, pagination(path, dasquery.Query, nres, startIdx, limit))
 	//     br := "<br/>"
 	fields := dasquery.Fields
+	var pkey, inst string
+	var das mongo.DASRecord
 	var services []string
 	for jdx, item := range data {
-		das := item["das"].(mongo.DASRecord)
+		das = item["das"].(mongo.DASRecord)
 		if len(services) == 0 {
 			for _, v := range das["services"].([]interface{}) {
 				srv := strings.Split(v.(string), ":")[0]
 				services = append(services, srv)
 			}
 		}
-		pkey := das["primary_key"].(string)
-		inst := das["instance"].(string)
+		pkey = das["primary_key"].(string)
+		inst = das["instance"].(string)
+		// aggregator part
+		if len(dasquery.Aggregators) > 0 {
+			fname := item["function"].(string)
+			fkey := item["key"].(string)
+			res := item["result"].(mongo.DASRecord)
+			var val string
+			if strings.HasSuffix(fkey, "size") {
+				val = fmt.Sprintf("%s(%s)=%v<br/>\n", fname, fkey, utils.SizeFormat(res["value"].(float64)))
+			} else {
+				val = fmt.Sprintf("%s(%s)=%v<br/>\n", fname, fkey, res["value"])
+			}
+			out = append(out, val)
+			out = append(out, colServices(services))
+			out = append(out, showRecord(item))
+			if jdx != len(data) {
+				out = append(out, line)
+			}
+			continue
+		}
+		// record part
 		for _, key := range fields {
 			records := item[key].([]interface{})
 			uiRows := pmap[key].([]interface{})
