@@ -570,6 +570,10 @@ func aggregate(data []mongo.DASRecord, agg, key string, ch chan mongo.DASRecord)
 		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Mean(values)}, "function": "mean", "key": key}
 	case "count":
 		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": len(values)}, "function": "count", "key": key}
+	case "median":
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Median(values)}, "function": "median", "key": key}
+	case "avg":
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Avg(values)}, "function": "avg", "key": key}
 	default:
 		rec = make(mongo.DASRecord)
 	}
