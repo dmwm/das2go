@@ -239,7 +239,7 @@ func Server(port, afile string) {
 	}
 
 	// create all required indexes in das.cache, das.merge collections
-	indexes := []string{"qhash", "das.expire", "das.record"}
+	indexes := []string{"qhash", "das.expire", "das.record", "dataset.name", "file.name"}
 	mongo.CreateIndexes("das", "cache", indexes)
 	mongo.CreateIndexes("das", "merge", indexes)
 
