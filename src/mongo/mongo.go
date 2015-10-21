@@ -178,6 +178,7 @@ func GetFilteredSorted(dbname, collname string, spec bson.M, fields, skeys []str
 	defer s.Close()
 	c := s.DB(dbname).C(collname)
 	var err error
+	fields = append(fields, "das") // always extract das part of the record
 	if limit > 0 {
 		if len(skeys) > 0 {
 			err = c.Find(spec).Skip(idx).Limit(limit).Select(sel(fields...)).Sort(skeys...).All(&out)
