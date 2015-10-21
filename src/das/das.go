@@ -561,16 +561,17 @@ func aggregate(data []mongo.DASRecord, agg, key string, ch chan mongo.DASRecord)
 	}
 	switch agg {
 	case "sum":
-		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Sum(values)}, "function": "sum"}
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Sum(values)}, "function": "sum", "key": key}
 	case "min":
-		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Min(values)}, "function": "min"}
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Min(values)}, "function": "min", "key": key}
 	case "max":
-		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Max(values)}, "function": "max"}
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Max(values)}, "function": "max", "key": key}
 	case "mean":
-		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Mean(values)}, "function": "mean"}
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": utils.Mean(values)}, "function": "mean", "key": key}
 	case "count":
-		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": len(values)}, "function": "count"}
+		rec = mongo.DASRecord{"result": mongo.DASRecord{"value": len(values)}, "function": "count", "key": key}
 	}
+	rec["das"] = data[0]["das"]
 	ch <- rec
 }
 
