@@ -181,15 +181,14 @@ func (LocalAPIs) L_reqmgr_configs(spec bson.M) []mongo.DASRecord {
 			var data mongo.DASRecord
 			err := json.Unmarshal(r.Data, &data)
 			if err == nil {
-				//                 row := data.(map[string]interface{})
 				val := data["ConfigCacheID"]
 				switch v := val.(type) {
 				case string:
-					rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/%s/configFile", base, v)
+					rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
 					urls = append(urls, rurl)
 				case []string:
 					for _, u := range v {
-						rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/%s/configFile", base, u)
+						rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, u)
 						urls = append(urls, rurl)
 					}
 				}
@@ -208,11 +207,11 @@ func (LocalAPIs) L_reqmgr_configs(spec bson.M) []mongo.DASRecord {
 						if val != nil {
 							switch v := val.(type) {
 							case string:
-								rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/%s/configFile", base, v)
+								rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
 								urls = append(urls, rurl)
 							case []string:
 								for _, u := range v {
-									rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/%s/configFile", base, u)
+									rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, u)
 									urls = append(urls, rurl)
 								}
 							}
