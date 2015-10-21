@@ -167,6 +167,12 @@ func List2Set(arr []string) []string {
 	return out
 }
 
+// helper function to convert Unix time into human readable form
+func TimeFormat(ts float64) string {
+	layout := "2006-01-02 15:04:05"
+	return time.Unix(int64(ts), 0).UTC().Format(layout)
+}
+
 // helper function to convert size into human readable form
 func SizeFormat(val float64) string {
 	base := 1000. // CMS convert is to use power of 10
