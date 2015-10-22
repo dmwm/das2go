@@ -8,6 +8,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"mongo"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 	"utils"
@@ -78,13 +79,6 @@ func urlsFormat(urls interface{}) string {
 	return strings.Join(out, ", ")
 }
 
-// implement sort for []string type
-type StringList []string
-
-func (s StringList) Len() int           { return len(s) }
-func (s StringList) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
-func (s StringList) Less(i, j int) bool { return s[i] < s[j] }
-
 // helper function to show services
 func colServices(services []string) string {
 	out := make(map[string]interface{})
@@ -95,7 +89,7 @@ func colServices(services []string) string {
 	}
 	var srvs []string
 	keys := utils.MapKeys(out)
-	sort.Sort(StringList(keys))
+	sort.Sort(utils.StringList(keys))
 	for _, k := range keys {
 		srvs = append(srvs, out[k].(string))
 	}
@@ -140,8 +134,15 @@ func showRecord(data mongo.DASRecord) string {
 		out = append(out, fmt.Sprintf("DAS service: %v DAS api: %s", srvval, dasapi))
 		var rec mongo.DASRecord
 		if data[pkey] != nil {
-			vvv := data[pkey].([]interface{})
-			rec = vvv[i].(mongo.DASRecord)
+			switch r := data[pkey].(type) {
+			case []interface{}:
+				vvv := data[pkey].([]interface{})
+				rec = vvv[i].(mongo.DASRecord)
+			case mongo.DASRecord:
+				rec = r
+			}
+			//             vvv := data[pkey].([]interface{})
+			//             rec = vvv[i].(mongo.DASRecord)
 		} else {
 			rec = data
 		}
@@ -245,7 +246,14 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 		var pval string
 		var values []string
 		for _, key := range fields {
-			records := item[key].([]interface{})
+			var records []interface{}
+			switch r := item[key].(type) {
+			case []interface{}:
+				records = r
+			case mongo.DASRecord:
+				records = append(records, r)
+			}
+			//             records := item[key].([]interface{})
 			uiRows := pmap[key].([]interface{})
 			for idx, elem := range records {
 				rec := elem.(mongo.DASRecord)
@@ -262,6 +270,9 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					attrs := strings.Split(daskey, ".")
 					attr := strings.Join(attrs[1:len(attrs)], ".")
 					value := ExtractValue(rec, attr)
+					if pkey == "lumi.number" {
+						value = joinLumis(strings.Split(value, ","))
+					}
 					if pval == "" {
 						pval = value
 					}
@@ -344,5 +355,33 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 		}
 		count = count + 1
 	}
-	return strings.Join(out, ",")
+	return strings.Join(out, ", ")
+}
+
+// helper function to join lumi sections
+func joinLumis(lumis []string) string {
+	var intLumis []int
+	for _, v := range lumis {
+		l, _ := strconv.Atoi(strings.TrimSpace(v))
+		intLumis = append(intLumis, l)
+	}
+	sort.Sort(utils.IntList(intLumis))
+	var out []string
+	flumi := 0
+	clumi := 0
+	for _, l := range intLumis {
+		if flumi == 0 {
+			flumi = l
+		}
+		if clumi == 0 {
+			clumi = l
+		}
+		if l-clumi > 1 {
+			out = append(out, fmt.Sprintf("[%d, %d]", flumi, clumi))
+			flumi = l
+		}
+		clumi = l
+	}
+	out = append(out, fmt.Sprintf("[%d, %d]", flumi, clumi))
+	return fmt.Sprintf("[%s]", strings.Join(out, ", "))
 }
