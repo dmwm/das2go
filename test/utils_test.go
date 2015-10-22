@@ -16,3 +16,18 @@ func TestInList(t *testing.T) {
 		t.Error("Fail TestInList")
 	}
 }
+
+func TestCheckEntries(t *testing.T) {
+	list1 := []string{"1", "2"}
+	list2 := []string{"1", "2", "3"}
+	res := utils.CheckEntries(list1, list2)
+	if res == false {
+		t.Error("Fail TestCheckEntries")
+	}
+	list1 = []string{"1"}
+	list2 = []string{"2", "3"}
+	res = utils.CheckEntries(list1, list2)
+	if res == true {
+		t.Error("Fail TestCheckEntries")
+	}
+}
