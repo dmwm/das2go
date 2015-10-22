@@ -27,5 +27,15 @@ func loadCondDBData(api string, data []byte) []mongo.DASRecord {
 // Unmarshal CondDB data stream and return DAS records based on api
 func CondDBUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadCondDBData(api, data)
+	var out []mongo.DASRecord
+	if api == "get_run_info" || api == "get_run_info4date" {
+		for _, rec := range records {
+			r := make(mongo.DASRecord)
+			r["run_number"] = fmt.Sprintf("%d", int(rec["Run"].(float64)))
+			r["delivered_lumi"] = rec["DeliveredLumi"]
+			out = append(out, r)
+		}
+		return out
+	}
 	return records
 }
