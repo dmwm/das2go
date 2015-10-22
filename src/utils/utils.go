@@ -146,6 +146,14 @@ func UnixTime(ts string) int64 {
 	return int64(t.Unix())
 }
 
+// helper function to convert given time into Unix timestamp
+func Unix2DASTime(ts int64) string {
+	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
+	const layout = "20060102"
+	t := time.Unix(ts, 0)
+	return t.Format(layout)
+}
+
 // helper function to convert given time into Dashboard timestamp
 func DashboardTime(ts string) string {
 	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
@@ -155,6 +163,17 @@ func DashboardTime(ts string) string {
 		panic(err)
 	}
 	return t.Format("2006-01-02 15:04:05") // represent t in given format
+}
+
+// helper function to convert given time into Conddb timestamp
+func ConddbTime(ts string) string {
+	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
+	const layout = "20060102"
+	t, err := time.Parse(layout, ts)
+	if err != nil {
+		panic(err)
+	}
+	return t.Format("02-Jan-06-15:04") // represent t in given format
 }
 
 // helper function to convert input list into set
@@ -201,7 +220,9 @@ func IsInt(val string) bool {
 func Sum(data []interface{}) float64 {
 	out := 0.0
 	for _, val := range data {
-		out += val.(float64)
+		if val != nil {
+			out += val.(float64)
+		}
 	}
 	return out
 }
@@ -210,9 +231,11 @@ func Sum(data []interface{}) float64 {
 func Max(data []interface{}) float64 {
 	out := 0.0
 	for _, val := range data {
-		v := val.(float64)
-		if v > out {
-			out = v
+		if val != nil {
+			v := val.(float64)
+			if v > out {
+				out = v
+			}
 		}
 	}
 	return out
@@ -222,6 +245,9 @@ func Max(data []interface{}) float64 {
 func Min(data []interface{}) float64 {
 	out := 1e100
 	for _, val := range data {
+		if val == nil {
+			continue
+		}
 		v := val.(float64)
 		if v < out {
 			out = v
