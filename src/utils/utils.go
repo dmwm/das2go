@@ -258,3 +258,17 @@ func Median(data []interface{}) float64 {
 	}
 	return median
 }
+
+// implement sort for []int type
+type IntList []int
+
+func (s IntList) Len() int           { return len(s) }
+func (s IntList) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s IntList) Less(i, j int) bool { return s[i] < s[j] }
+
+// implement sort for []string type
+type StringList []string
+
+func (s StringList) Len() int           { return len(s) }
+func (s StringList) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
+func (s StringList) Less(i, j int) bool { return s[i] < s[j] }
