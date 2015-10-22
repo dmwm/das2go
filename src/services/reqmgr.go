@@ -20,7 +20,7 @@ import (
 // helper function to load ReqMgr data stream
 func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	if api == "configIDs" {
+	if api == "configIDs" || api == "datasetByPrepID" {
 		var rec mongo.DASRecord
 		err := json.Unmarshal(data, &rec)
 		if err != nil {
@@ -28,6 +28,18 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 			panic(msg)
 		}
 		out = append(out, rec)
+	} else if api == "recentDatasetByPrepID" {
+		var datasets []string
+		err := json.Unmarshal(data, &datasets)
+		if err != nil {
+			msg := fmt.Sprintf("ReqMgr unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
+			panic(msg)
+		}
+		for _, d := range datasets {
+			rec := make(mongo.DASRecord)
+			rec["name"] = d
+			out = append(out, rec)
+		}
 	} else {
 		err := json.Unmarshal(data, &out)
 		if err != nil {
@@ -71,6 +83,15 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
 				crec := make(mongo.DASRecord)
 				crec["request_name"] = key
 				crec["config_files"] = val
+				out = append(out, crec)
+			}
+		}
+		return out
+	} else if api == "datasetByPrepID" {
+		for _, rec := range records {
+			for _, v := range rec {
+				crec := make(mongo.DASRecord)
+				crec["name"] = v
 				out = append(out, crec)
 			}
 		}
