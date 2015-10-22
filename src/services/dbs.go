@@ -41,6 +41,22 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 			out = append(out, rec)
 		}
 		return out
+	} else if api == "physicsgroup" {
+		for _, rec := range records {
+			rec["name"] = rec["physics_group_name"]
+			delete(rec, "physics_group_name")
+			out = append(out, rec)
+		}
+		return out
+	} else if api == "fileparents" {
+		for _, rec := range records {
+			for _, v := range rec["parent_logical_file_name"].([]interface{}) {
+				r := make(mongo.DASRecord)
+				r["name"] = v.(string)
+				out = append(out, r)
+			}
+		}
+		return out
 	}
 	return records
 }
