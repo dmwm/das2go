@@ -181,6 +181,30 @@ func getRequiredArgs(rec mongo.DASRecord) []string {
 	return out
 }
 
+// helper function to extract all required arguments for given dasmap record
+func getAllArgs(rec mongo.DASRecord) []string {
+	var out, args []string
+	params := rec["params"].(mongo.DASRecord)
+	for k, _ := range params {
+		args = append(args, k)
+	}
+	dasmaps := GetDASMaps(rec["das_map"])
+	for _, dmap := range dasmaps {
+		das_key := dmap["das_key"].(string)
+		api_val := dmap["api_arg"]
+		if api_val == nil {
+			continue
+		}
+		api_arg := api_val.(string)
+		for _, v := range args {
+			if v == api_arg && !utils.InList(das_key, out) {
+				out = append(out, das_key)
+			}
+		}
+	}
+	return out
+}
+
 // helper function for DASRecord type similar to utils.InList
 func MapInList(a mongo.DASRecord, list []mongo.DASRecord) bool {
 	check := 0
@@ -226,8 +250,9 @@ func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 	for _, rec := range cond_records {
 		lkeys := strings.Split(rec["lookup"].(string), ",")
 		rkeys := getRequiredArgs(rec)
-		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && !MapInList(rec, out) {
-			log.Println("DAS match", rec["system"], rec["urn"], rec["url"], "spec keys", keys, "required keys", rkeys)
+		akeys := getAllArgs(rec)
+		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) {
+			log.Println("DAS match", rec["system"], rec["urn"], rec["url"], "spec keys", keys, "required keys", rkeys, "all api keys", akeys)
 			out = append(out, rec)
 		}
 	}
