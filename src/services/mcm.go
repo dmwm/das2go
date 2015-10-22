@@ -29,5 +29,11 @@ func loadMcMData(api string, data []byte) []mongo.DASRecord {
 // Unmarshal McM data stream and return DAS records based on api
 func McMUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadMcMData(api, data)
-	return records
+	var out []mongo.DASRecord
+	for _, rec := range records {
+		nrec := make(mongo.DASRecord)
+		nrec["mcm"] = rec["results"]
+		out = append(out, nrec)
+	}
+	return out
 }
