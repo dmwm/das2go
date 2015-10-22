@@ -5,7 +5,16 @@ format : JSON
 urn: "get_run_info"
 url : "https://cms-conddb.cern.ch/getLumi/"
 expire : 3600
-params : {"Runs":"", "date": "optional"}
+params : {"Runs":"required"}
+lookup : run
+das_map : [
+    {"das_key":"run","rec_key":"run.run_number","api_arg":"Runs"},
+]
+---
+urn: "get_run_info4date"
+url : "https://cms-conddb.cern.ch/getLumi/"
+expire : 3600
+params : {"date": "required"}
 lookup : run
 das_map : [
     {"das_key":"run","rec_key":"run.run_number","api_arg":"Runs"},
