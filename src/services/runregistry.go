@@ -20,6 +20,9 @@ import (
 // helper function to load RunRegistry data stream
 func loadRunRegistryData(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	if len(data) == 0 {
+		return out
+	}
 	err := json.Unmarshal(data, &out)
 	if err != nil {
 		msg := fmt.Sprintf("RunRegistry unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
@@ -31,5 +34,14 @@ func loadRunRegistryData(api string, data []byte) []mongo.DASRecord {
 // Unmarshal RunRegistry data stream and return DAS records based on api
 func RunRegistryUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadRunRegistryData(api, data)
+	var out []mongo.DASRecord
+	if api == "rr_xmlrpc2" {
+		for _, rec := range records {
+			rec["run_number"] = fmt.Sprintf("%d", int(rec["number"].(float64)))
+			delete(rec, "number")
+			out = append(out, rec)
+		}
+		return out
+	}
 	return records
 }
