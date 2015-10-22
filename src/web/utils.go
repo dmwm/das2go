@@ -214,11 +214,10 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 	var services []string
 	for jdx, item := range data {
 		das = item["das"].(mongo.DASRecord)
-		if len(services) == 0 {
-			for _, v := range das["services"].([]interface{}) {
-				srv := strings.Split(v.(string), ":")[0]
-				services = append(services, srv)
-			}
+		services = []string{}
+		for _, v := range das["services"].([]interface{}) {
+			srv := strings.Split(v.(string), ":")[0]
+			services = append(services, srv)
 		}
 		pkey = das["primary_key"].(string)
 		inst = das["instance"].(string)
