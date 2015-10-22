@@ -109,6 +109,12 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 						vals.Add(arg, fmt.Sprintf("%d", utils.UnixTime(val)))
 						maxd := utils.UnixTime(val) + 24*60*60
 						vals.Add("max_cdate", fmt.Sprintf("%d", maxd))
+					} else if dkey == "date" && system == "conddb" {
+						vals.Add("startTime", utils.ConddbTime(val))
+						eval := utils.Unix2DASTime(utils.UnixTime(val) + 37*3660)
+						fmt.Println("### times", utils.UnixTime(val), utils.UnixTime(val)+37*3660, eval)
+						vals.Add("endTime", utils.ConddbTime(eval))
+						use_args = append(use_args, arg)
 					} else {
 						vals.Add(arg, val)
 					}
@@ -127,6 +133,10 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 				} else if dkey == "date" && system == "dashboard" {
 					vals.Add("date1", utils.DashboardTime(arr[0]))
 					vals.Add("date2", utils.DashboardTime(arr[1]))
+					use_args = append(use_args, arg)
+				} else if dkey == "date" && system == "conddb" {
+					vals.Add("startTime", utils.ConddbTime(arr[0]))
+					vals.Add("endTime", utils.ConddbTime(arr[1]))
 					use_args = append(use_args, arg)
 				} else if system == "conddb" && arg == "Runs" {
 					if len(arr) > 0 {
@@ -385,7 +395,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 			case string:
 				args = fmt.Sprintf("{\"filter\": {\"number\": \">= %s and <= %s\"}}", v, v)
 			case []string:
-				args = fmt.Sprintf("{\"filter\": {\"number\": \">= %s and <= %s\"}}", v[0], v[len(v)])
+				args = fmt.Sprintf("{\"filter\": {\"number\": \">= %s and <= %s\"}}", v[0], v[len(v)-1])
 			}
 			furl, _ = dmap["url"].(string)
 		} else if system == "reqmgr" || system == "mcm" {
