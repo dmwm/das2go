@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"sort"
 	"strings"
+	"utils"
 )
 
 // helper function which checks Authentication
@@ -27,7 +28,7 @@ func checkAuthentication(headers http.Header) bool {
 	for kkk, _ := range headers {
 		hkeys = append(hkeys, kkk)
 	}
-	sort.Sort(StringList(hkeys))
+	sort.Sort(utils.StringList(hkeys))
 	var prefix, suffix, hmacValue string
 	for _, kkk := range hkeys {
 		values := headers[kkk]
