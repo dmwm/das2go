@@ -272,7 +272,7 @@ func parsePipe(pipe string) (map[string][]string, [][]string, string) {
 	aggregators := [][]string{}
 	var item, next, nnext, nnnext, cfilter string
 	nan := "_NA_"
-	aggrs := []string{"sum", "min", "max", "avg", "median"}
+	aggrs := []string{"sum", "min", "max", "avg", "median", "count"}
 	opers := []string{">", "<", ">=", "<=", "=", "!="}
 	idx := 0
 	arr := strings.Split(pipe, " ")
