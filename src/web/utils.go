@@ -277,6 +277,9 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					}
 					if len(value) > 0 {
 						var row string
+						if webkey == "Luminosity number" {
+							value = joinLumis(strings.Split(value, ","))
+						}
 						if daskey == pkey {
 							row = fmt.Sprintf("%s: %v\n<br/>\n", webkey, href(path, pkey, value))
 						} else {
