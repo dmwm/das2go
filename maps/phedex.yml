@@ -25,7 +25,7 @@ das_map : [
 ]
 ---
 urn : block4site
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockreplicasummary"
+url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
 expire : 3600
 params : {"node":"required", "dataset":"optional"}
 lookup: block
@@ -36,7 +36,7 @@ das_map : [
 ]
 ---
 urn : block4se
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockreplicasummary"
+url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
 expire : 3600
 params : {"se":"required", "dataset":"optional"}
 lookup : block
