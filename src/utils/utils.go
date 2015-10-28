@@ -243,7 +243,7 @@ func Max(data []interface{}) float64 {
 
 // helper function to perform Min operation over provided array of values
 func Min(data []interface{}) float64 {
-	out := 1e100
+	out := float64(^uint(0) >> 1) // largest int
 	for _, val := range data {
 		if val == nil {
 			continue
