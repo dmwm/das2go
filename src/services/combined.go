@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
 	"mongo"
+	"strings"
 	"utils"
 )
 
@@ -23,7 +24,54 @@ func (LocalAPIs) L_combined_dataset4site_release_parent(spec bson.M) []mongo.DAS
 }
 func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	panic("Not implemented")
+	// find children of given dataset
+	dataset := spec["dataset"].(string)
+	release := spec["release"].(string)
+	site := spec["site"].(string)
+	api := "datasetchildren"
+	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
+	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	records := DBSUnmarshal(api, resp.Data)
+	// collect only children from given release
+	var datasets []string
+	for _, rec := range records {
+		dataset := rec["child_dataset"].(string)
+		api = "releaseversions"
+		furl = fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
+		resp = utils.FetchResponse(furl, "") // "" specify optional args
+		for _, row := range DBSUnmarshal(api, resp.Data) {
+			for _, rel := range row["release_version"].([]interface{}) {
+				if rel.(string) == release {
+					datasets = append(datasets, dataset)
+				}
+			}
+		}
+	}
+	// create list of PhEDEx urls with given set of datasets and phedex node
+	api = "blockReplicas"
+	node := phedexNode(site)
+	var urls []string
+	for _, dataset := range datasets {
+		furl = fmt.Sprintf("%s/%s?dataset=%s&%s", phedexUrl(), api, dataset, node)
+		if !utils.InList(furl, urls) {
+			urls = append(urls, furl)
+		}
+	}
+	var datasetsAtSite []string
+	// filter children on given site
+	for _, rec := range processUrls("phedex", api, urls) {
+		block := rec["name"].(string)
+		dataset := strings.Split(block, "#")[0]
+		if !utils.InList(dataset, datasetsAtSite) {
+			datasetsAtSite = append(datasetsAtSite, dataset)
+		}
+	}
+	// prepare final records
+	for _, d := range datasetsAtSite {
+		rec := make(mongo.DASRecord)
+		rec["name"] = d
+		out = append(out, rec)
+	}
 	return out
 }
 func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
