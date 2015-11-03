@@ -145,6 +145,20 @@ func GetDASRecord(dasquery dasql.DASQuery) mongo.DASRecord {
 	return rec[0]
 }
 
+// get DAS record from das cache
+func GetMinExpire(dasquery dasql.DASQuery) int64 {
+	expire := utils.Expire(3600)
+	spec := bson.M{"qhash": dasquery.Qhash}
+	records := mongo.Get("das", "cache", spec, 0, -1) // get all records
+	for _, rec := range records {
+		dasExpire := GetExpire(rec)
+		if dasExpire < expire {
+			expire = dasExpire
+		}
+	}
+	return expire
+}
+
 // update DAS record in das cache
 func UpdateDASRecord(qhash string, dasrecord mongo.DASRecord) {
 	spec := bson.M{"qhash": qhash, "das.record": 0}
