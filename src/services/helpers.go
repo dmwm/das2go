@@ -61,7 +61,7 @@ func find_blocks(spec bson.M) []string {
 // helper function to process given set of urls and unmarshal results
 // from all url calls
 func processUrls(system, api string, urls []string) []mongo.DASRecord {
-	var out_records []mongo.DASRecord
+	var outRecords []mongo.DASRecord
 	out := make(chan utils.ResponseType)
 	umap := map[string]int{}
 	for _, furl := range urls {
@@ -75,14 +75,14 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 		case r := <-out:
 			// process data
 			var records []mongo.DASRecord
-			if system == "dbs3" {
+			if system == "dbs3" || system == "dbs" {
 				records = DBSUnmarshal(api, r.Data)
 			} else if system == "phedex" {
 				records = PhedexUnmarshal(api, r.Data)
 			}
 			for _, rec := range records {
 				rec["url"] = r.Url
-				out_records = append(out_records, rec)
+				outRecords = append(outRecords, rec)
 			}
 			// remove from umap, indicate that we processed it
 			delete(umap, r.Url) // remove Url from map
@@ -96,7 +96,7 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 			break
 		}
 	}
-	return out_records
+	return outRecords
 }
 
 // helper function to get run arguments for given spec
