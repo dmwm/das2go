@@ -137,6 +137,11 @@ func Expire(expire int) int64 {
 
 // helper function to convert given time into Unix timestamp
 func UnixTime(ts string) int64 {
+	// time is unix since epoch
+	if len(ts) == 10 { // unix time
+		tstamp, _ := strconv.ParseInt(ts, 10, 64)
+		return tstamp
+	}
 	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
@@ -156,24 +161,38 @@ func Unix2DASTime(ts int64) string {
 
 // helper function to convert given time into Dashboard timestamp
 func DashboardTime(ts string) string {
+	const dashboardTime = "2006-01-02 15:04:05"
+	// time is unix since epoch
+	if len(ts) == 10 { // unix time
+		tstamp, _ := strconv.ParseInt(ts, 10, 64)
+		t := time.Unix(tstamp, 0)
+		return t.Format(dashboardTime)
+	}
 	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
 	if err != nil {
 		panic(err)
 	}
-	return t.Format("2006-01-02 15:04:05") // represent t in given format
+	return t.Format(dashboardTime)
 }
 
 // helper function to convert given time into Conddb timestamp
 func ConddbTime(ts string) string {
+	const conddbTime = "02-Jan-06-15:04"
+	// time is unix since epoch
+	if len(ts) == 10 { // unix time
+		tstamp, _ := strconv.ParseInt(ts, 10, 64)
+		t := time.Unix(tstamp, 0)
+		return t.Format(conddbTime)
+	}
 	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
 	if err != nil {
 		panic(err)
 	}
-	return t.Format("02-Jan-06-15:04") // represent t in given format
+	return t.Format(conddbTime)
 }
 
 // helper function to convert input list into set
