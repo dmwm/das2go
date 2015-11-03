@@ -32,34 +32,44 @@ func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASR
 	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
-	// collect only children from given release
-	var datasets []string
+	// collect dbs urls to fetch versions for given set of datasets
+	api = "releaseversions"
+	var dbsUrls []string
 	for _, rec := range records {
 		dataset := rec["child_dataset"].(string)
-		api = "releaseversions"
 		furl = fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
-		resp = utils.FetchResponse(furl, "") // "" specify optional args
-		for _, row := range DBSUnmarshal(api, resp.Data) {
-			for _, rel := range row["release_version"].([]interface{}) {
-				if rel.(string) == release {
-					datasets = append(datasets, dataset)
-				}
+		if !utils.InList(furl, dbsUrls) {
+			dbsUrls = append(dbsUrls, furl)
+		}
+	}
+	var datasets []string
+	// collect children datasets
+	for _, rec := range processUrls("dbs3", api, dbsUrls) {
+		url := rec["url"].(string)
+		furl = fmt.Sprintf("%s/%s?dataset=", dbsUrl(), api)
+		dataset := strings.Trim(url, furl)
+		if !strings.HasPrefix(dataset, "/") {
+			dataset = fmt.Sprintf("/%s", dataset)
+		}
+		for _, rel := range rec["release_version"].([]interface{}) {
+			if rel.(string) == release {
+				datasets = append(datasets, dataset)
 			}
 		}
 	}
 	// create list of PhEDEx urls with given set of datasets and phedex node
 	api = "blockReplicas"
 	node := phedexNode(site)
-	var urls []string
+	var phedexUrls []string
 	for _, dataset := range datasets {
 		furl = fmt.Sprintf("%s/%s?dataset=%s&%s", phedexUrl(), api, dataset, node)
-		if !utils.InList(furl, urls) {
-			urls = append(urls, furl)
+		if !utils.InList(furl, phedexUrls) {
+			phedexUrls = append(phedexUrls, furl)
 		}
 	}
 	var datasetsAtSite []string
 	// filter children on given site
-	for _, rec := range processUrls("phedex", api, urls) {
+	for _, rec := range processUrls("phedex", api, phedexUrls) {
 		block := rec["name"].(string)
 		dataset := strings.Split(block, "#")[0]
 		if !utils.InList(dataset, datasetsAtSite) {
