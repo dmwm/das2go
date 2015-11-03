@@ -13,6 +13,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
+	"time"
 	"utils"
 )
 
@@ -35,7 +36,7 @@ func (q DASQuery) String() string {
 }
 
 func operators() []string {
-	return []string{"(", ")", ">", "<", "!", "[", "]", ",", "=", "in", "between"}
+	return []string{"(", ")", ">", "<", "!", "[", "]", ",", "=", "in", "between", "last"}
 }
 func relax(query string) string {
 	for _, oper := range operators() {
@@ -157,9 +158,35 @@ func qhash(query string) string {
 	arr := md5.Sum(data)
 	return hex.EncodeToString(arr[:])
 }
+func parseLastValue(val string) []string {
+	var out []string
+	var t0 int64
+	v, e := strconv.ParseInt(val[:len(val)-1], 10, 64) // parse string into int64
+	if e != nil {
+		panic(e)
+	}
+	if strings.HasSuffix(val, "h") {
+		t0 = time.Now().Unix() - v*60*60
+	} else if strings.HasSuffix(val, "m") {
+		t0 = time.Now().Unix() - v*60
+	} else if strings.HasSuffix(val, "s") {
+		t0 = time.Now().Unix() - v
+	} else if strings.HasSuffix(val, "d") {
+		t0 = time.Now().Unix() - v*24*60*60
+	} else if strings.HasSuffix(val, "m") {
+		t0 = time.Now().Unix() - v*30*24*60*60
+	} else if strings.HasSuffix(val, "y") {
+		t0 = time.Now().Unix() - v*365*24*60*60
+	} else {
+		msg := fmt.Sprintf("Unsupported value=%s for last operator", val)
+		panic(msg)
+	}
+	out = append(out, fmt.Sprintf("%d", t0))
+	out = append(out, fmt.Sprintf("%d", time.Now().Unix()))
+	return out
+}
 
-// TODO: I need to add pipe parsing
-//
+// DAS query parser
 func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	var qlerr string
 	var rec DASQuery
@@ -222,6 +249,9 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 				msg := "operator " + nval + " should be followed by square bracket"
 				qlerr = qlError(relaxed_query, idx, msg)
 				return rec, qlerr
+			} else if nval == "last" {
+				updateSpec(spec, spec_entry(val, nval, parseLastValue(nnval)))
+				idx += 2
 			} else if first_nnval == "\"" || first_nnval == "'" {
 				value, step := parseQuotes(relaxed_query, idx, first_nnval)
 				updateSpec(spec, spec_entry(val, nval, value))
