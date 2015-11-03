@@ -23,9 +23,19 @@ func loadDashboardData(api string, data []byte) []mongo.DASRecord {
 		panic(msg)
 	}
 	val := rec["summaries"]
-	summaries := val.([]mongo.DASRecord)
-	for _, row := range summaries {
-		out = append(out, row)
+	switch summaries := val.(type) {
+	case []mongo.DASRecord:
+		for _, row := range summaries {
+			out = append(out, row)
+		}
+	case []interface{}:
+		for _, row := range summaries {
+			rec := make(mongo.DASRecord)
+			for k, v := range row.(map[string]interface{}) {
+				rec[k] = v
+			}
+			out = append(out, rec)
+		}
 	}
 	return out
 }
