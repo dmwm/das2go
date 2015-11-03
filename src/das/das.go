@@ -269,7 +269,8 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		mongo.Insert("das", "cache", records)
 	}
 	// initial expire timestamp is 1h
-	expire := utils.Expire(3600)
+	//     expire := utils.Expire(3600)
+	expire := services.GetMinExpire(dasquery)
 	// get DAS record and adjust its settings
 	dasrecord := services.GetDASRecord(dasquery)
 	dasexpire := services.GetExpire(dasrecord)
@@ -281,10 +282,6 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 	das["status"] = "ok"
 	dasrecord["das"] = das
 	services.UpdateDASRecord(dasquery.Qhash, dasrecord)
-
-	// merge DAS cache records
-	records, _ := services.MergeDASRecords(dasquery)
-	mongo.Insert("das", "merge", records)
 }
 
 // helper function to process given set of URLs associted with dasquery
@@ -352,8 +349,7 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 			delete(umap, r.Url) // remove Url from map
 		default:
 			if len(umap) == 0 { // no more requests, merge data records
-				records, expire := services.MergeDASRecords(dasquery)
-				mongo.Insert("das", "merge", records)
+				expire := services.GetMinExpire(dasquery)
 				// get DAS record and adjust its settings
 				dasrecord := services.GetDASRecord(dasquery)
 				dasexpire := services.GetExpire(dasrecord)
@@ -443,6 +439,11 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	if urls != nil {
 		utils.GoDeferFunc("go processURLs", func() { processURLs(dasquery, urls, maps, dmaps, pkeys) })
 	}
+
+	// merge DAS cache records
+	records, _ = services.MergeDASRecords(dasquery)
+	mongo.Insert("das", "merge", records)
+
 	return dasquery.Qhash
 }
 
