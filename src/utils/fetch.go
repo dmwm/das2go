@@ -18,8 +18,10 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"regexp"
+	"strings"
 	"time"
 	"x509proxy"
 )
@@ -122,8 +124,19 @@ func FetchResponse(rurl, args string) ResponseType {
 	} else {
 		req, _ = http.NewRequest("GET", rurl, nil)
 		req.Header.Add("Accept-Encoding", "identity")
+		if strings.Contains(rurl, "sitedb") {
+			req.Header.Add("Accept", "application/json")
+		}
+	}
+	if VERBOSE > 1 {
+		dump1, err1 := httputil.DumpRequestOut(req, true)
+		log.Println("### HTTP request", string(dump1), err1)
 	}
 	resp, err := client.Do(req)
+	if VERBOSE > 1 {
+		dump2, err2 := httputil.DumpResponse(resp, true)
+		log.Println("### HTTP response", string(dump2), err2)
+	}
 	if err != nil {
 		response.Error = err
 		return response
@@ -162,7 +175,7 @@ func Fetch(rurl string, args string, ch chan<- ResponseType) {
 		log.Println("DAS ERROR, fail to fetch data", rurl, "retries", retry, "error", resp.Error)
 	}
 	endTime := time.Now()
-	if VERBOSE {
+	if VERBOSE > 0 {
 		if args == "" {
 			log.Println("DAS GET", rurl, endTime.Sub(startTime))
 		} else {
