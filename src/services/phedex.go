@@ -75,6 +75,17 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 				rec = mongo.DASRecord{"name": brec["name"].(string)}
 				out = append(out, rec)
 			}
+		} else if api == "nodeusage" || api == "groupusage" || api == "nodes" {
+			val := rec["phedex"].(map[string]interface{})
+			groups := val["node"].([]interface{})
+			for _, item := range groups {
+				brec := item.(map[string]interface{})
+				prec := make(mongo.DASRecord)
+				for k, v := range brec {
+					prec[k] = v
+				}
+				out = append(out, prec)
+			}
 		} else {
 			out = append(out, rec)
 		}
