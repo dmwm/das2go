@@ -61,6 +61,8 @@ func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []m
 		out = CondDBUnmarshal(api, data)
 	case system == "runregistry":
 		out = RunRegistryUnmarshal(api, data)
+	case system == "sitedb2":
+		out = SiteDBUnmarshal(api, data)
 	}
 	return remap(api, out, notations)
 }
