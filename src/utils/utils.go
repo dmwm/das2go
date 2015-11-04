@@ -18,7 +18,7 @@ import (
 
 // global variable for this module which we're going to use across
 // many modules
-var VERBOSE bool
+var VERBOSE int
 
 // helper function to return Stack
 func Stack() string {
