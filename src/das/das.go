@@ -112,7 +112,6 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 					} else if dkey == "date" && system == "conddb" {
 						vals.Add("startTime", utils.ConddbTime(val))
 						eval := utils.Unix2DASTime(utils.UnixTime(val) + 37*3660)
-						fmt.Println("### times", utils.UnixTime(val), utils.UnixTime(val)+37*3660, eval)
 						vals.Add("endTime", utils.ConddbTime(eval))
 						use_args = append(use_args, arg)
 					} else {
