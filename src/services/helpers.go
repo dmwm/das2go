@@ -26,6 +26,9 @@ func dbsUrl() string {
 func phedexUrl() string {
 	return "https://cmsweb.cern.ch/phedex/datasvc/json/prod"
 }
+func sitedbUrl() string {
+	return "https://cmsweb.cern.ch/sitedb/data/prod"
+}
 
 // Here I list __ONLY__ exceptional apis due to mistake in DAS maps
 func DASLocalAPIs() []string {
