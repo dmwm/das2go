@@ -65,6 +65,13 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
+	system, _ := dasmap["system"].(string)
+	if system == "sitedb2" {
+		// all sitedb apis is better to treat as local APIs, since
+		// they don't really accept parameters. Instead, we'll use local
+		// APIs to fetch all data and match records with given parameters
+		return "local_api"
+	}
 	if !strings.HasPrefix(base, "http") {
 		return "local_api"
 	}
@@ -86,7 +93,6 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	dasmaps := dasmaps.GetDASMaps(dasmap["das_map"])
 	vals := url.Values{}
 	var use_args []string
-	system, _ := dasmap["system"].(string)
 	for _, dmap := range dasmaps {
 		dkey, rkey, arg, pat := getApiParams(dmap)
 		if utils.InList(dkey, skeys) {
