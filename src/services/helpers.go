@@ -253,3 +253,57 @@ func dataset4site_release(spec bson.M) []mongo.DASRecord {
 	}
 	return out
 }
+
+// struct which cache PhEDEX nodes and periodically update them
+type PhedexNodes struct {
+	nodes  []mongo.DASRecord
+	tstamp int64
+}
+
+// PhedexNodes API which periodically fetch PhEDEx nodes info
+// if records still alive (fetched less than a day ago) we use the cache
+func (p *PhedexNodes) Nodes() []mongo.DASRecord {
+	if len(p.nodes) != 0 && (time.Now().Unix()-p.tstamp) < 24*60*60 {
+		return p.nodes
+	}
+	api := "nodes"
+	furl := fmt.Sprintf("%s/%s", phedexUrl(), api)
+	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	p.nodes = PhedexUnmarshal(api, resp.Data)
+	p.tstamp = time.Now().Unix()
+	return p.nodes
+}
+
+// PhedexNodes API to return type of given node
+func (p *PhedexNodes) NodeType(site string) string {
+	nodeMatch, _ := regexp.MatchString("^T[0-9]_[A-Z]+(_)[A-Z]+", site)
+	seMatch, _ := regexp.MatchString("^[a-z]+(\\.)[a-z]+(\\.)", site)
+	nodes := p.Nodes()
+	var siteName, seName, kind string
+	for _, rec := range nodes {
+		switch v := rec["se"].(type) {
+		case string:
+			seName = v
+		default:
+			seName = ""
+		}
+		switch v := rec["name"].(type) {
+		case string:
+			siteName = v
+		default:
+			siteName = ""
+		}
+		switch v := rec["kind"].(type) {
+		case string:
+			kind = v
+		default:
+			kind = ""
+		}
+		if nodeMatch && siteName == site {
+			return kind
+		} else if seMatch && seName == site {
+			return kind
+		}
+	}
+	return ""
+}
