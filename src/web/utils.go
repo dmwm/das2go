@@ -288,7 +288,8 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 							if strings.HasPrefix(value, "100") {
 								color = green
 							}
-							value = fmt.Sprintf("<b><span %s>100%</span></b>", color)
+							value = fmt.Sprintf("<b><span %s>100%%</span></b>", color)
+							webkey = tooltip(webkey)
 						}
 						if daskey == pkey {
 							row = fmt.Sprintf("%s: %v\n<br/>\n", webkey, href(path, pkey, value))
@@ -396,4 +397,25 @@ func joinLumis(lumis []string) string {
 	}
 	out = append(out, fmt.Sprintf("[%d, %d]", flumi, clumi))
 	return fmt.Sprintf("[%s]", strings.Join(out, ", "))
+}
+
+// helper function for tooltips
+func tooltip(key string) string {
+	page := ""
+	tooltip := ""
+	if key == "Dataset presence" {
+		tooltip = key + " is a total number of files at the site divided by total number of files in a dataset"
+	} else if key == "Block presence" {
+		tooltip = key + " is a total number of blocks at the site divided by total number of blocks in a dataset"
+	} else if key == "File-replica presence" {
+		tooltip = key + " is a total number of files at the site divided by total number of files in all block at this site"
+	} else if key == "Block completion" {
+		tooltip = key + " is a total number of blocks fully transferred to the site divided by total number of blocks at this site"
+	} else if key == "Config urls" {
+		tooltip = key + " represents either config file(s) used to produced this dataset (input-config) or config file(s) used to produce other datasets using dataset in question (output-config)"
+	}
+	if len(tooltip) > 0 {
+		page = fmt.Sprintf("<span class=\"tooltip\">%s<span class=\"classic\">%s</span></span>", key, tooltip)
+	}
+	return page
 }
