@@ -73,10 +73,17 @@ func (LocalAPIs) L_sitedb2_site_names(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	api := "site-names"
 	site := spec["site"].(string)
+	sitePattern := ""
+	if strings.Contains(site, "*") {
+		sitePattern = strings.Replace(site, "*", "", -1)
+	}
 	records := getSiteDBData(api)
 	for _, r := range records {
-		if r["site_name"].(string) == site {
-			r["name"] = r["site_name"]
+		siteName := r["site_name"].(string)
+		r["name"] = r["site_name"]
+		if siteName == site {
+			out = append(out, r)
+		} else if len(sitePattern) > 0 && strings.Contains(siteName, sitePattern) {
 			out = append(out, r)
 		}
 	}
@@ -88,9 +95,16 @@ func (LocalAPIs) L_sitedb2_groups(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	api := "groups"
 	group := spec["group"].(string)
+	groupPattern := ""
+	if strings.Contains(group, "*") {
+		groupPattern = strings.Replace(group, "*", "", -1)
+	}
 	records := getSiteDBData(api)
 	for _, r := range records {
-		if r["name"].(string) == group {
+		groupName := r["name"].(string)
+		if groupName == group {
+			out = append(out, r)
+		} else if len(groupPattern) > 0 && strings.Contains(groupName, groupPattern) {
 			out = append(out, r)
 		}
 	}
@@ -102,10 +116,17 @@ func (LocalAPIs) L_sitedb2_group_responsibilities(spec bson.M) []mongo.DASRecord
 	var out []mongo.DASRecord
 	api := "group-responsibilities"
 	group := spec["group"].(string)
+	groupPattern := ""
+	if strings.Contains(group, "*") {
+		groupPattern = strings.Replace(group, "*", "", -1)
+	}
 	records := getSiteDBData(api)
 	for _, r := range records {
-		if r["user_group"].(string) == group {
-			r["name"] = r["user_group"]
+		groupName := r["user_name"].(string)
+		r["name"] = r["user_group"]
+		if groupName == group {
+			out = append(out, r)
+		} else if len(groupPattern) > 0 && strings.Contains(groupName, groupPattern) {
 			out = append(out, r)
 		}
 	}
@@ -149,9 +170,16 @@ func (LocalAPIs) L_sitedb2_roles(spec bson.M) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	api := "roles"
 	role := spec["role"].(string)
+	rolePattern := ""
+	if strings.Contains(role, "*") {
+		rolePattern = strings.Replace(role, "*", "", -1)
+	}
 	records := getSiteDBData(api)
 	for _, r := range records {
-		if r["title"].(string) == role {
+		roleTitle := r["title"].(string)
+		if roleTitle == role {
+			out = append(out, r)
+		} else if len(rolePattern) > 0 && strings.Contains(roleTitle, rolePattern) {
 			out = append(out, r)
 		}
 	}
