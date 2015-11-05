@@ -202,6 +202,8 @@ func pagination(base, query string, nres, startIdx, limit int) string {
 func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int) string {
 	var out []string
 	line := "<hr class=\"line\" />"
+	red := "style=\"color:red\""
+	green := "style=\"color:green\""
 	total := nres
 	if len(dasquery.Aggregators) > 0 {
 		total = len(dasquery.Aggregators)
@@ -279,6 +281,14 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 						var row string
 						if webkey == "Luminosity number" {
 							value = joinLumis(strings.Split(value, ","))
+						} else if webkey == "Site type" {
+							value = fmt.Sprintf("<b><span %s>TAPE</span> no user access</b>", red)
+						} else if webkey == "Dataset presence" || webkey == "Block presence" || webkey == "Block completion" || webkey == "File-replica presence" {
+							color := red
+							if strings.HasPrefix(value, "100") {
+								color = green
+							}
+							value = fmt.Sprintf("<b><span %s>100%</span></b>", color)
 						}
 						if daskey == pkey {
 							row = fmt.Sprintf("%s: %v\n<br/>\n", webkey, href(path, pkey, value))
