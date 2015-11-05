@@ -15,6 +15,9 @@ import (
 	"utils"
 )
 
+// global variables used in this module
+var _phedexNodes PhedexNodes
+
 // combined service APIs
 func (LocalAPIs) L_combined_dataset4site_release(spec bson.M) []mongo.DASRecord {
 	return dataset4site_release(spec)
@@ -118,9 +121,10 @@ func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
 			nfiles = row["files"].(float64)
 			skeys := utils.MapKeys(siteInfo)
 			if utils.InList(node, skeys) {
-				nfiles += siteInfo["files"].(float64)
-				nblks = siteInfo["blocks"].(float64) + 1
-				bc := siteInfo["block_complete"].(float64)
+				sInfo := siteInfo[node].(mongo.DASRecord)
+				nfiles += sInfo["files"].(float64)
+				nblks = sInfo["blocks"].(float64) + 1
+				bc := sInfo["block_complete"].(float64)
 				if complete == "y" {
 					b_complete = bc + 1
 				} else {
@@ -129,7 +133,7 @@ func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
 			} else {
 				nblks = 1
 			}
-			siteInfo[node] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "block_complete": b_complete, "se": se}
+			siteInfo[node] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "block_complete": b_complete, "se": se, "kind": _phedexNodes.NodeType(node)}
 		}
 	}
 	var pfiles, pblks string
@@ -157,7 +161,7 @@ func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
 		rec := make(mongo.DASRecord)
 		rec["site"] = []mongo.DASRecord{mongo.DASRecord{"name": key,
 			"dataset_fraction": pfiles, "block_fraction": pblks, "block_completion": bc,
-			"se": row["se"].(string), "replica_fraction": rf}}
+			"se": row["se"].(string), "replica_fraction": rf, "kind": row["kind"].(string)}}
 		out = append(out, rec)
 	}
 	return out
