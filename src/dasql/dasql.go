@@ -284,6 +284,16 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	}
 	filters, aggregators, qlerror := parsePipe(pipe)
 
+	// remove instance from spec
+	instance := spec["instance"]
+	if len(inst) == 0 && instance != nil {
+		inst = instance.(string)
+		delete(spec, "instance")
+	}
+	if inst == "" {
+		inst = "prod/global" // default DBS instance
+	}
+
 	rec.Query = query
 	rec.relaxed_query = relaxed_query
 	rec.Spec = spec
