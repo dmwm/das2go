@@ -55,7 +55,7 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 		response["pid"] = pid
 	} else { // no data in cache (even client supplied the pid), process it
 		if utils.VERBOSE > 1 {
-			log.Println("DAS QUERY spec:", dasquery.Spec, "fields:", dasquery.Fields, "pipe:", dasquery.Pipe, "aggregators:", dasquery.Aggregators)
+			log.Println("DAS QUERY spec:", dasquery.Spec, "fields:", dasquery.Fields, "pipe:", dasquery.Pipe, "aggregators:", dasquery.Aggregators, "instance:", dasquery.Instance)
 		}
 		qhash := das.Process(dasquery, _dasmaps)
 		response["status"] = "requested"
