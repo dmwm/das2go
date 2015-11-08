@@ -8,9 +8,9 @@
 package services
 
 import (
+	"dasql"
 	"encoding/json"
 	"fmt"
-	"gopkg.in/mgo.v2/bson"
 	"mongo"
 	"strings"
 	"time"
@@ -171,7 +171,8 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 // The logic: we look-up ReqMgr ids for given dataset and scan them
 // if id has length 32 we use configFile URL, otherwise we look-up record
 // in couchdb and fetch ConfigIDs to construct configFile URL
-func (LocalAPIs) L_reqmgr_configs(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_reqmgr_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
 	base := "https://cmsweb.cern.ch"
 	// find ReqMgr Ids for given dataset
 	dataset := spec["dataset"].(string)

@@ -58,6 +58,20 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 				brec := item.(map[string]interface{})
 				out = append(out, brec)
 			}
+		} else if api == "site4dataset" {
+			val := rec["phedex"].(map[string]interface{})
+			blocks := val["block"].([]interface{})
+			for _, item := range blocks {
+				brec := item.(map[string]interface{})
+				replicas := brec["replica"].([]interface{})
+				for _, val := range replicas {
+					row := val.(map[string]interface{})
+					node := row["node"].(string)
+					se := row["se"].(string)
+					rec := mongo.DASRecord{"name": node, "se": se}
+					out = append(out, rec)
+				}
+			}
 		} else if api == "dataset4site" || api == "dataset4site_group" || api == "dataset4se" || api == "dataset4se_group" {
 			val := rec["phedex"].(map[string]interface{})
 			blocks := val["block"].([]interface{})

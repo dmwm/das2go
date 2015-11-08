@@ -8,8 +8,8 @@
 package services
 
 import (
+	"dasql"
 	"fmt"
-	"gopkg.in/mgo.v2/bson"
 	"mongo"
 	"strings"
 	"utils"
@@ -19,20 +19,22 @@ import (
 var _phedexNodes PhedexNodes
 
 // combined service APIs
-func (LocalAPIs) L_combined_dataset4site_release(spec bson.M) []mongo.DASRecord {
-	return dataset4site_release(spec)
+func (LocalAPIs) L_combined_dataset4site_release(dasquery dasql.DASQuery) []mongo.DASRecord {
+	return dataset4site_release(dasquery)
 }
-func (LocalAPIs) L_combined_dataset4site_release_parent(spec bson.M) []mongo.DASRecord {
-	return dataset4site_release(spec)
+func (LocalAPIs) L_combined_dataset4site_release_parent(dasquery dasql.DASQuery) []mongo.DASRecord {
+	return dataset4site_release(dasquery)
 }
-func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_combined_child4site_release_dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
+	inst := dasquery.Instance
 	var out []mongo.DASRecord
 	// find children of given dataset
 	dataset := spec["dataset"].(string)
 	release := spec["release"].(string)
 	site := spec["site"].(string)
 	api := "datasetchildren"
-	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
+	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(inst), api, dataset)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	// collect dbs urls to fetch versions for given set of datasets
@@ -40,7 +42,7 @@ func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASR
 	var dbsUrls []string
 	for _, rec := range records {
 		dataset := rec["child_dataset"].(string)
-		furl = fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
+		furl = fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(inst), api, dataset)
 		if !utils.InList(furl, dbsUrls) {
 			dbsUrls = append(dbsUrls, furl)
 		}
@@ -49,7 +51,7 @@ func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASR
 	// collect children datasets
 	for _, rec := range processUrls("dbs3", api, dbsUrls) {
 		url := rec["url"].(string)
-		furl = fmt.Sprintf("%s/%s?dataset=", dbsUrl(), api)
+		furl = fmt.Sprintf("%s/%s?dataset=", dbsUrl(inst), api)
 		dataset := strings.Trim(url, furl)
 		if !strings.HasPrefix(dataset, "/") {
 			dataset = fmt.Sprintf("/%s", dataset)
@@ -87,11 +89,13 @@ func (LocalAPIs) L_combined_child4site_release_dataset(spec bson.M) []mongo.DASR
 	}
 	return out
 }
-func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
+	inst := dasquery.Instance
 	// DBS part, find total number of blocks and files for given dataset
 	dataset := spec["dataset"].(string)
 	api := "filesummaries"
-	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
+	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(inst), api, dataset)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var totblocks, totfiles float64
@@ -168,7 +172,7 @@ func (LocalAPIs) L_combined_site4dataset(spec bson.M) []mongo.DASRecord {
 }
 
 // Seems to me it is too much to look-up, user can use file,lumi or block,run,lumi for dataset APIs
-func (LocalAPIs) L_combined_lumi4dataset(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_combined_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	panic("Not implemented")
 	return out
@@ -191,10 +195,11 @@ func filterFiles(files []string, site string) []string {
 }
 
 // helper function to get list of files for given dataset/block and run/site
-func files4db_runs_site(spec bson.M) []mongo.DASRecord {
+func files4db_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "files"
-	urls := dbs_urls(spec, api)
+	urls := dbs_urls(dasquery, api)
 	files := processUrls("dbs3", api, urls)
 	var fileList []string
 	for _, rec := range files {
@@ -213,11 +218,11 @@ func files4db_runs_site(spec bson.M) []mongo.DASRecord {
 }
 
 // combined APIs to lookup file list for give dataset/run/site
-func (LocalAPIs) L_combined_files4dataset_runs_site(spec bson.M) []mongo.DASRecord {
-	return files4db_runs_site(spec)
+func (LocalAPIs) L_combined_files4dataset_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
+	return files4db_runs_site(dasquery)
 }
 
 // combined APIs to lookup file list for give block/run/site
-func (LocalAPIs) L_combined_files4block_runs_site(spec bson.M) []mongo.DASRecord {
-	return files4db_runs_site(spec)
+func (LocalAPIs) L_combined_files4block_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
+	return files4db_runs_site(dasquery)
 }

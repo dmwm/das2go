@@ -8,8 +8,8 @@
 package services
 
 import (
+	"dasql"
 	"fmt"
-	"gopkg.in/mgo.v2/bson"
 	"mongo"
 	"net/url"
 	"regexp"
@@ -20,8 +20,9 @@ import (
 
 type LocalAPIs struct{}
 
-func dbsUrl() string {
-	return "https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
+func dbsUrl(inst string) string {
+	//     return "https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
+	return fmt.Sprintf("https://cmsweb.cern.ch/dbs/%s/DBSReader", inst)
 }
 func phedexUrl() string {
 	return "https://cmsweb.cern.ch/phedex/datasvc/json/prod"
@@ -43,7 +44,9 @@ func DASLocalAPIs() []string {
 }
 
 // helper function to find file,run,lumis for given dataset or block
-func find_blocks(spec bson.M) []string {
+func find_blocks(dasquery dasql.DASQuery) []string {
+	spec := dasquery.Spec
+	inst := dasquery.Instance
 	var out []string
 	blk := spec["block"]
 	if blk != nil {
@@ -52,7 +55,7 @@ func find_blocks(spec bson.M) []string {
 	}
 	dataset := spec["dataset"].(string)
 	api := "blocks"
-	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(), api, dataset)
+	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(inst), api, dataset)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
@@ -104,8 +107,9 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 
 // helper function to get run arguments for given spec
 // we extract run parameter from spec and construct run_num arguments for DBS
-func runArgs(spec bson.M) string {
+func runArgs(dasquery dasql.DASQuery) string {
 	// get runs from spec
+	spec := dasquery.Spec
 	runs := spec["run"]
 	runs_args := ""
 	if runs != nil {
@@ -124,7 +128,8 @@ func runArgs(spec bson.M) string {
 }
 
 // helper function to get file status from the spec
-func fileStatus(spec bson.M) bool {
+func fileStatus(dasquery dasql.DASQuery) bool {
+	spec := dasquery.Spec
 	status := spec["status"]
 	if status != nil {
 		val := status.(string)
@@ -136,15 +141,16 @@ func fileStatus(spec bson.M) bool {
 }
 
 // helper function to get DBS urls for given spec and api
-func dbs_urls(spec bson.M, api string) []string {
+func dbs_urls(dasquery dasql.DASQuery, api string) []string {
+	inst := dasquery.Instance
 	// get runs from spec
-	runs_args := runArgs(spec)
-	valid_file := fileStatus(spec)
+	runs_args := runArgs(dasquery)
+	valid_file := fileStatus(dasquery)
 
 	// find all blocks for given dataset or block
 	var urls []string
-	for _, blk := range find_blocks(spec) {
-		myurl := fmt.Sprintf("%s/%s?block_name=%s", dbsUrl(), api, url.QueryEscape(blk))
+	for _, blk := range find_blocks(dasquery) {
+		myurl := fmt.Sprintf("%s/%s?block_name=%s", dbsUrl(inst), api, url.QueryEscape(blk))
 		if len(runs_args) > 0 {
 			myurl += runs_args // append run arguments
 		}
@@ -157,17 +163,17 @@ func dbs_urls(spec bson.M, api string) []string {
 }
 
 // helper function to get file,run,lumi triplets
-func file_run_lumi(spec bson.M, fields []string) []mongo.DASRecord {
+func file_run_lumi(dasquery dasql.DASQuery, keys []string) []mongo.DASRecord {
 	var out []mongo.DASRecord
 
 	// use filelumis DBS API output to get
 	// run_num, logical_file_name, lumi_secion_num from provided fields
 	api := "filelumis"
-	urls := dbs_urls(spec, api)
+	urls := dbs_urls(dasquery, api)
 	filelumis := processUrls("dbs3", api, urls)
 	for _, rec := range filelumis {
 		row := make(mongo.DASRecord)
-		for _, key := range fields {
+		for _, key := range keys {
 			// put into file das record, internal type must be list
 			if key == "run_num" {
 				row["run"] = []mongo.DASRecord{mongo.DASRecord{"run_number": rec[key]}}
@@ -179,15 +185,52 @@ func file_run_lumi(spec bson.M, fields []string) []mongo.DASRecord {
 		}
 		out = append(out, row)
 	}
+	if len(keys) == 2 {
+		if keys[0] == "run_num" && keys[1] == "lumi_section_num" {
+			return OrderByRunLumis(out)
+		} else if keys[0] == "lumi_section_num" && keys[1] == "run_num" {
+			return OrderByRunLumis(out)
+		}
+	}
+	return out
+}
+
+// helper function to sort records by run and then merge lumis within a run
+func OrderByRunLumis(records []mongo.DASRecord) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	rmap := make(map[float64][]float64)
+	for _, r := range records {
+		lumiList := mongo.GetValue(r, "lumi.number").([]interface{})
+		run := mongo.GetValue(r, "run.run_number").(float64)
+		lumis, ok := rmap[run]
+		if ok {
+			for _, v := range lumiList {
+				lumis = append(lumis, v.(float64))
+			}
+			rmap[run] = lumis
+		} else {
+			var lumiValues []float64
+			for _, v := range lumiList {
+				lumiValues = append(lumiValues, v.(float64))
+			}
+			rmap[run] = lumiValues
+		}
+	}
+	for run, lumis := range rmap {
+		rec := mongo.DASRecord{"run": mongo.DASRecord{"run_number": run}, "lumi": mongo.DASRecord{"number": lumis}}
+		out = append(out, rec)
+	}
 	return out
 }
 
 // helper function to get dataset for release
-func dataset4release(spec bson.M) []string {
+func dataset4release(dasquery dasql.DASQuery) []string {
+	spec := dasquery.Spec
+	inst := dasquery.Instance
 	var out []string
 	api := "datasets"
 	release := spec["release"].(string)
-	furl := fmt.Sprintf("%s/%s?release_version=%s", dbsUrl(), api, release)
+	furl := fmt.Sprintf("%s/%s?release_version=%s", dbsUrl(inst), api, release)
 	parent := spec["parent"]
 	if parent != nil {
 		furl = fmt.Sprintf("%s&parent_dataset=%s", furl, parent.(string))
@@ -226,12 +269,13 @@ func phedexNode(site string) string {
 }
 
 // helper function to find datasets for given site and release
-func dataset4site_release(spec bson.M) []mongo.DASRecord {
+func dataset4site_release(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	var urls, datasets []string
 	api := "blockReplicas"
 	node := phedexNode(spec["site"].(string))
-	for _, dataset := range dataset4release(spec) {
+	for _, dataset := range dataset4release(dasquery) {
 		furl := fmt.Sprintf("%s/%s?dataset=%s&%s", phedexUrl(), api, dataset, node)
 		if !utils.InList(furl, urls) {
 			urls = append(urls, furl)

@@ -8,9 +8,9 @@
 package services
 
 import (
+	"dasql"
 	"encoding/json"
 	"fmt"
-	"gopkg.in/mgo.v2/bson"
 	"log"
 	"mongo"
 	"strings"
@@ -69,7 +69,8 @@ func getSiteDBData(api string) []mongo.DASRecord {
 }
 
 // site-names
-func (LocalAPIs) L_sitedb2_site_names(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_sitedb2_site_names(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "site-names"
 	site := spec["site"].(string)
@@ -91,7 +92,8 @@ func (LocalAPIs) L_sitedb2_site_names(spec bson.M) []mongo.DASRecord {
 }
 
 // groups
-func (LocalAPIs) L_sitedb2_groups(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_sitedb2_groups(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "groups"
 	group := spec["group"].(string)
@@ -112,7 +114,8 @@ func (LocalAPIs) L_sitedb2_groups(spec bson.M) []mongo.DASRecord {
 }
 
 // group_responsibilities
-func (LocalAPIs) L_sitedb2_group_responsibilities(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_sitedb2_group_responsibilities(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "group-responsibilities"
 	group := spec["group"].(string)
@@ -122,19 +125,23 @@ func (LocalAPIs) L_sitedb2_group_responsibilities(spec bson.M) []mongo.DASRecord
 	}
 	records := getSiteDBData(api)
 	for _, r := range records {
-		groupName := r["user_name"].(string)
-		r["name"] = r["user_group"]
-		if groupName == group {
-			out = append(out, r)
-		} else if len(groupPattern) > 0 && strings.Contains(groupName, groupPattern) {
-			out = append(out, r)
+		val := r["user_name"]
+		if val != nil {
+			groupName := val.(string)
+			r["name"] = r["user_group"]
+			if groupName == group {
+				out = append(out, r)
+			} else if len(groupPattern) > 0 && strings.Contains(groupName, groupPattern) {
+				out = append(out, r)
+			}
 		}
 	}
 	return out
 }
 
 // people_via_email
-func (LocalAPIs) L_sitedb2_people_via_email(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_sitedb2_people_via_email(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "people"
 	user := spec["user"].(string)
@@ -148,7 +155,8 @@ func (LocalAPIs) L_sitedb2_people_via_email(spec bson.M) []mongo.DASRecord {
 }
 
 // people_via_name
-func (LocalAPIs) L_sitedb2_people_via_name(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_sitedb2_people_via_name(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "people"
 	user := strings.ToLower(spec["user"].(string))
@@ -166,7 +174,8 @@ func (LocalAPIs) L_sitedb2_people_via_name(spec bson.M) []mongo.DASRecord {
 }
 
 // roles
-func (LocalAPIs) L_sitedb2_roles(spec bson.M) []mongo.DASRecord {
+func (LocalAPIs) L_sitedb2_roles(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "roles"
 	role := spec["role"].(string)

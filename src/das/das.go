@@ -66,6 +66,13 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
 	system, _ := dasmap["system"].(string)
+	// Adjust DBS URL wrt dbs instance name from query
+	if system == "dbs" || system == "dbs3" {
+		dbsInst := dasquery.Instance
+		if len(dbsInst) > 0 && dbsInst != "prod/global" {
+			base = strings.Replace(base, "prod/global", dbsInst, -1)
+		}
+	}
 	if system == "sitedb2" {
 		// all sitedb apis is better to treat as local APIs, since
 		// they don't really accept parameters. Instead, we'll use local
@@ -241,11 +248,11 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		// we use reflection to look-up api from our services/localapis.go functions
 		// for details on reflection see
 		// http://stackoverflow.com/questions/12127585/go-lookup-function-by-name
-		t := reflect.ValueOf(services.LocalAPIs{})              // type of LocalAPIs struct
-		m := t.MethodByName(api)                                // associative function name for given api
-		args := []reflect.Value{reflect.ValueOf(dasquery.Spec)} // list of function arguments
-		vals := m.Call(args)[0]                                 // return value
-		records := vals.Interface().([]mongo.DASRecord)         // cast reflect value to its type
+		t := reflect.ValueOf(services.LocalAPIs{})         // type of LocalAPIs struct
+		m := t.MethodByName(api)                           // associative function name for given api
+		args := []reflect.Value{reflect.ValueOf(dasquery)} // list of function arguments
+		vals := m.Call(args)[0]                            // return value
+		records := vals.Interface().([]mongo.DASRecord)    // cast reflect value to its type
 		//         log.Println("### LOCAL APIS", urn, system, expire, dmap, api, m, len(records))
 
 		records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
@@ -317,7 +324,12 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 				}
 				// here we check that request Url match DAS map one either by splitting
 				// base from parameters or making a match for REST based urls
-				if strings.Split(r.Url, "?")[0] == surl || strings.HasPrefix(r.Url, surl) {
+				stm := dasmaps.GetString(dmap, "system")
+				inst := dasquery.Instance
+				if inst != "prod/global" && stm == "dbs3" {
+					surl = strings.Replace(surl, "prod/global", inst, -1)
+				}
+				if strings.Split(r.Url, "?")[0] == surl || strings.HasPrefix(r.Url, surl) || r.Url == surl {
 					urn = dasmaps.GetString(dmap, "urn")
 					system = dasmaps.GetString(dmap, "system")
 					expire = dasmaps.GetInt(dmap, "expire")
