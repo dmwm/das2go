@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"gopkg.in/mgo.v2/bson"
 	"mongo"
+	"net/url"
 	"sort"
 	"strconv"
 	"strings"
@@ -18,7 +19,12 @@ import (
 func href(path, daskey, value string) string {
 	key := strings.Split(daskey, ".")[0]
 	ref := fmt.Sprintf("%s=%s", key, value)
-	out := fmt.Sprintf("<span class=\"highlight\"><a href=\"%s?input=%s\">%s</a></span>", path, ref, value)
+	var furl url.URL
+	furl.Path = path
+	parameters := url.Values{}
+	parameters.Add("input", ref)
+	furl.RawQuery = parameters.Encode()
+	out := fmt.Sprintf("<span class=\"highlight\"><a href=\"%s\">%s</a></span>", furl.String(), value)
 	return out
 }
 
