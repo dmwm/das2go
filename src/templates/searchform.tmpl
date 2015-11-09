@@ -46,7 +46,7 @@ autocompletion
 </tr>
 </table>
 <div class="autocomplete">
-<input type="text" name="input" id="input" style="width:100%;" />
+<input type="text" name="input" id="input" style="width:100%;" onchange="javascript:processRequest()" />
 <div id="ac_container"></div>
 </div>
 <span>
@@ -165,6 +165,13 @@ document.observe('keydown', HideDasKeys);
 if(getUrlParam('input')=="") {
     ShowTag('das_cards')
 }
+
+// clean-up response field
+function processRequest() {
+   var doc = document.getElementById('response');
+   doc.innerHTML="<img alt=\"Start\" src=\"{{.Base}}/images/loading.gif\"> processing your request, please wait ...";
+}
+processRequest()
 </script>
 
 <div id="response" name="response" class="results"> <!-- we close this tag in das_bottom.tmpl -->
