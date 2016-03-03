@@ -34,7 +34,7 @@ func loadDBSData(api string, data []byte) []mongo.DASRecord {
 func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadDBSData(api, data)
 	var out []mongo.DASRecord
-	if api == "dataset_info" || api == "datasets" {
+	if api == "dataset_info" || api == "datasets" || api == "datasetlist" {
 		for _, rec := range records {
 			rec["name"] = rec["dataset"]
 			delete(rec, "dataset")
@@ -206,4 +206,20 @@ func (LocalAPIs) L_dbs3_blocks4tier_dates(dasquery dasql.DASQuery) []mongo.DASRe
 func (LocalAPIs) L_dbs3_lumi4block_run(dasquery dasql.DASQuery) []mongo.DASRecord {
 	keys := []string{"lumi_section_num"}
 	return file_run_lumi(dasquery, keys)
+}
+
+func (LocalAPIs) L_dbs3_datasetlist(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
+	inst := dasquery.Instance
+	api := "datasetlist"
+	furl := fmt.Sprintf("%s/%s", dbsUrl(inst), api)
+	args, err := json.Marshal(spec)
+	if err != nil {
+		msg := fmt.Sprintf("DBS datasetlist unable to marshal the spec %v, error %v", spec, err)
+		panic(msg)
+	}
+	log.Println(furl, string(args))
+	resp := utils.FetchResponse(furl, string(args)) // POST request
+	records := DBSUnmarshal(api, resp.Data)
+	return records
 }
