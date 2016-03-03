@@ -107,7 +107,7 @@ func Worker(in <-chan string, out chan<- ResponseType, quit <-chan bool) {
 	}
 }
 
-// Fetch data for provided URL
+// Fetch data for provided URL, args is a json dump of arguments
 func FetchResponse(rurl, args string) ResponseType {
 	var response ResponseType
 	response.Url = rurl
@@ -118,7 +118,7 @@ func FetchResponse(rurl, args string) ResponseType {
 	}
 	var req *http.Request
 	if len(args) > 0 {
-		var jsonStr = []byte(args)
+		jsonStr := []byte(args)
 		req, _ = http.NewRequest("POST", rurl, bytes.NewBuffer(jsonStr))
 		req.Header.Set("Content-Type", "application/json")
 	} else {
