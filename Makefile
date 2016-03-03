@@ -6,6 +6,16 @@ all: build
 build:
 	go clean; rm -rf pkg; go build
 
+build_all: build_osx build_linux build
+
+build_osx:
+	go clean; rm -rf pkg das2go_osx; GOOS=darwin go build
+	mv das2go das2go_osx
+
+build_linux:
+	go clean; rm -rf pkg das2go_linux; GOOS=linux go build
+	mv das2go das2go_linux
+
 install:
 	go install
 
