@@ -233,7 +233,8 @@ func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 					cond_records = append(cond_records, rec)
 				} else {
 					das_val := fmt.Sprintf("%v", spec[das_key])
-					matched, _ := regexp.MatchString(das_pat.(string), das_val)
+					pat := fmt.Sprintf("^%s", das_pat.(string))
+					matched, _ := regexp.MatchString(pat, das_val)
 					if matched {
 						cond_records = append(cond_records, rec)
 					}
