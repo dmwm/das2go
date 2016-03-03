@@ -1,11 +1,14 @@
 #!/bin/sh
 # on Linux take advantage of proc system to figure out number of availabel CPUs
-if [ -f /proc/cpuinfo ]; then
-    ncpus=`cat /proc/cpuinfo | grep processor | tail -1 | awk '{v=1+$3; print v}'`
-    export GOMAXPROCS=$ncpus
-fi
+# this is only needed for Go < 1.5
+#if [ -f /proc/cpuinfo ]; then
+#    ncpus=`cat /proc/cpuinfo | grep processor | tail -1 | awk '{v=1+$3; print v}'`
+#    export GOMAXPROCS=$ncpus
+#fi
 
 # das2go server
+cmd=$PWD/das2go
+args=${1+"$@"}
 das2go_server(){
     # check if das2go is running
     for (( ; ; )); do
@@ -14,7 +17,10 @@ das2go_server(){
         if [ -z "$pid" ]; then
             local tstamp=`date "+%Y/%m/%d %H:%M:%S"`
             echo "$tstamp das2go is not running, restart"
-            das2go
+            $cmd $args
+            if [ "$args" == "-help" ] || [ "$args" == "--help" ]; then
+                break
+            fi
         fi
         sleep 10
     done
