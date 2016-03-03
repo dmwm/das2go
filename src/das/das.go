@@ -211,8 +211,10 @@ func formRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	for _, dmap := range dasmaps {
 		dkey, _, _, pat := getApiParams(dmap)
 		if utils.InList(dkey, skeys) {
-			val, ok := spec[dkey].(string)
-			if ok {
+			msg := fmt.Sprintf("Invalid '%T' type for '%s' DAS key in %v", spec[dkey], dkey, dmap)
+			switch spec[dkey].(type) {
+			case string:
+				val, _ := spec[dkey].(string)
 				matched, _ := regexp.MatchString(pat, val)
 				if matched || pat == "" {
 					if !(strings.HasSuffix(base, "/") && strings.HasPrefix(val, "/")) {
@@ -221,8 +223,13 @@ func formRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 						return base + val
 					}
 				}
-			} else {
-				msg := fmt.Sprintf("Invalid '%T' type for '%s' DAS key", spec[dkey], dkey)
+			case []string:
+				val, _ := spec[dkey].([]string)
+				matched, _ := regexp.MatchString(pat, val[0])
+				if matched || pat == "" {
+					return base
+				}
+			default:
 				panic(msg)
 			}
 		}
