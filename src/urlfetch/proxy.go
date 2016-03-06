@@ -251,6 +251,10 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	//    log.Println("out of loop")
 	quit <- true
+
+	// close all channels we used
+	close(in)
+	close(out)
 }
 
 // proxy server. It defines /fetch public interface

@@ -393,6 +393,7 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 			break
 		}
 	}
+	close(out) // we're done with channel
 }
 
 // Process DAS query
@@ -583,6 +584,7 @@ func aggregateAll(data []mongo.DASRecord, aggrs [][]string) []mongo.DASRecord {
 			break
 		}
 	}
+	close(ch)
 	return out
 }
 
