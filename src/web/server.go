@@ -19,6 +19,7 @@ import (
 	"dasql"
 	"encoding/json"
 	"fmt"
+	"github.com/vkuznet/cmsauth"
 	"log"
 	"mongo"
 	"net/http"
@@ -34,7 +35,8 @@ import _ "net/http/pprof"
 
 // global variables used in this module
 var _dasmaps dasmaps.DASMaps
-var _afile, _tdir, _top, _bottom, _search, _cards, _hiddenCards, _base string
+var _tdir, _top, _bottom, _search, _cards, _hiddenCards, _base string
+var _cmsAuth cmsauth.CMSAuth
 var _dbses []string
 
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
@@ -71,13 +73,11 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
  */
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// check if DAS server started with hkey file (auth is required)
-	if len(_afile) > 0 {
-		status := checkAuthnAuthz(r.Header)
-		if !status {
-			msg := "You are not allowed to access this resource"
-			http.Error(w, msg, http.StatusForbidden)
-			return
-		}
+	status := _cmsAuth.CheckAuthnAuthz(r.Header)
+	if !status {
+		msg := "You are not allowed to access this resource"
+		http.Error(w, msg, http.StatusForbidden)
+		return
 	}
 
 	query := r.FormValue("input")
@@ -209,7 +209,8 @@ func Server(port, afile string) {
 			timg = val[1]
 		}
 	}
-	_afile = afile
+	// init CMS Authentication module
+	_cmsAuth.Init(afile)
 
 	// DAS templates
 	_base = "/das"

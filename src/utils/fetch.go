@@ -15,6 +15,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"errors"
+	"github.com/vkuznet/x509proxy"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -23,7 +24,6 @@ import (
 	"regexp"
 	"strings"
 	"time"
-	"x509proxy"
 )
 
 /*
