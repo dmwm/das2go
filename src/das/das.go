@@ -1,9 +1,7 @@
-/*
- *
- * Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
- * Description: DAS core module
- * Created    : Fri Jun 26 14:25:01 EDT 2015
- */
+// das2go/das - Core system of DAS server
+//
+// Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
+//
 package das
 
 import (
@@ -23,6 +21,7 @@ import (
 	"utils"
 )
 
+// DASRecord is a main entity DAS server operates
 type Record map[string]interface{}
 type DASRecord struct {
 	query  dasql.DASQuery

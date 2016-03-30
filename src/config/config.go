@@ -1,3 +1,7 @@
+// das2go/config - configuration sub-package for das2go
+//
+// Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
+//
 package config
 
 import (

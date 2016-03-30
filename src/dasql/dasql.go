@@ -1,9 +1,7 @@
-/*
- *
- * Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
- * Description: DAS QL parser
- * Created    : Fri Jun 26 14:25:01 EDT 2015
- */
+// das2go/dasql - DAS QL implementation for DAS server
+//
+// Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
+//
 package dasql
 
 import (
