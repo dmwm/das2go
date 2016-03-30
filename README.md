@@ -11,7 +11,12 @@ Go implementation of DAS (Data Aggregation System for CMS)
 To compile the server you need a Go compiler, then perform the following:
 
 ```
-go build
+# one time operation, setup your GOPATH and download the following
+go get github.com/vkuznet/cmsauth
+go get github.com/vkuznet/x509proxy
+
+# to build DAS server run
+make
 ```
 
 It will build ```das2go``` executable which you can fetch from UNIX shell.
