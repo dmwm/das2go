@@ -5,3 +5,4 @@ go:
 install:
   - go get github.com/vkuznet/cmsauth
   - go get github.com/vkuznet/x509proxy
+  - go get gopkg.in/mgo.v2

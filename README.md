@@ -14,6 +14,7 @@ To compile the server you need a Go compiler, then perform the following:
 # one time operation, setup your GOPATH and download the following
 go get github.com/vkuznet/cmsauth
 go get github.com/vkuznet/x509proxy
+go get gopkg.in/mgo.v2
 
 # to build DAS server run
 make
