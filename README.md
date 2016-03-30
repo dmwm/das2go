@@ -2,7 +2,6 @@ das2go
 ======
 
 [![Build Status](https://travis-ci.org/vkuznet/das2go.svg?branch=master)](https://travis-ci.org/vkuznet/das2go)
-[![GoDoc](https://godoc.org/github.com/vkuznet/das2go?status.svg)](https://godoc.org/github.com/vkuznet/das2go)
 
 Go implementation of DAS (Data Aggregation System for CMS)
 
