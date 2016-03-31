@@ -1,4 +1,5 @@
-// das2go - DAS service module
+// DAS service module
+// It aggregates information from: DBS, PhEDEx, SiteDB, McM, ReqMgr, Dashboard, RunSummary, CondDB
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //

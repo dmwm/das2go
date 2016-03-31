@@ -1,4 +1,4 @@
-// das2go/mongo - DAS mongo module
+// DAS mongo module
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //

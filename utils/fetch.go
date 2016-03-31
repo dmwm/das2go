@@ -1,14 +1,11 @@
-/*
- *
- * Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
- * Description: DAS web server, it handles all DAS reuqests
- * Created    : Fri Jun 26 14:25:01 EDT 2015
- *
- * Some links: http://www.alexedwards.net/blog/golang-response-snippets
- * http://blog.golang.org/json-and-go
- * http://golang.org/pkg/html/template/
- * https://labix.org/mgo
- */
+// DAS utils module
+//
+// Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
+//
+// Some links: http://www.alexedwards.net/blog/golang-response-snippets
+// http://blog.golang.org/json-and-go
+// http://golang.org/pkg/html/template/
+// https://labix.org/mgo
 package utils
 
 import (

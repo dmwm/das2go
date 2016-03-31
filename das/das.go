@@ -1,4 +1,4 @@
-// das2go/das - Core system of DAS server
+// Core system of DAS server
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //

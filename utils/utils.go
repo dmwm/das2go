@@ -1,4 +1,4 @@
-// das2go - DAS utils module
+// DAS utils module
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //

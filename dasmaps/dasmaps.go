@@ -1,4 +1,4 @@
-// das2go/dasmaps - DASMaps implementation for DAS server
+// DASMaps implementation for DAS server
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //
