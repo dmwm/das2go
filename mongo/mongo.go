@@ -7,14 +7,14 @@
 package mongo
 
 import (
-	"config"
 	"encoding/json"
 	"fmt"
+	"github.com/vkuznet/das2go/config"
+	"github.com/vkuznet/das2go/utils"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 	"log"
 	"strings"
-	"utils"
 )
 
 type DASRecord map[string]interface{}

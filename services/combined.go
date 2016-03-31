@@ -8,11 +8,11 @@
 package services
 
 import (
-	"dasql"
 	"fmt"
-	"mongo"
+	"github.com/vkuznet/das2go/dasql"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/utils"
 	"strings"
-	"utils"
 )
 
 // global variables used in this module

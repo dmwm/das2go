@@ -8,11 +8,11 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"github.com/vkuznet/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 	"time"
-	"utils"
 )
 
 type DASQuery struct {

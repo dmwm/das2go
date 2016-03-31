@@ -8,13 +8,13 @@
 package services
 
 import (
-	"dasql"
 	"encoding/json"
 	"fmt"
+	"github.com/vkuznet/das2go/dasql"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/utils"
 	"log"
-	"mongo"
 	"strings"
-	"utils"
 )
 
 // helper function to load SiteDB data stream

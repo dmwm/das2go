@@ -14,7 +14,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
-	"mongo"
+	"github.com/vkuznet/das2go/mongo"
 )
 
 // helper function to load RunRegistry data stream

@@ -6,8 +6,8 @@ package main
 
 import (
 	"flag"
-	"utils"
-	"web"
+	"github.com/vkuznet/das2go/utils"
+	"github.com/vkuznet/das2go/web"
 )
 
 func main() {

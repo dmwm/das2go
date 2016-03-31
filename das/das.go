@@ -5,20 +5,20 @@
 package das
 
 import (
-	"dasmaps"
-	"dasql"
 	"fmt"
+	"github.com/vkuznet/das2go/dasmaps"
+	"github.com/vkuznet/das2go/dasql"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/services"
+	"github.com/vkuznet/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
 	"log"
-	"mongo"
 	"net/url"
 	"reflect"
 	"regexp"
-	"services"
 	"strconv"
 	"strings"
 	"time"
-	"utils"
 )
 
 // DASRecord is a main entity DAS server operates

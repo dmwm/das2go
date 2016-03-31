@@ -12,20 +12,20 @@
 package web
 
 import (
-	"das"
-	"dasmaps"
-	"dasql"
 	"encoding/json"
 	"fmt"
 	"github.com/vkuznet/cmsauth"
+	"github.com/vkuznet/das2go/das"
+	"github.com/vkuznet/das2go/dasmaps"
+	"github.com/vkuznet/das2go/dasql"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/utils"
 	"log"
-	"mongo"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
-	"utils"
 )
 
 // profiler

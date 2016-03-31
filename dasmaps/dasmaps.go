@@ -6,13 +6,12 @@ package dasmaps
 
 import (
 	"fmt"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
 	"log"
-	"mongo"
-	//     "sort"
 	"regexp"
 	"strings"
-	"utils"
 )
 
 type DASMaps struct {

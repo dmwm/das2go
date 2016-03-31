@@ -8,13 +8,13 @@
 package services
 
 import (
-	"dasql"
 	"encoding/json"
 	"fmt"
-	"mongo"
+	"github.com/vkuznet/das2go/dasql"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/utils"
 	"strings"
 	"time"
-	"utils"
 )
 
 // helper function to load ReqMgr data stream

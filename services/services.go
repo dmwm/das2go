@@ -5,13 +5,13 @@
 package services
 
 import (
-	"dasmaps"
-	"dasql"
+	"github.com/vkuznet/das2go/dasmaps"
+	"github.com/vkuznet/das2go/dasql"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
-	"mongo"
 	"strings"
 	"time"
-	"utils"
 )
 
 // remap function uses DAS notations and convert series of DAS records
