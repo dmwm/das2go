@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-// profiler
+// profiler, see https://golang.org/pkg/net/http/pprof/
 import _ "net/http/pprof"
 
 // global variables used in this module
@@ -78,6 +78,10 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if v, err := strconv.Atoi(r.FormValue("verbose")); err == nil {
+		log.Printf("DAS VERBOSE level=%d", v)
+		utils.VERBOSE = v
+	}
 	query := r.FormValue("input")
 	pid := r.FormValue("pid")
 	ajax := r.FormValue("ajax")
@@ -182,8 +186,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				w.Write([]byte(page))
 			}
 		} else {
-			//         t, _ := template.ParseFiles("src/templates/error.html")
-			//         t.Execute(w, nil)
 			http.Error(w, "Not implemented path", http.StatusInternalServerError)
 		}
 	}
