@@ -217,7 +217,7 @@ func MapInList(a mongo.DASRecord, list []mongo.DASRecord) bool {
 }
 
 // Find services for given set fields and spec pair, return DAS maps associated with found services
-func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
+func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mongo.DASRecord {
 	keys := utils.MapKeys(spec)
 	var cond_records, out []mongo.DASRecord
 	for _, rec := range m.records {
@@ -250,6 +250,8 @@ func (m *DASMaps) FindServices(fields []string, spec bson.M) []mongo.DASRecord {
 		rkeys := getRequiredArgs(rec)
 		akeys := getAllArgs(rec)
 		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) {
+			// adjust DBS instance
+			rec["url"] = strings.Replace(rec["url"].(string), "prod/global", inst, 1)
 			log.Println("DAS match", rec["system"], rec["urn"], rec["url"], "spec keys", keys, "required keys", rkeys, "all api keys", akeys)
 			out = append(out, rec)
 		}

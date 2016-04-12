@@ -401,7 +401,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	//     defer utils.ErrPropagate("Process")
 
 	// find out list of APIs/CMS services which can process this query request
-	maps := dmaps.FindServices(dasquery.Fields, dasquery.Spec)
+	maps := dmaps.FindServices(dasquery.Instance, dasquery.Fields, dasquery.Spec)
 	var srvs, pkeys []string
 	urls := make(map[string]string)
 	var local_apis []mongo.DASRecord
