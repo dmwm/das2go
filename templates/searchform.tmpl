@@ -159,7 +159,7 @@ function HideDasKeys(e) {
 }
 document.observe('keydown', HideDasKeys);
 // It should observe given tag (code below), but somehow does not
-//\$('das_keys_desc').observe('keydown', HideDasKeys);
+//$('das_keys_desc').observe('keydown', HideDasKeys);
 
 // Show DAS cards when there is no input on a page
 if(getUrlParam('input')=="") {
@@ -169,7 +169,9 @@ if(getUrlParam('input')=="") {
 // clean-up response field
 function processRequest() {
    var doc = document.getElementById('response');
-   doc.innerHTML="<img alt=\"Start\" src=\"{{.Base}}/images/loading.gif\"> processing your request, please wait ...";
+   if (doc != null) {
+       doc.innerHTML='<img alt="Start" src="{{.Base}}/images/loading.gif"> processing your request, please wait ...';
+   }
 }
 processRequest()
 </script>
