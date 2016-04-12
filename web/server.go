@@ -82,6 +82,14 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		log.Printf("DAS VERBOSE level=%d", v)
 		utils.VERBOSE = v
 	}
+	// Example to parse all args
+	/*
+		if err := r.ParseForm(); err == nil {
+			for k, v := range r.Form {
+				log.Println(k, v)
+			}
+		}
+	*/
 	query := r.FormValue("input")
 	pid := r.FormValue("pid")
 	ajax := r.FormValue("ajax")
@@ -143,11 +151,13 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		if pid == "" {
 			pid = dasquery.Qhash
 		}
+		//         pid = dasquery.Qhash
 		if len(pid) != 32 {
 			http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
 		}
 		// Remove expire records from cache
-		das.RemoveExpired(dasquery.Qhash)
+		//         das.RemoveExpired(dasquery.Qhash)
+		das.RemoveExpired(pid)
 		// process given query
 		response := processRequest(dasquery, pid, idx, limit)
 		if path == "/das/cache" {
@@ -176,6 +186,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				tmplData["Base"] = _base
 				tmplData["PID"] = pid
 				tmplData["Input"] = query
+				tmplData["Instance"] = inst
 				tmplData["Interval"] = 2500
 				tmplData["Method"] = "request"
 				page = parseTmpl(_tdir, "check_pid.tmpl", tmplData)
