@@ -1,4 +1,4 @@
-function ajaxCheckPid(base, method, input, pid, interval) {
+function ajaxCheckPid(base, method, input, inst, pid, interval) {
     // base is a URL base, e.g. https://cmsweb.cern.ch
     // method is request method, e.g. /request
     // pid is DASQuery qhash
@@ -12,7 +12,7 @@ function ajaxCheckPid(base, method, input, pid, interval) {
     } else { wait = limit; }
     new Ajax.Updater('response', base+'/'+method,
     { method: 'get' ,
-      parameters : {'pid': pid, 'input': input, 'ajax': 1},
+        parameters : {'pid': pid, 'input': input, 'ajax': 1, 'instance': inst},
       onException: function() {return;},
       onComplete : function() {
         if (url.indexOf('view=xml') != -1 ||
@@ -27,7 +27,7 @@ function ajaxCheckPid(base, method, input, pid, interval) {
         // reload the request page
         if (transport.responseText.match(/processing PID/)) {
             transport.responseText += msg;
-            setTimeout('ajaxCheckPid("'+base+'","'+method+'","'+input+'","'+pid+'","'+wait+'")', wait);
+            setTimeout('ajaxCheckPid("'+base+'","'+method+'","'+input+'","'+inst+'","'+pid+'","'+wait+'")', wait);
         } else {
             return;
         }
