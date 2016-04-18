@@ -249,6 +249,9 @@ func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mong
 		lkeys := strings.Split(rec["lookup"].(string), ",")
 		rkeys := getRequiredArgs(rec)
 		akeys := getAllArgs(rec)
+		if utils.VERBOSE > 1 {
+			log.Printf("DAS map lookup, urn %v, lookup %v, required keys %v, all keys %v", rec["urn"].(string), lkeys, rkeys, akeys)
+		}
 		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) {
 			// adjust DBS instance
 			rec["url"] = strings.Replace(rec["url"].(string), "prod/global", inst, 1)
