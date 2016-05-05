@@ -270,7 +270,7 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		if len(records) != 0 {
 			rec := records[0]
 			recexpire := services.GetExpire(rec)
-			if dasexpire > recexpire {
+			if dasexpire < recexpire {
 				dasexpire = recexpire
 			}
 		}
@@ -396,7 +396,8 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 }
 
 // Process DAS query
-func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
+// func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
+func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	// defer function will propagate panic message to higher level
 	//     defer utils.ErrPropagate("Process")
 
@@ -447,7 +448,13 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	}
 
 	if len(srvs) == 0 {
-		panic("Unable to find any CMS service to serve your request")
+		log.Println("DAS WARNING", dasquery, "unable to find any CMS service to fullfill this request")
+		dasrecord := services.CreateDASErrorRecord(dasquery, pkeys)
+		var records []mongo.DASRecord
+		records = append(records, dasrecord)
+		mongo.Insert("das", "cache", records)
+		mongo.Insert("das", "merge", records)
+		return
 	}
 	dasrecord := services.CreateDASRecord(dasquery, srvs, pkeys)
 	var records []mongo.DASRecord
@@ -468,7 +475,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
 	records, _ = services.MergeDASRecords(dasquery)
 	mongo.Insert("das", "merge", records)
 
-	return dasquery.Qhash
+	//     return dasquery.Qhash
 }
 
 // helper function to modify spec with given filter
