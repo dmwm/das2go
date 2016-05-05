@@ -69,6 +69,7 @@ func find_blocks(dasquery dasql.DASQuery) []string {
 func processUrls(system, api string, urls []string) []mongo.DASRecord {
 	var outRecords []mongo.DASRecord
 	out := make(chan utils.ResponseType)
+	defer close(out)
 	umap := map[string]int{}
 	for _, furl := range urls {
 		umap[furl] = 1                // keep track of processed urls below

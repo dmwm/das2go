@@ -308,6 +308,7 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 	//     defer utils.ErrPropagate("processUrls")
 
 	out := make(chan utils.ResponseType)
+	defer close(out)
 	umap := map[string]int{}
 	for furl, args := range urls {
 		umap[furl] = 1 // keep track of processed urls below
@@ -392,7 +393,6 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 			break
 		}
 	}
-	close(out) // we're done with channel
 }
 
 // Process DAS query

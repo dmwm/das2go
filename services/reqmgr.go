@@ -118,6 +118,7 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	rurl = fmt.Sprintf("%s/couchdb/wmstats/_design/WMStats/_view/requestByInputDataset?key=\"%s\"&include_docs=true&stale=update_after", base, dataset)
 	urls = append(urls, rurl)
 	ch := make(chan utils.ResponseType)
+	defer close(ch)
 	idict := make(map[string][]string)
 	umap := map[string]int{}
 	for _, u := range urls {
@@ -193,6 +194,7 @@ func (LocalAPIs) L_reqmgr_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	umap := map[string]int{}
 	exit := false
 	ch := make(chan utils.ResponseType)
+	defer close(ch)
 	for _, u := range rurls {
 		umap[u] = 1 // keep track of processed urls below
 		go utils.Fetch(u, "", ch)

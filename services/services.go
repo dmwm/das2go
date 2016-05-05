@@ -163,7 +163,10 @@ func CreateDASErrorRecord(dasquery dasql.DASQuery, pkeys []string) mongo.DASReco
 func GetDASRecord(dasquery dasql.DASQuery) mongo.DASRecord {
 	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 0}
 	rec := mongo.Get("das", "cache", spec, 0, 1)
-	return rec[0]
+	if len(rec) > 0 {
+		return rec[0]
+	}
+	return CreateDASErrorRecord(dasquery, []string{})
 }
 
 // get DAS record from das cache
