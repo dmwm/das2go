@@ -10,6 +10,7 @@ package utils
 
 import (
 	"bytes"
+	"container/heap"
 	"crypto/tls"
 	"errors"
 	"github.com/vkuznet/x509proxy"
@@ -20,6 +21,7 @@ import (
 	"os"
 	"regexp"
 	"strings"
+	"sync/atomic"
 	"time"
 )
 
@@ -85,27 +87,75 @@ type ResponseType struct {
 	Error error
 }
 
+type UrlRequest struct {
+	rurl string
+	args string
+	out  chan<- ResponseType
+	ts   int64
+}
+
+// A UrlFetchQueue implements heap.Interface and holds UrlRequests
+type UrlFetchQueue []*UrlRequest
+
+func (q UrlFetchQueue) Len() int           { return len(q) }
+func (q UrlFetchQueue) Less(i, j int) bool { return q[i].ts < q[j].ts }
+func (q UrlFetchQueue) Swap(i, j int)      { q[i], q[j] = q[j], q[i] }
+func (q *UrlFetchQueue) Push(x interface{}) {
+	item := x.(*UrlRequest)
+	*q = append(*q, item)
+}
+func (q *UrlFetchQueue) Pop() interface{} {
+	old := *q
+	n := len(old)
+	item := old[n-1]
+	*q = old[0 : n-1]
+	return item
+}
+
+var (
+	UrlQueueSize      int64 = 0    // keep track of running URL requests
+	UrlQueueLimit     int64 = 1000 // how many URL requests we can handle at a time
+	UrlRequestChannel       = make(chan UrlRequest)
+)
+
+func init() {
+	go URLFetchWorker(UrlRequestChannel)
+}
+
 // A URL fetch Worker. It has three channels: in channel for incoming requests
 // (in a form of URL strings), out channel for outgoing responses in a form of
 // ResponseType structure and quit channel
-func Worker(in <-chan string, out chan<- ResponseType, quit <-chan bool) {
+func URLFetchWorker(in <-chan UrlRequest) {
+	urlRequests := &UrlFetchQueue{}
+	heap.Init(urlRequests)
+	// loop forever to accept url requests
+	// a given request will be placed in internal Queue and we'll process it
+	// only in a limited queueSize. Every request is processed via NewFetch
+	// function which will decrement queueSize once it's done with request.
 	for {
 		select {
-		case rurl := <-in:
-			//            log.Println("Receive", url)
-			go Fetch(rurl, "", out)
-		case <-quit:
-			//            log.Println("Quit Worker")
-			return
+		case request := <-in:
+			// put new request to urlRequests queue and increment queueSize
+			heap.Push(urlRequests, &request)
 		default:
-			time.Sleep(time.Duration(100) * time.Millisecond)
-			//            log.Println("Waiting for request")
+			if urlRequests.Len() > 0 && UrlQueueSize < UrlQueueLimit {
+				r := heap.Pop(urlRequests)
+				request := r.(*UrlRequest)
+				go NewFetch(request.rurl, request.args, request.out)
+			}
+			time.Sleep(time.Duration(10) * time.Millisecond)
 		}
 	}
 }
 
+// Problem with too many open files
+// http://craigwickesser.com/2015/01/golang-http-to-many-open-files/
+
 // Fetch data for provided URL, args is a json dump of arguments
 func FetchResponse(rurl, args string) ResponseType {
+	// increment UrlQueueSize since we'll process request
+	atomic.AddInt64(&UrlQueueSize, 1)
+	defer atomic.AddInt64(&UrlQueueSize, -1) // decrement UrlQueueSize since we done with this request
 	var response ResponseType
 	response.Url = rurl
 	response.Data = []byte{}
@@ -149,7 +199,45 @@ func FetchResponse(rurl, args string) ResponseType {
 }
 
 // Fetch data for provided URL and redirect results to given channel
-func Fetch(rurl string, args string, ch chan<- ResponseType) {
+func NewFetch(rurl string, args string, ch chan<- ResponseType) {
+	//    log.Println("Receive", rurl)
+	var resp, r ResponseType
+	retry := 3 // how many times we'll retry given url
+	startTime := time.Now()
+	resp = FetchResponse(rurl, args)
+	if resp.Error != nil {
+		log.Println("DAS WARNING, fail to fetch data", rurl, "error", resp.Error)
+		for i := 1; i <= retry; i++ {
+			sleep := time.Duration(i) * time.Second
+			time.Sleep(sleep)
+			r = FetchResponse(rurl, args)
+			if r.Error == nil {
+				break
+			}
+			log.Println("DAS WARNING", rurl, "retry", i, "error", r.Error)
+		}
+		resp = r
+	}
+	if resp.Error != nil {
+		log.Println("DAS ERROR, fail to fetch data", rurl, "retries", retry, "error", resp.Error)
+	}
+	endTime := time.Now()
+	if VERBOSE > 0 {
+		if args == "" {
+			log.Println("DAS GET", rurl, endTime.Sub(startTime))
+		} else {
+			log.Println("DAS POST", rurl, args, endTime.Sub(startTime))
+		}
+	}
+	ch <- resp
+}
+
+// Fetch data for provided URL and redirect results to given channel
+func Fetch(rurl string, args string, out chan<- ResponseType) {
+	request := UrlRequest{rurl: rurl, args: args, out: out, ts: time.Now().Unix()}
+	UrlRequestChannel <- request
+}
+func OldFetch(rurl string, args string, ch chan<- ResponseType) {
 	//    log.Println("Receive", rurl)
 	var resp, r ResponseType
 	retry := 3 // how many times we'll retry given url
