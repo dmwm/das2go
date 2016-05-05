@@ -25,7 +25,7 @@ function ajaxCheckPid(base, method, input, inst, pid, interval) {
         // look at transport body and match its content,
         // if check_pid still working on request, call again, otherwise
         // reload the request page
-        if (transport.responseText.match(/processing PID/)) {
+        if (transport.responseText.match(/request PID/)) {
             transport.responseText += msg;
             setTimeout('ajaxCheckPid("'+base+'","'+method+'","'+input+'","'+inst+'","'+pid+'","'+wait+'")', wait);
         } else {
