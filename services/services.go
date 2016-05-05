@@ -138,6 +138,27 @@ func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRec
 	return dasrecord
 }
 
+// create DAS record for DAS cache
+func CreateDASErrorRecord(dasquery dasql.DASQuery, pkeys []string) mongo.DASRecord {
+	dasrecord := make(mongo.DASRecord)
+	dasrecord["query"] = dasquery.Query
+	dasrecord["qhash"] = dasquery.Qhash
+	dasheader := DASHeader()
+	dasheader["record"] = 0    // DAS record type, zero for DAS record
+	dasheader["status"] = "ok" // initial status
+	dasheader["services"] = []string{"das:NA"}
+	if len(pkeys) > 0 {
+		dasheader["primary_key"] = pkeys[0]
+	} else {
+		dasheader["primary_key"] = ""
+	}
+	dasheader["expire"] = utils.Expire(600) // initial expire, 600 seconds from now
+	dasheader["ts"] = time.Now().Unix()
+	dasheader["instance"] = dasquery.Instance
+	dasrecord["das"] = dasheader
+	return dasrecord
+}
+
 // get DAS record from das cache
 func GetDASRecord(dasquery dasql.DASQuery) mongo.DASRecord {
 	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 0}
