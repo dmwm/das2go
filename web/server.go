@@ -160,7 +160,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		das.RemoveExpired(pid)
 		// process given query
 		response := processRequest(dasquery, pid, idx, limit)
-		if path == "/das/cache" {
+		if path == "/das/cache" || path == "/das/cache/" {
 			status := response["status"]
 			if status != "ok" {
 				w.Write([]byte(response["pid"].(string)))
@@ -173,7 +173,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(js)
-		} else if path == "/das/request" {
+		} else if path == "/das/request" || path == "/das/request/" {
 			status := response["status"]
 			var page string
 			if status == "ok" {
