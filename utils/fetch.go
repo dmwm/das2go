@@ -113,12 +113,13 @@ func (q *UrlFetchQueue) Pop() interface{} {
 }
 
 var (
-	UrlQueueSize      int64 = 0    // keep track of running URL requests
-	UrlQueueLimit     int64 = 1000 // how many URL requests we can handle at a time
+	UrlQueueSize      int32 = 0    // keep track of running URL requests
+	UrlQueueLimit     int32 = 1000 // how many URL requests we can handle at a time
 	UrlRequestChannel       = make(chan UrlRequest)
 )
 
 func init() {
+	log.Println("DAS URLFetchWorker")
 	go URLFetchWorker(UrlRequestChannel)
 }
 
@@ -154,8 +155,11 @@ func URLFetchWorker(in <-chan UrlRequest) {
 // Fetch data for provided URL, args is a json dump of arguments
 func FetchResponse(rurl, args string) ResponseType {
 	// increment UrlQueueSize since we'll process request
-	atomic.AddInt64(&UrlQueueSize, 1)
-	defer atomic.AddInt64(&UrlQueueSize, -1) // decrement UrlQueueSize since we done with this request
+	atomic.AddInt32(&UrlQueueSize, 1)
+	defer atomic.AddInt32(&UrlQueueSize, -1) // decrement UrlQueueSize since we done with this request
+	if VERBOSE > 1 {
+		log.Println("### HTTP request, UrlQueueSize", UrlQueueSize, "UrlQueueLimit", UrlQueueLimit)
+	}
 	var response ResponseType
 	response.Url = rurl
 	response.Data = []byte{}
