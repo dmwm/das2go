@@ -1,9 +1,7 @@
 <!-- das_check_pid.tmpl -->
 <img src="{{.Base}}/images/loading.gif" alt="loading"/>
 request PID={{.PID}}, please wait...
-<a href="/das/request?input={{.Input}}&instance={{.Instance}}">stop</a> request
 <script type="text/javascript">
 HideTag('das_cards')
-setTimeout('ajaxCheckPid("{{.Base}}", "{{.Method}}", "{{.Input}}", "{{.Instance}}", "{{.PID}}", "{{.Interval}}")', {{.Interval}})
 </script>
 <!-- enf of das_check_pid.tmpl -->
