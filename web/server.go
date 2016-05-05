@@ -57,9 +57,9 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 		if utils.VERBOSE > 1 {
 			log.Println("DAS QUERY spec:", dasquery.Spec, "fields:", dasquery.Fields, "pipe:", dasquery.Pipe, "aggregators:", dasquery.Aggregators, "instance:", dasquery.Instance)
 		}
-		qhash := das.Process(dasquery, _dasmaps)
+		go das.Process(dasquery, _dasmaps)
 		response["status"] = "requested"
-		response["pid"] = qhash
+		response["pid"] = pid
 	}
 	response["idx"] = idx
 	response["limit"] = limit
@@ -175,7 +175,6 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write(js)
 		} else if path == "/das/request" {
 			status := response["status"]
-			//             log.Println("RESPONSE", response)
 			var page string
 			if status == "ok" {
 				data := response["data"].([]mongo.DASRecord)
@@ -185,11 +184,8 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			} else {
 				tmplData["Base"] = _base
 				tmplData["PID"] = pid
-				tmplData["Input"] = query
-				tmplData["Instance"] = inst
-				tmplData["Interval"] = 2500
-				tmplData["Method"] = "request"
 				page = parseTmpl(_tdir, "check_pid.tmpl", tmplData)
+				page += fmt.Sprintf("<script>setTimeout('ajaxCheckPid(\"%s\", \"request\", \"%s\", \"%s\", \"%s\", \"%d\")', %d)</script>", _base, query, inst, pid, 2500, 2500)
 			}
 			if ajax == "" {
 				w.Write([]byte(_top + _search + _hiddenCards + page + _bottom))
@@ -204,7 +200,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
 // proxy server. It defines /fetch public interface
 func Server(port, afile string) {
-	log.Printf("Start server localhost:%s/das", port)
+	log.Printf("Start server localhost:%s", port)
 	var tcss, tjs, timg, tyui string
 	for _, item := range os.Environ() {
 		val := strings.Split(item, "=")
