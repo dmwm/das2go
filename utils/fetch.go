@@ -113,9 +113,10 @@ func (q *UrlFetchQueue) Pop() interface{} {
 }
 
 var (
-	UrlQueueSize      int32 = 0    // keep track of running URL requests
-	UrlQueueLimit     int32 = 1000 // how many URL requests we can handle at a time
-	UrlRequestChannel       = make(chan UrlRequest)
+	UrlQueueSize      int32 // keep track of running URL requests
+	UrlQueueLimit     int32 // how many URL requests we can handle at a time, 0 means no limit
+	UrlRetry          int   // how many times we'll retry given url call
+	UrlRequestChannel = make(chan UrlRequest)
 )
 
 func init() {
@@ -131,7 +132,7 @@ func URLFetchWorker(in <-chan UrlRequest) {
 	heap.Init(urlRequests)
 	// loop forever to accept url requests
 	// a given request will be placed in internal Queue and we'll process it
-	// only in a limited queueSize. Every request is processed via NewFetch
+	// only in a limited queueSize. Every request is processed via fetch
 	// function which will decrement queueSize once it's done with request.
 	for {
 		select {
@@ -142,7 +143,7 @@ func URLFetchWorker(in <-chan UrlRequest) {
 			if urlRequests.Len() > 0 && UrlQueueSize < UrlQueueLimit {
 				r := heap.Pop(urlRequests)
 				request := r.(*UrlRequest)
-				go NewFetch(request.rurl, request.args, request.out)
+				go fetch(request.rurl, request.args, request.out)
 			}
 			time.Sleep(time.Duration(10) * time.Millisecond)
 		}
@@ -203,53 +204,27 @@ func FetchResponse(rurl, args string) ResponseType {
 }
 
 // Fetch data for provided URL and redirect results to given channel
-func NewFetch(rurl string, args string, ch chan<- ResponseType) {
-	//    log.Println("Receive", rurl)
-	var resp, r ResponseType
-	retry := 3 // how many times we'll retry given url
-	startTime := time.Now()
-	resp = FetchResponse(rurl, args)
-	if resp.Error != nil {
-		log.Println("DAS WARNING, fail to fetch data", rurl, "error", resp.Error)
-		for i := 1; i <= retry; i++ {
-			sleep := time.Duration(i) * time.Second
-			time.Sleep(sleep)
-			r = FetchResponse(rurl, args)
-			if r.Error == nil {
-				break
-			}
-			log.Println("DAS WARNING", rurl, "retry", i, "error", r.Error)
-		}
-		resp = r
+// This wrapper function look-up UrlQueueLimit and either redirect to
+// URULFetchWorker go-routine or pass the call to local fetch function
+func Fetch(rurl string, args string, out chan<- ResponseType) {
+	if UrlQueueLimit > 0 {
+		request := UrlRequest{rurl: rurl, args: args, out: out, ts: time.Now().Unix()}
+		UrlRequestChannel <- request
+	} else {
+		fetch(rurl, args, out)
 	}
-	if resp.Error != nil {
-		log.Println("DAS ERROR, fail to fetch data", rurl, "retries", retry, "error", resp.Error)
-	}
-	endTime := time.Now()
-	if VERBOSE > 0 {
-		if args == "" {
-			log.Println("DAS GET", rurl, endTime.Sub(startTime))
-		} else {
-			log.Println("DAS POST", rurl, args, endTime.Sub(startTime))
-		}
-	}
-	ch <- resp
 }
 
-// Fetch data for provided URL and redirect results to given channel
-func Fetch(rurl string, args string, out chan<- ResponseType) {
-	request := UrlRequest{rurl: rurl, args: args, out: out, ts: time.Now().Unix()}
-	UrlRequestChannel <- request
-}
-func OldFetch(rurl string, args string, ch chan<- ResponseType) {
+// local function which fetch response for given url/args and place it into response channel
+// By defat
+func fetch(rurl string, args string, ch chan<- ResponseType) {
 	//    log.Println("Receive", rurl)
 	var resp, r ResponseType
-	retry := 3 // how many times we'll retry given url
 	startTime := time.Now()
 	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
 		log.Println("DAS WARNING, fail to fetch data", rurl, "error", resp.Error)
-		for i := 1; i <= retry; i++ {
+		for i := 1; i <= UrlRetry; i++ {
 			sleep := time.Duration(i) * time.Second
 			time.Sleep(sleep)
 			r = FetchResponse(rurl, args)
@@ -261,7 +236,7 @@ func OldFetch(rurl string, args string, ch chan<- ResponseType) {
 		resp = r
 	}
 	if resp.Error != nil {
-		log.Println("DAS ERROR, fail to fetch data", rurl, "retries", retry, "error", resp.Error)
+		log.Println("DAS ERROR, fail to fetch data", rurl, "retries", UrlRetry, "error", resp.Error)
 	}
 	endTime := time.Now()
 	if VERBOSE > 0 {

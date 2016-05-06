@@ -19,8 +19,11 @@ func main() {
 	flag.IntVar(&verbose, "verbose", 0, "Verbose level, support 0,1,2")
 	var urlQueueLimit int
 	flag.IntVar(&urlQueueLimit, "urlQueueLimit", 1000, "urlQueueLimit controls number of concurrent URL calls to remote data-services, default 1000")
+	var urlRetry int
+	flag.IntVar(&urlRetry, "urlRetry", 3, "urlRetry controls number of retries we do with URL call, default 3")
 	flag.Parse()
 	utils.VERBOSE = verbose
 	utils.UrlQueueLimit = int32(urlQueueLimit)
+	utils.UrlRetry = urlRetry
 	web.Server(port, afile)
 }
