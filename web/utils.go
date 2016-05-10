@@ -277,7 +277,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					attrs := strings.Split(daskey, ".")
 					attr := strings.Join(attrs[1:len(attrs)], ".")
 					value := ExtractValue(rec, attr)
-					if pkey == "lumi.number" {
+					if daskey == "lumi.number" {
 						value = joinLumis(strings.Split(value, ","))
 					}
 					if pval == "" {
@@ -285,9 +285,12 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					}
 					if len(value) > 0 {
 						var row string
-						if webkey == "Luminosity number" {
-							value = joinLumis(strings.Split(value, ","))
-						} else if webkey == "Site type" {
+						/*
+							if webkey == "Luminosity number" {
+								value = joinLumis(strings.Split(value, ","))
+							} else if webkey == "Site type" {
+						*/
+						if webkey == "Site type" {
 							value = fmt.Sprintf("<b><span %s>TAPE</span> no user access</b>", red)
 						} else if webkey == "Dataset presence" || webkey == "Block presence" || webkey == "Block completion" || webkey == "File-replica presence" {
 							color := red
