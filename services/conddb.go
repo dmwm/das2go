@@ -31,7 +31,7 @@ func CondDBUnmarshal(api string, data []byte) []mongo.DASRecord {
 	if api == "get_run_info" || api == "get_run_info4date" {
 		for _, rec := range records {
 			r := make(mongo.DASRecord)
-			rv := run["Run"]
+			rv := rec["Run"]
 			if rv != nil {
 				r["run_number"] = fmt.Sprintf("%d", int(rv.(float64)))
 			}
