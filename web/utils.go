@@ -264,6 +264,10 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			uiRows := pmap[key].([]interface{})
 			for idx, elem := range records {
 				rec := elem.(mongo.DASRecord)
+				if v, ok := rec["error"]; ok {
+					erec := fmt.Sprintf("<b>Error:</b> <span %s>%s</span>", red, v)
+					values = append(values, erec)
+				}
 				for _, uir := range uiRows {
 					uirow := uir.(mongo.DASRecord)
 					daskey := uirow["das"].(string)

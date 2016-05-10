@@ -40,6 +40,12 @@ func (r DASRecord) ToString() string {
 	return strings.Join(out, "\n")
 }
 
+func DASErrorRecord(msg string) DASRecord {
+	erec := make(DASRecord)
+	erec["error"] = msg
+	return erec
+}
+
 // function to get int value from DAS record for given key
 func GetValue(rec DASRecord, key string) interface{} {
 	var val DASRecord

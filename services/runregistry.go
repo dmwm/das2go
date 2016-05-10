@@ -26,7 +26,7 @@ func loadRunRegistryData(api string, data []byte) []mongo.DASRecord {
 	err := json.Unmarshal(data, &out)
 	if err != nil {
 		msg := fmt.Sprintf("RunRegistry unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
-		panic(msg)
+		out = append(out, mongo.DASErrorRecord(msg))
 	}
 	return out
 }

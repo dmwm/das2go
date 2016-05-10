@@ -174,7 +174,7 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 // Seems to me it is too much to look-up, user can use file,lumi or block,run,lumi for dataset APIs
 func (LocalAPIs) L_combined_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	panic("Not implemented")
+	out = append(out, mongo.DASErrorRecord("combined_lumi4dataset API is not implemented"))
 	return out
 }
 

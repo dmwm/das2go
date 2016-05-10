@@ -20,7 +20,7 @@ func loadMcMData(api string, data []byte) []mongo.DASRecord {
 	err := json.Unmarshal(data, &rec)
 	if err != nil {
 		msg := fmt.Sprintf("McM unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
-		panic(msg)
+		out = append(out, mongo.DASErrorRecord(msg))
 	}
 	out = append(out, rec)
 	return out

@@ -20,7 +20,7 @@ func loadDashboardData(api string, data []byte) []mongo.DASRecord {
 	err := json.Unmarshal(data, &rec)
 	if err != nil {
 		msg := fmt.Sprintf("Dashboard unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
-		panic(msg)
+		out = append(out, mongo.DASErrorRecord(msg))
 	}
 	val := rec["summaries"]
 	switch summaries := val.(type) {
