@@ -29,7 +29,7 @@ import (
 	"time"
 )
 
-// profiler, see https://golang.org/pkg/net/http/pprof/
+// import _ "net/http/pprof" is profiler, see https://golang.org/pkg/net/http/pprof/
 import _ "net/http/pprof"
 
 // global variables used in this module
@@ -67,9 +67,7 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 	return response
 }
 
-/*
- * RequestHandler is used by web server to handle incoming requests
- */
+// RequestHandler is used by web server to handle incoming requests
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// check if DAS server started with hkey file (auth is required)
 	status := _cmsAuth.CheckAuthnAuthz(r.Header)
@@ -117,56 +115,25 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	if path == "/das" || path == "/das/" {
 		w.Write([]byte(_top + _search + _cards + _bottom))
 		return
-	} else {
-		// defer function will be fired when following processRequest will panic
-		defer func() {
-			if err := recover(); err != nil {
-				log.Println("DAS ERROR, web server error", err, utils.Stack())
-				response := make(map[string]interface{})
-				accept := r.Header["Accept"][0]
-				if !strings.Contains(strings.ToLower(accept), "json") {
-					response["Status"] = "fail"
-					response["Reason"] = err
-					response["PID"] = pid
-					var templates DASTemplates
-					errTmp := templates.DASError(_tdir, response)
-					w.Write([]byte(_top + _search + _hiddenCards + errTmp + _bottom))
-					return
-				}
-				response["status"] = "fail"
-				response["reason"] = err
-				response["pid"] = pid
-				js, err := json.Marshal(&response)
-				if err != nil {
-					http.Error(w, err.Error(), http.StatusInternalServerError)
-					return
-				}
-				w.Header().Set("Content-Type", "application/json")
-				w.Write(js)
-			}
-		}()
-		dasquery, err := dasql.Parse(query, inst, _dasmaps.DASKeys())
-		if err != "" {
-			panic(err)
-		}
-		if pid == "" {
-			pid = dasquery.Qhash
-		}
-		//         pid = dasquery.Qhash
-		if len(pid) != 32 {
-			http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
-		}
-		// Remove expire records from cache
-		//         das.RemoveExpired(dasquery.Qhash)
-		das.RemoveExpired(pid)
-		// process given query
-		response := processRequest(dasquery, pid, idx, limit)
-		if path == "/das/cache" || path == "/das/cache/" {
-			status := response["status"]
-			if status != "ok" {
-				w.Write([]byte(response["pid"].(string)))
+	}
+	// defer function will be fired when following processRequest will panic
+	defer func() {
+		if err := recover(); err != nil {
+			log.Println("DAS ERROR, web server error", err, utils.Stack())
+			response := make(map[string]interface{})
+			accept := r.Header["Accept"][0]
+			if !strings.Contains(strings.ToLower(accept), "json") {
+				response["Status"] = "fail"
+				response["Reason"] = err
+				response["PID"] = pid
+				var templates DASTemplates
+				errTmp := templates.DASError(_tdir, response)
+				w.Write([]byte(_top + _search + _hiddenCards + errTmp + _bottom))
 				return
 			}
+			response["status"] = "fail"
+			response["reason"] = err
+			response["pid"] = pid
 			js, err := json.Marshal(&response)
 			if err != nil {
 				http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -174,32 +141,62 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(js)
-		} else if path == "/das/request" || path == "/das/request/" {
-			status := response["status"]
-			var page string
-			if status == "ok" {
-				data := response["data"].([]mongo.DASRecord)
-				nres := response["nresults"].(int)
-				presentationMap := _dasmaps.PresentationMap()
-				page = PresentData(path, dasquery, data, presentationMap, nres, idx, limit)
-			} else {
-				tmplData["Base"] = _base
-				tmplData["PID"] = pid
-				page = parseTmpl(_tdir, "check_pid.tmpl", tmplData)
-				page += fmt.Sprintf("<script>setTimeout('ajaxCheckPid(\"%s\", \"request\", \"%s\", \"%s\", \"%s\", \"%d\")', %d)</script>", _base, query, inst, pid, 2500, 2500)
-			}
-			if ajax == "" {
-				w.Write([]byte(_top + _search + _hiddenCards + page + _bottom))
-			} else {
-				w.Write([]byte(page))
-			}
-		} else {
-			http.Error(w, "Not implemented path", http.StatusInternalServerError)
 		}
+	}()
+	dasquery, err := dasql.Parse(query, inst, _dasmaps.DASKeys())
+	if err != "" {
+		panic(err)
+	}
+	if pid == "" {
+		pid = dasquery.Qhash
+	}
+	//         pid = dasquery.Qhash
+	if len(pid) != 32 {
+		http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
+	}
+	// Remove expire records from cache
+	//         das.RemoveExpired(dasquery.Qhash)
+	das.RemoveExpired(pid)
+	// process given query
+	response := processRequest(dasquery, pid, idx, limit)
+	if path == "/das/cache" || path == "/das/cache/" {
+		status := response["status"]
+		if status != "ok" {
+			w.Write([]byte(response["pid"].(string)))
+			return
+		}
+		js, err := json.Marshal(&response)
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(js)
+	} else if path == "/das/request" || path == "/das/request/" {
+		status := response["status"]
+		var page string
+		if status == "ok" {
+			data := response["data"].([]mongo.DASRecord)
+			nres := response["nresults"].(int)
+			presentationMap := _dasmaps.PresentationMap()
+			page = PresentData(path, dasquery, data, presentationMap, nres, idx, limit)
+		} else {
+			tmplData["Base"] = _base
+			tmplData["PID"] = pid
+			page = parseTmpl(_tdir, "check_pid.tmpl", tmplData)
+			page += fmt.Sprintf("<script>setTimeout('ajaxCheckPid(\"%s\", \"request\", \"%s\", \"%s\", \"%s\", \"%d\")', %d)</script>", _base, query, inst, pid, 2500, 2500)
+		}
+		if ajax == "" {
+			w.Write([]byte(_top + _search + _hiddenCards + page + _bottom))
+		} else {
+			w.Write([]byte(page))
+		}
+	} else {
+		http.Error(w, "Not implemented path", http.StatusInternalServerError)
 	}
 }
 
-// proxy server. It defines /fetch public interface
+// Server is proxy server. It defines /fetch public interface
 func Server(port, afile string) {
 	log.Printf("Start server localhost:%s", port)
 	var tcss, tjs, timg, tyui string
