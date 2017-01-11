@@ -29,7 +29,7 @@ func (m *DASMaps) Maps() []mongo.DASRecord {
 	return m.records
 }
 
-// DASKyes provides list of DAS keys
+// DASKeys provides list of DAS keys
 func (m *DASMaps) DASKeys() []string {
 	if len(m.daskeys) != 0 {
 		return m.daskeys
@@ -123,7 +123,7 @@ func (m *DASMaps) PresentationMap() mongo.DASRecord {
 	return m.presentations
 }
 
-// Find notation maps for given system
+// FindNotation provides notation maps for given system
 func (m *DASMaps) FindNotations(system string) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	for _, rec := range m.NotationMaps() {
@@ -166,15 +166,15 @@ func getRequiredArgs(rec mongo.DASRecord) []string {
 	}
 	dasmaps := GetDASMaps(rec["das_map"])
 	for _, dmap := range dasmaps {
-		das_key := dmap["das_key"].(string)
-		api_val := dmap["api_arg"]
-		if api_val == nil {
+		dasKey := dmap["das_key"].(string)
+		apiVal := dmap["api_arg"]
+		if apiVal == nil {
 			continue
 		}
-		api_arg := api_val.(string)
+		apiArg := apiVal.(string)
 		for _, v := range args {
-			if v == api_arg && !utils.InList(das_key, out) {
-				out = append(out, das_key)
+			if v == apiArg && !utils.InList(dasKey, out) {
+				out = append(out, dasKey)
 			}
 		}
 	}
@@ -190,15 +190,15 @@ func getAllArgs(rec mongo.DASRecord) []string {
 	}
 	dasmaps := GetDASMaps(rec["das_map"])
 	for _, dmap := range dasmaps {
-		das_key := dmap["das_key"].(string)
+		dasKey := dmap["das_key"].(string)
 		api_val := dmap["api_arg"]
 		if api_val == nil {
 			continue
 		}
 		api_arg := api_val.(string)
 		for _, v := range args {
-			if v == api_arg && !utils.InList(das_key, out) {
-				out = append(out, das_key)
+			if v == api_arg && !utils.InList(dasKey, out) {
+				out = append(out, dasKey)
 			}
 		}
 	}
@@ -222,21 +222,21 @@ func MapInList(a mongo.DASRecord, list []mongo.DASRecord) bool {
 // FindServices look-up DAS services for given set fields and spec pair, return DAS maps associated with found services
 func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mongo.DASRecord {
 	keys := utils.MapKeys(spec)
-	var cond_records, out []mongo.DASRecord
+	var condRecords, out []mongo.DASRecord
 	for _, rec := range m.records {
 		dasmaps := GetDASMaps(rec["das_map"])
 		for _, dmap := range dasmaps {
-			das_key := dmap["das_key"].(string)
-			das_pat := dmap["pattern"]
-			if utils.InList(das_key, keys) {
-				if das_pat == nil {
-					cond_records = append(cond_records, rec)
+			dasKey := dmap["das_key"].(string)
+			dasPattern := dmap["pattern"]
+			if utils.InList(dasKey, keys) {
+				if dasPattern == nil {
+					condRecords = append(condRecords, rec)
 				} else {
-					das_val := fmt.Sprintf("%v", spec[das_key])
-					pat := fmt.Sprintf("^%s", das_pat.(string))
-					matched, _ := regexp.MatchString(pat, das_val)
+					dasValue := fmt.Sprintf("%v", spec[dasKey])
+					pat := fmt.Sprintf("^%s", dasPattern.(string))
+					matched, _ := regexp.MatchString(pat, dasValue)
 					if matched {
-						cond_records = append(cond_records, rec)
+						condRecords = append(condRecords, rec)
 					}
 				}
 			}
@@ -248,7 +248,7 @@ func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mong
 		val, _ := spec[key].(string)
 		values = append(values, val)
 	}
-	for _, rec := range cond_records {
+	for _, rec := range condRecords {
 		lkeys := strings.Split(rec["lookup"].(string), ",")
 		rkeys := getRequiredArgs(rec)
 		akeys := getAllArgs(rec)
@@ -301,8 +301,8 @@ func GetFloat(dmap mongo.DASRecord, key string) float64 {
 
 // GetNotation provides values from notation map
 func GetNotation(nmap mongo.DASRecord) (string, string, string) {
-	api_output := GetString(nmap, "api_output")
-	rec_key := GetString(nmap, "rec_key")
+	apiOutput := GetString(nmap, "api_output")
+	recKey := GetString(nmap, "rec_key")
 	api := GetString(nmap, "api")
-	return api, api_output, rec_key
+	return api, apiOutput, recKey
 }
