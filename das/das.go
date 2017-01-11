@@ -22,18 +22,22 @@ import (
 	"time"
 )
 
-// DASRecord is a main entity DAS server operates
+// Record is a main entity DAS server operates
 type Record map[string]interface{}
+
+// DASRecord represent basic DAS record structure
 type DASRecord struct {
 	query  dasql.DASQuery
 	record Record
 	das    Record
 }
 
+// Qhash returns hash of DAS record
 func (r *DASRecord) Qhash() string {
 	return string(r.query.Qhash)
 }
 
+// Services returns list of services for DAS record
 func (r *DASRecord) Services() []string {
 	return []string{}
 }
@@ -59,7 +63,7 @@ func getApiParams(dasmap mongo.DASRecord) (string, string, string, string) {
 	return das_key, rec_key, api_arg, pattern
 }
 
-// Form appropriate URL from given dasquery and dasmap, the final URL
+// FormUrlCall forms appropriate URL from given dasquery and dasmap, the final URL
 // contains all parameters
 func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	spec := dasquery.Spec
@@ -189,7 +193,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	return base
 }
 
-// Form appropriate URL from given dasquery and dasmap, the final URL
+// FormRESTUrl forms appropriate URL from given dasquery and dasmap, the final URL
 // contains all parameters
 func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	spec := dasquery.Spec
@@ -237,6 +241,7 @@ func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	return ""
 }
 
+// DASRecords holds list of DAS records
 type DASRecords []mongo.DASRecord
 
 // helper function to process given set of URLs associted with dasquery
@@ -520,7 +525,7 @@ func modSpec(spec bson.M, filter string) {
 	spec[key] = cond
 }
 
-// Get data for given pid (DAS Query qhash)
+// GetGata for given pid (DAS Query qhash)
 func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mongo.DASRecord) {
 	var empty_data, data []mongo.DASRecord
 	pid := dasquery.Qhash
@@ -631,7 +636,7 @@ func Count(pid string) int {
 	return mongo.Count("das", "merge", spec)
 }
 
-// Get initial timestamp of DAS query request
+// GetTimestamp gets initial timestamp of DAS query request
 func GetTimestamp(pid string) int64 {
 	spec := bson.M{"qhash": pid, "das.record": 0}
 	data := mongo.Get("das", "cache", spec, 0, 1)
@@ -642,7 +647,7 @@ func GetTimestamp(pid string) int64 {
 	return ts
 }
 
-// Check if data exists in DAS cache for given query/pid
+// CheckDataReadiness checks if data exists in DAS cache for given query/pid
 // we look-up DAS record (record=0) with status ok (merging step is done)
 func CheckDataReadiness(pid string) bool {
 	espec := bson.M{"$gt": time.Now().Unix()}
@@ -654,7 +659,7 @@ func CheckDataReadiness(pid string) bool {
 	return false
 }
 
-// Check if data exists in DAS cache for given query/pid
+// CheckData checks if data exists in DAS cache for given query/pid
 func CheckData(pid string) bool {
 	espec := bson.M{"$gt": time.Now().Unix()}
 	spec := bson.M{"qhash": pid, "das.expire": espec}
@@ -665,7 +670,7 @@ func CheckData(pid string) bool {
 	return false
 }
 
-// Remove expired records
+// RemoveExpired remove expired records
 func RemoveExpired(pid string) {
 	espec := bson.M{"$lt": time.Now().Unix()}
 	spec := bson.M{"qhash": pid, "das.expire": espec}
