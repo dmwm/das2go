@@ -17,6 +17,7 @@ import (
 	"time"
 )
 
+// LocalAPIs structure to hold information about local APIs
 type LocalAPIs struct{}
 
 func dbsUrl(inst string) string {
@@ -30,7 +31,7 @@ func sitedbUrl() string {
 	return "https://cmsweb.cern.ch/sitedb/data/prod"
 }
 
-// Here I list __ONLY__ exceptional apis due to mistake in DAS maps
+// DASLocalAPIs contains list of __ONLY__ exceptional apis due to mistake in DAS maps
 func DASLocalAPIs() []string {
 	out := []string{
 		// dbs3 APIs which should be treated as local_api, but they have

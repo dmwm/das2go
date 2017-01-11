@@ -23,7 +23,7 @@ func loadCondDBData(api string, data []byte) []mongo.DASRecord {
 	return out
 }
 
-// Unmarshal CondDB data stream and return DAS records based on api
+// CondDBUnmarshal unmarshals CondDB data stream and return DAS records based on api
 func CondDBUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadCondDBData(api, data)
 	var out []mongo.DASRecord

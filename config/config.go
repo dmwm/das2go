@@ -13,6 +13,7 @@ import (
 	"strings"
 )
 
+// Configuration structure
 type Configuration struct {
 	Uri string
 }
@@ -20,6 +21,7 @@ type Configuration struct {
 // global config object
 var _config Configuration
 
+// ParseConfig function to parse configuration file
 func ParseConfig() Configuration {
 	var fname string
 	for _, item := range os.Environ() {
@@ -48,6 +50,7 @@ func ParseConfig() Configuration {
 	return conf
 }
 
+// Uri function extracts URI from configuration
 func Uri() string {
 	if _config.Uri == "" {
 		_config = ParseConfig()
