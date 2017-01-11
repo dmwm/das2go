@@ -8,6 +8,7 @@ package mongo
 //              https://gist.github.com/border/3489566
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/vkuznet/das2go/config"
@@ -18,8 +19,10 @@ import (
 	"strings"
 )
 
+// DASRecord define DAS record
 type DASRecord map[string]interface{}
 
+// ToString provides string representation of DAS record
 func (r DASRecord) ToString() string {
 	var out []string
 	for _, k := range utils.MapKeys(r) {
@@ -41,13 +44,14 @@ func (r DASRecord) ToString() string {
 	return strings.Join(out, "\n")
 }
 
+// DASErrorRecord provides DAS error record
 func DASErrorRecord(msg string) DASRecord {
 	erec := make(DASRecord)
 	erec["error"] = msg
 	return erec
 }
 
-// function to get int value from DAS record for given key
+// GetValue function to get int value from DAS record for given key
 func GetValue(rec DASRecord, key string) interface{} {
 	var val DASRecord
 	keys := strings.Split(key, ".")
@@ -73,7 +77,7 @@ func GetValue(rec DASRecord, key string) interface{} {
 	return value
 }
 
-// function to get string value from DAS record for given key
+// GetStringValue function to get string value from DAS record for given key
 func GetStringValue(rec DASRecord, key string) (string, error) {
 	value := GetValue(rec, key)
 	val, ok := value.(string)
@@ -83,7 +87,7 @@ func GetStringValue(rec DASRecord, key string) (string, error) {
 	return "", fmt.Errorf("Unable to cast value for key '%s'", key)
 }
 
-// function to get int value from DAS record for given key
+// GetIntValue function to get int value from DAS record for given key
 func GetIntValue(rec DASRecord, key string) (int, error) {
 	value := GetValue(rec, key)
 	val, ok := value.(int)
@@ -93,7 +97,7 @@ func GetIntValue(rec DASRecord, key string) (int, error) {
 	return 0, fmt.Errorf("Unable to cast value for key '%s'", key)
 }
 
-// function to get int value from DAS record for given key
+// GetInt64Value function to get int value from DAS record for given key
 func GetInt64Value(rec DASRecord, key string) (int64, error) {
 	value := GetValue(rec, key)
 	out, ok := value.(int64)
@@ -103,10 +107,12 @@ func GetInt64Value(rec DASRecord, key string) (int64, error) {
 	return 0, fmt.Errorf("Unable to cast value for key '%s'", key)
 }
 
+// MongoConnection defines connection to MongoDB
 type MongoConnection struct {
 	Session *mgo.Session
 }
 
+// Connect provides connection to MongoDB
 func (m *MongoConnection) Connect() *mgo.Session {
 	var err error
 	if m.Session == nil {
@@ -124,7 +130,7 @@ func (m *MongoConnection) Connect() *mgo.Session {
 // global object which holds MongoDB connection
 var _Mongo MongoConnection
 
-// insert into MongoDB
+// Insert records into MongoDB
 func Insert(dbname, collname string, records []DASRecord) {
 	s := _Mongo.Connect()
 	defer s.Close()
@@ -136,7 +142,7 @@ func Insert(dbname, collname string, records []DASRecord) {
 	}
 }
 
-// get records from MongoDB
+// Get records from MongoDB
 func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 	out := []DASRecord{}
 	s := _Mongo.Connect()
@@ -154,7 +160,7 @@ func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 	return out
 }
 
-// get records from MongoDB sorted by given key
+// GetSorted records from MongoDB sorted by given key
 func GetSorted(dbname, collname string, spec bson.M, skeys []string) []DASRecord {
 	out := []DASRecord{}
 	s := _Mongo.Connect()
@@ -176,7 +182,7 @@ func sel(q ...string) (r bson.M) {
 	return
 }
 
-// get records from MongoDB filtered and sorted by given key
+// GetFilteredSorted get records from MongoDB filtered and sorted by given key
 func GetFilteredSorted(dbname, collname string, spec bson.M, fields, skeys []string, idx, limit int) []DASRecord {
 	out := []DASRecord{}
 	s := _Mongo.Connect()
@@ -203,7 +209,7 @@ func GetFilteredSorted(dbname, collname string, spec bson.M, fields, skeys []str
 	return out
 }
 
-// update inplace for given spec
+// Update inplace for given spec
 func Update(dbname, collname string, spec, newdata bson.M) {
 	s := _Mongo.Connect()
 	defer s.Close()
@@ -214,7 +220,7 @@ func Update(dbname, collname string, spec, newdata bson.M) {
 	}
 }
 
-// get number records from MongoDB
+// Count gets number records from MongoDB
 func Count(dbname, collname string, spec bson.M) int {
 	s := _Mongo.Connect()
 	defer s.Close()
@@ -226,7 +232,7 @@ func Count(dbname, collname string, spec bson.M) int {
 	return nrec
 }
 
-// remove records from MongoDB
+// Remove records from MongoDB
 func Remove(dbname, collname string, spec bson.M) {
 	s := _Mongo.Connect()
 	defer s.Close()
@@ -237,7 +243,7 @@ func Remove(dbname, collname string, spec bson.M) {
 	}
 }
 
-// Load json data stream from series of bytes
+// LoadJsonData stream from series of bytes
 func LoadJsonData(data []byte) DASRecord {
 	r := make(DASRecord)
 	err := json.Unmarshal(data, &r)
@@ -247,7 +253,7 @@ func LoadJsonData(data []byte) DASRecord {
 	return r
 }
 
-// create DAS cache indexes
+// CreateIndexes creates DAS cache indexes
 func CreateIndexes(dbname, collname string, keys []string) {
 	s := _Mongo.Connect()
 	defer s.Close()
@@ -264,4 +270,15 @@ func CreateIndexes(dbname, collname string, keys []string) {
 			panic(err)
 		}
 	}
+}
+
+// GetBytesFromDASRecord converts DASRecord map into bytes
+func GetBytesFromDASRecord(data DASRecord) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := json.NewEncoder(&buf)
+	err := enc.Encode(data)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
 }

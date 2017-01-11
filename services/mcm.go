@@ -25,7 +25,7 @@ func loadMcMData(api string, data []byte) []mongo.DASRecord {
 	return out
 }
 
-// Unmarshal McM data stream and return DAS records based on api
+// McMUnmarshal unmarshals McM data stream and return DAS records based on api
 func McMUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadMcMData(api, data)
 	var out []mongo.DASRecord

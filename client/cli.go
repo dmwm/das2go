@@ -6,7 +6,6 @@ package client
 //
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"github.com/buger/jsonparser"
@@ -20,6 +19,7 @@ import (
 	"time"
 )
 
+// Process function process' given query and return back results
 func Process(query, inst string, jsonout bool) {
 	var dmaps dasmaps.DASMaps
 	dmaps.LoadMaps("mapping", "db")
@@ -35,7 +35,7 @@ func Process(query, inst string, jsonout bool) {
 	maps := dmaps.FindServices(dasquery.Instance, dasquery.Fields, dasquery.Spec)
 	var srvs, pkeys []string
 	urls := make(map[string]string)
-	var local_apis []mongo.DASRecord
+	var localApis []mongo.DASRecord
 	var furl string
 	// loop over services and fetch data
 	for _, dmap := range maps {
@@ -54,8 +54,8 @@ func Process(query, inst string, jsonout bool) {
 		} else {
 			furl = das.FormUrlCall(dasquery, dmap)
 		}
-		if furl == "local_api" && !dasmaps.MapInList(dmap, local_apis) {
-			local_apis = append(local_apis, dmap)
+		if furl == "local_api" && !dasmaps.MapInList(dmap, localApis) {
+			localApis = append(localApis, dmap)
 		} else if furl != "" {
 			if _, ok := urls[furl]; !ok {
 				urls[furl] = args
@@ -79,7 +79,7 @@ func Process(query, inst string, jsonout bool) {
 	if utils.VERBOSE > 0 {
 		fmt.Println("srvs", srvs, pkeys)
 		fmt.Println("urls", urls)
-		fmt.Println("local_apis", local_apis)
+		fmt.Println("localApis", localApis)
 	}
 	if len(urls) > 0 {
 		dasrecords := processURLs(dasquery, urls, maps, dmaps, pkeys)
@@ -104,7 +104,7 @@ func Process(query, inst string, jsonout bool) {
 				}
 				continue
 			}
-			rbytes, err := GetBytesFromDASRecord(rec)
+			rbytes, err := mongo.GetBytesFromDASRecord(rec)
 			if err != nil {
 				if utils.VERBOSE > 0 {
 					fmt.Println("Fail to parse DAS record", pkeys, keys, err, rec)
@@ -123,17 +123,6 @@ func Process(query, inst string, jsonout bool) {
 			}
 		}
 	}
-}
-
-// convert interface to bytes
-func GetBytesFromDASRecord(data mongo.DASRecord) ([]byte, error) {
-	var buf bytes.Buffer
-	enc := json.NewEncoder(&buf)
-	err := enc.Encode(data)
-	if err != nil {
-		return nil, err
-	}
-	return buf.Bytes(), nil
 }
 
 // helper function to process given set of URLs associted with dasquery
