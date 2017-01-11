@@ -239,7 +239,7 @@ func Server(port, afile string) {
 	tmplData["CardClass"] = "hide"
 	_hiddenCards = templates.Cards(_tdir, tmplData)
 
-	// load DAS Maps if neccessary
+	// load DAS Maps if necessary
 	if len(_dasmaps.Services()) == 0 {
 		log.Println("Load DAS maps")
 		_dasmaps.LoadMaps("mapping", "db")

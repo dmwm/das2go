@@ -449,7 +449,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	}
 
 	if len(srvs) == 0 {
-		log.Println("DAS WARNING", dasquery, "unable to find any CMS service to fullfill this request")
+		log.Println("DAS WARNING", dasquery, "unable to find any CMS service to fullfil this request")
 		dasrecord := services.CreateDASErrorRecord(dasquery, pkeys)
 		var records []mongo.DASRecord
 		records = append(records, dasrecord)
