@@ -1,15 +1,13 @@
-/*
- *
- * Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
- * Description: RunRegistry module
- * Created    : Fri Jun 26 14:25:01 EDT 2015
-
- DAS calls
-http://localhost:8081/runregistry/api/GLOBAL/runsummary/json/number%2CstartTime%2CstopTime%2Ctriggers%2CrunClassName%2CrunStopReason%2Cbfield%2CgtKey%2Cl1Menu%2ChltKeyDescription%2ClhcFill%2ClhcEnergy%2CrunCreated%2Cmodified%2ClsCount%2ClsRanges/none/data {"filter": {"number": ">= 165103 and <= 165110"}}
-
- *
-*/
 package services
+
+// DAS service module
+// RunRegistry module
+//
+// Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
+//
+
+// example of DAS calls
+// http://localhost:8081/runregistry/api/GLOBAL/runsummary/json/number%2CstartTime%2CstopTime%2Ctriggers%2CrunClassName%2CrunStopReason%2Cbfield%2CgtKey%2Cl1Menu%2ChltKeyDescription%2ClhcFill%2ClhcEnergy%2CrunCreated%2Cmodified%2ClsCount%2ClsRanges/none/data {"filter": {"number": ">= 165103 and <= 165110"}}
 
 import (
 	"encoding/json"

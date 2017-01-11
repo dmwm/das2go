@@ -1,11 +1,10 @@
-/*
- *
- * Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
- * Description: this module contains all helper functions used in DAS services (Local APIs)
- * Created    : Fri Jun 26 14:25:01 EDT 2015
- *
- */
 package services
+
+// DAS service module
+// this module contains all helper functions used in DAS services, e.g. Local APIs
+//
+// Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
+//
 
 import (
 	"fmt"

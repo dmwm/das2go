@@ -1,8 +1,9 @@
+package utils
+
 // DAS utils module
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //
-package utils
 
 import (
 	"bytes"

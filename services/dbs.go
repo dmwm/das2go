@@ -1,11 +1,10 @@
-/*
- *
- * Author     : Valentin Kuznetsov <vkuznet AT gmail dot com>
- * Description: DBS module
- * Created    : Fri Jun 26 14:25:01 EDT 2015
- *
- */
 package services
+
+// DAS service module
+// DBS module
+//
+// Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
+//
 
 import (
 	"encoding/json"

@@ -1,3 +1,5 @@
+package web
+
 // das2go - DAS web server
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
@@ -9,7 +11,6 @@
 // Go patterns: http://www.golangpatterns.info/home
 // Templates:   http://gohugo.io/templates/go-templates/
 //              http://golang.org/pkg/html/template/
-package web
 
 import (
 	"encoding/json"

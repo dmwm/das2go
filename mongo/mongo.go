@@ -1,10 +1,11 @@
+package mongo
+
 // DAS mongo module
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //
 // References : https://gist.github.com/boj/5412538
 //              https://gist.github.com/border/3489566
-package mongo
 
 import (
 	"encoding/json"

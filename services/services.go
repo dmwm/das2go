@@ -1,9 +1,10 @@
+package services
+
 // DAS service module
 // It aggregates information from: DBS, PhEDEx, SiteDB, McM, ReqMgr, Dashboard, RunSummary, CondDB
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //
-package services
 
 import (
 	"github.com/vkuznet/das2go/dasmaps"

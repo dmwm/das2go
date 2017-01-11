@@ -1,8 +1,9 @@
+package das
+
 // Core system of DAS server
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //
-package das
 
 import (
 	"fmt"

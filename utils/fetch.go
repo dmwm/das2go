@@ -1,3 +1,5 @@
+package utils
+
 // DAS utils module
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
@@ -6,7 +8,6 @@
 // http://blog.golang.org/json-and-go
 // http://golang.org/pkg/html/template/
 // https://labix.org/mgo
-package utils
 
 import (
 	"bytes"
