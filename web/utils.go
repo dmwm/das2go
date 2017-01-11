@@ -204,7 +204,7 @@ func pagination(base, query string, nres, startIdx, limit int) string {
 	return fmt.Sprintf("%s%s<br/>", page, line)
 }
 
-// Represent DAS records for web UI
+// PresentData represents DAS records for web UI
 func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int) string {
 	var out []string
 	line := "<hr class=\"line\" />"
@@ -330,7 +330,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 	return strings.Join(out, "\n")
 }
 
-// helper function to extract value from das record
+// ExtractValue helper function to extract value from das record
 // relies on type switching, see
 // https://golang.org/doc/effective_go.html#type_switch
 func ExtractValue(data mongo.DASRecord, daskey string) string {

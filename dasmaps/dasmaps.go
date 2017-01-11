@@ -123,7 +123,7 @@ func (m *DASMaps) PresentationMap() mongo.DASRecord {
 	return m.presentations
 }
 
-// FindNotation provides notation maps for given system
+// FindNotations provides notation maps for given system
 func (m *DASMaps) FindNotations(system string) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	for _, rec := range m.NotationMaps() {
@@ -191,13 +191,13 @@ func getAllArgs(rec mongo.DASRecord) []string {
 	dasmaps := GetDASMaps(rec["das_map"])
 	for _, dmap := range dasmaps {
 		dasKey := dmap["das_key"].(string)
-		api_val := dmap["api_arg"]
-		if api_val == nil {
+		apiVal := dmap["api_arg"]
+		if apiVal == nil {
 			continue
 		}
-		api_arg := api_val.(string)
+		apiArg := apiVal.(string)
 		for _, v := range args {
-			if v == api_arg && !utils.InList(dasKey, out) {
+			if v == apiArg && !utils.InList(dasKey, out) {
 				out = append(out, dasKey)
 			}
 		}

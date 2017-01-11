@@ -29,7 +29,7 @@ func loadRunRegistryData(api string, data []byte) []mongo.DASRecord {
 	return out
 }
 
-// Unmarshal RunRegistry data stream and return DAS records based on api
+// RunRegistryUnmarshal unmarshals RunRegistry data stream and return DAS records based on api
 func RunRegistryUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadRunRegistryData(api, data)
 	var out []mongo.DASRecord

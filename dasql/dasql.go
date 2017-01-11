@@ -16,18 +16,19 @@ import (
 	"time"
 )
 
+// DASQuery provides basic structure to hold DAS query record
 type DASQuery struct {
-	Query, relaxed_query, Qhash string
-	Spec                        bson.M
-	Fields                      []string
-	Pipe                        string
-	Instance                    string
-	Filters                     map[string][]string
-	Aggregators                 [][]string
-	Error                       string
+	Query, relaxedQuery, Qhash string
+	Spec                       bson.M
+	Fields                     []string
+	Pipe                       string
+	Instance                   string
+	Filters                    map[string][]string
+	Aggregators                [][]string
+	Error                      string
 }
 
-// implement own formatter using DASQuery rather then *DASQuery, since
+// String method implements own formatter using DASQuery rather then *DASQuery, since
 // former will be invoked on both pointer and values and therefore used by fmt/log
 // http://stackoverflow.com/questions/16976523/in-go-why-isnt-my-stringer-interface-method-getting-invoked-when-using-fmt-pr
 func (q DASQuery) String() string {
@@ -42,8 +43,8 @@ func relax(query string) string {
 		if oper == "in" || oper == "between" {
 			continue
 		} else {
-			new_oper := " " + oper + " "
-			query = strings.Replace(query, oper, new_oper, -1)
+			newOp := " " + oper + " "
+			query = strings.Replace(query, oper, newOp, -1)
 		}
 	}
 	arr := strings.Split(query, " ")
@@ -185,15 +186,15 @@ func parseLastValue(val string) []string {
 	return out
 }
 
-// DAS query parser
+// Parse method provides DAS query parser
 func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	var qlerr string
 	var rec DASQuery
-	relaxed_query := relax(query)
-	parts := strings.SplitN(relaxed_query, "|", 2)
+	relaxedQuery := relax(query)
+	parts := strings.SplitN(relaxedQuery, "|", 2)
 	pipe := ""
 	if len(parts) > 1 {
-		relaxed_query = strings.Trim(parts[0], " ")
+		relaxedQuery = strings.Trim(parts[0], " ")
 		pipe = strings.Trim(parts[1], " ")
 	}
 	nan := "_NA_"
@@ -201,7 +202,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	spec_ops := []string{"in", "between"}
 	fields := []string{}
 	spec := bson.M{}
-	arr := strings.Split(relaxed_query, " ")
+	arr := strings.Split(relaxedQuery, " ")
 	qlen := len(arr)
 	nval := nan
 	nnval := nan
@@ -234,11 +235,11 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		} else if utils.InList(nval, operators()) {
 			first_nnval := string(nnval[0])
 			if !utils.InList(val, append(daskeys, specials...)) {
-				qlerr = qlError(relaxed_query, idx, "Wrong DAS key: "+val)
+				qlerr = qlError(relaxedQuery, idx, "Wrong DAS key: "+val)
 				return rec, qlerr
 			}
 			if first_nnval == "[" {
-				value, step, qlerr := parseArray(relaxed_query, idx+2, nval, val)
+				value, step, qlerr := parseArray(relaxedQuery, idx+2, nval, val)
 				if qlerr != "" {
 					return rec, qlerr
 				}
@@ -246,13 +247,13 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 				idx += step
 			} else if utils.InList(nval, spec_ops) {
 				msg := "operator " + nval + " should be followed by square bracket"
-				qlerr = qlError(relaxed_query, idx, msg)
+				qlerr = qlError(relaxedQuery, idx, msg)
 				return rec, qlerr
 			} else if nval == "last" {
 				updateSpec(spec, spec_entry(val, nval, parseLastValue(nnval)))
 				idx += 2
 			} else if first_nnval == "\"" || first_nnval == "'" {
-				value, step := parseQuotes(relaxed_query, idx, first_nnval)
+				value, step := parseQuotes(relaxedQuery, idx, first_nnval)
 				updateSpec(spec, spec_entry(val, nval, value))
 				idx += step
 			} else {
@@ -266,11 +267,11 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 				idx += 1
 				continue
 			} else {
-				qlerr = qlError(relaxed_query, idx, "Not a DAS key")
+				qlerr = qlError(relaxedQuery, idx, "Not a DAS key")
 				return rec, qlerr
 			}
 		} else {
-			qlerr = qlError(relaxed_query, idx, "unable to parse DAS query")
+			qlerr = qlError(relaxedQuery, idx, "unable to parse DAS query")
 			return rec, qlerr
 		}
 
@@ -294,10 +295,10 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	}
 
 	rec.Query = query
-	rec.relaxed_query = relaxed_query
+	rec.relaxedQuery = relaxedQuery
 	rec.Spec = spec
 	rec.Fields = fields
-	rec.Qhash = qhash(relaxed_query, inst)
+	rec.Qhash = qhash(relaxedQuery, inst)
 	rec.Pipe = pipe
 	rec.Instance = inst
 	rec.Filters = filters
