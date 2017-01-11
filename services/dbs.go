@@ -95,29 +95,29 @@ func (LocalAPIs) L_dbs3_dataset4block(dasquery dasql.DASQuery) []mongo.DASRecord
 
 func (LocalAPIs) L_dbs3_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	keys := []string{"run_num", "lumi_section_num"}
-	return file_run_lumi(dasquery, keys)
+	return fileRunLumi(dasquery, keys)
 }
 func (LocalAPIs) L_dbs3_run_lumi4block(dasquery dasql.DASQuery) []mongo.DASRecord {
 	keys := []string{"run_num", "lumi_section_num"}
-	return file_run_lumi(dasquery, keys)
+	return fileRunLumi(dasquery, keys)
 }
 
 func (LocalAPIs) L_dbs3_file_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	keys := []string{"logical_file_name", "lumi_section_num"}
-	return file_run_lumi(dasquery, keys)
+	return fileRunLumi(dasquery, keys)
 }
 func (LocalAPIs) L_dbs3_file_lumi4block(dasquery dasql.DASQuery) []mongo.DASRecord {
 	keys := []string{"logical_file_name", "lumi_section_num"}
-	return file_run_lumi(dasquery, keys)
+	return fileRunLumi(dasquery, keys)
 }
 
 func (LocalAPIs) L_dbs3_file_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	keys := []string{"logical_file_name", "run_num", "lumi_section_num"}
-	return file_run_lumi(dasquery, keys)
+	return fileRunLumi(dasquery, keys)
 }
 func (LocalAPIs) L_dbs3_file_run_lumi4block(dasquery dasql.DASQuery) []mongo.DASRecord {
 	keys := []string{"logical_file_name", "run_num", "lumi_section_num"}
-	return file_run_lumi(dasquery, keys)
+	return fileRunLumi(dasquery, keys)
 }
 func (LocalAPIs) L_dbs3_block_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	var out []mongo.DASRecord
@@ -125,7 +125,7 @@ func (LocalAPIs) L_dbs3_block_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.
 	// use filelumis DBS API output to get
 	// run_num, logical_file_name, lumi_secion_num from provided keys
 	api := "filelumis"
-	urls := dbs_urls(dasquery, api)
+	urls := dbsUrls(dasquery, api)
 	filelumis := processUrls("dbs3", api, urls)
 	for _, rec := range filelumis {
 		row := make(mongo.DASRecord)
@@ -155,7 +155,7 @@ func (LocalAPIs) L_dbs3_file4dataset_run_lumi(dasquery dasql.DASQuery) []mongo.D
 	var out []mongo.DASRecord
 	lumi, _ := strconv.ParseFloat(spec["lumi"].(string), 64)
 	keys := []string{"logical_file_name", "lumi_section_num"}
-	records := file_run_lumi(dasquery, keys)
+	records := fileRunLumi(dasquery, keys)
 	for _, rec := range records {
 		for _, row := range rec["lumi"].([]mongo.DASRecord) {
 			lumis := row["number"].([]interface{})
@@ -204,7 +204,7 @@ func (LocalAPIs) L_dbs3_blocks4tier_dates(dasquery dasql.DASQuery) []mongo.DASRe
 }
 func (LocalAPIs) L_dbs3_lumi4block_run(dasquery dasql.DASQuery) []mongo.DASRecord {
 	keys := []string{"lumi_section_num"}
-	return file_run_lumi(dasquery, keys)
+	return fileRunLumi(dasquery, keys)
 }
 
 func (LocalAPIs) L_dbs3_datasetlist(dasquery dasql.DASQuery) []mongo.DASRecord {

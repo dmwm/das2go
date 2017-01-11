@@ -44,7 +44,7 @@ func DASLocalAPIs() []string {
 }
 
 // helper function to find file,run,lumis for given dataset or block
-func find_blocks(dasquery dasql.DASQuery) []string {
+func findBlocks(dasquery dasql.DASQuery) []string {
 	spec := dasquery.Spec
 	inst := dasquery.Instance
 	var out []string
@@ -112,20 +112,20 @@ func runArgs(dasquery dasql.DASQuery) string {
 	// get runs from spec
 	spec := dasquery.Spec
 	runs := spec["run"]
-	runs_args := ""
+	runsArgs := ""
 	if runs != nil {
 		switch value := runs.(type) {
 		case []string:
 			for _, val := range value {
-				runs_args = fmt.Sprintf("%s&run_num=%s", runs_args, val)
+				runsArgs = fmt.Sprintf("%s&run_num=%s", runsArgs, val)
 			}
 		case string:
-			runs_args = fmt.Sprintf("%s&run_num=%s", runs_args, value)
+			runsArgs = fmt.Sprintf("%s&run_num=%s", runsArgs, value)
 		default:
 			panic(fmt.Sprintf("Unknown type for runs=%s, type=%T", runs, runs))
 		}
 	}
-	return runs_args
+	return runsArgs
 }
 
 // helper function to get file status from the spec
@@ -142,20 +142,20 @@ func fileStatus(dasquery dasql.DASQuery) bool {
 }
 
 // helper function to get DBS urls for given spec and api
-func dbs_urls(dasquery dasql.DASQuery, api string) []string {
+func dbsUrls(dasquery dasql.DASQuery, api string) []string {
 	inst := dasquery.Instance
 	// get runs from spec
-	runs_args := runArgs(dasquery)
-	valid_file := fileStatus(dasquery)
+	runsArgs := runArgs(dasquery)
+	validFile := fileStatus(dasquery)
 
 	// find all blocks for given dataset or block
 	var urls []string
-	for _, blk := range find_blocks(dasquery) {
+	for _, blk := range findBlocks(dasquery) {
 		myurl := fmt.Sprintf("%s/%s?block_name=%s", dbsUrl(inst), api, url.QueryEscape(blk))
-		if len(runs_args) > 0 {
-			myurl += runs_args // append run arguments
+		if len(runsArgs) > 0 {
+			myurl += runsArgs // append run arguments
 		}
-		if valid_file {
+		if validFile {
 			myurl += fmt.Sprintf("&validFileOnly=1") // append validFileOnly=1
 		}
 		urls = append(urls, myurl)
@@ -164,13 +164,13 @@ func dbs_urls(dasquery dasql.DASQuery, api string) []string {
 }
 
 // helper function to get file,run,lumi triplets
-func file_run_lumi(dasquery dasql.DASQuery, keys []string) []mongo.DASRecord {
+func fileRunLumi(dasquery dasql.DASQuery, keys []string) []mongo.DASRecord {
 	var out []mongo.DASRecord
 
 	// use filelumis DBS API output to get
 	// run_num, logical_file_name, lumi_secion_num from provided fields
 	api := "filelumis"
-	urls := dbs_urls(dasquery, api)
+	urls := dbsUrls(dasquery, api)
 	filelumis := processUrls("dbs3", api, urls)
 	for _, rec := range filelumis {
 		row := make(mongo.DASRecord)
@@ -196,7 +196,7 @@ func file_run_lumi(dasquery dasql.DASQuery, keys []string) []mongo.DASRecord {
 	return out
 }
 
-// helper function to sort records by run and then merge lumis within a run
+// OrderByRunLumis helper function to sort records by run and then merge lumis within a run
 func OrderByRunLumis(records []mongo.DASRecord) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	rmap := make(map[float64][]float64)
@@ -270,7 +270,7 @@ func phedexNode(site string) string {
 }
 
 // helper function to find datasets for given site and release
-func dataset4site_release(dasquery dasql.DASQuery) []mongo.DASRecord {
+func dataset4siteRelease(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	var urls, datasets []string
@@ -299,13 +299,13 @@ func dataset4site_release(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return out
 }
 
-// struct which cache PhEDEX nodes and periodically update them
+// PhedexNodes struct caches PhEDEX nodes and periodically update them
 type PhedexNodes struct {
 	nodes  []mongo.DASRecord
 	tstamp int64
 }
 
-// PhedexNodes API which periodically fetch PhEDEx nodes info
+// Nodes API periodically fetches PhEDEx nodes info
 // if records still alive (fetched less than a day ago) we use the cache
 func (p *PhedexNodes) Nodes() []mongo.DASRecord {
 	if len(p.nodes) != 0 && (time.Now().Unix()-p.tstamp) < 24*60*60 {
@@ -319,7 +319,7 @@ func (p *PhedexNodes) Nodes() []mongo.DASRecord {
 	return p.nodes
 }
 
-// PhedexNodes API to return type of given node
+// NodeType API returns type of given node
 func (p *PhedexNodes) NodeType(site string) string {
 	nodeMatch, _ := regexp.MatchString("^T[0-9]_[A-Z]+(_)[A-Z]+", site)
 	seMatch, _ := regexp.MatchString("^[a-z]+(\\.)[a-z]+(\\.)", site)

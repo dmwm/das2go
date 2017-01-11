@@ -19,10 +19,10 @@ var _phedexNodes PhedexNodes
 
 // combined service APIs
 func (LocalAPIs) L_combined_dataset4site_release(dasquery dasql.DASQuery) []mongo.DASRecord {
-	return dataset4site_release(dasquery)
+	return dataset4siteRelease(dasquery)
 }
 func (LocalAPIs) L_combined_dataset4site_release_parent(dasquery dasql.DASQuery) []mongo.DASRecord {
-	return dataset4site_release(dasquery)
+	return dataset4siteRelease(dasquery)
 }
 func (LocalAPIs) L_combined_child4site_release_dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
@@ -198,7 +198,7 @@ func files4db_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "files"
-	urls := dbs_urls(dasquery, api)
+	urls := dbsUrls(dasquery, api)
 	files := processUrls("dbs3", api, urls)
 	var fileList []string
 	for _, rec := range files {
