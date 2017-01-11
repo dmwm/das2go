@@ -92,7 +92,7 @@ func parseArray(rquery string, odx int, oper string, val string) ([]string, int,
 	}
 	// we receive relatex query, let's split it by spaces and extract array part
 	arr := strings.Split(rquery, " ")
-	query := strings.Join(arr[odx:len(arr)], " ")
+	query := strings.Join(arr[odx:], " ")
 	idx := strings.Index(query, "[")
 	jdx := strings.Index(query, "]")
 	vals := strings.Split(string(query[idx+1:jdx]), ",")
@@ -277,7 +277,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	}
 	// if no selection keys are given, we'll use spec dictionary keys
 	if len(fields) == 0 {
-		for key, _ := range spec {
+		for key := range spec {
 			fields = append(fields, key)
 		}
 	}

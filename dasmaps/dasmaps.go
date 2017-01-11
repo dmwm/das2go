@@ -183,7 +183,7 @@ func getRequiredArgs(rec mongo.DASRecord) []string {
 func getAllArgs(rec mongo.DASRecord) []string {
 	var out, args []string
 	params := rec["params"].(mongo.DASRecord)
-	for k, _ := range params {
+	for k := range params {
 		args = append(args, k)
 	}
 	dasmaps := GetDASMaps(rec["das_map"])

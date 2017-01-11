@@ -279,7 +279,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					}
 					webkey := uirow["ui"].(string)
 					attrs := strings.Split(daskey, ".")
-					attr := strings.Join(attrs[1:len(attrs)], ".")
+					attr := strings.Join(attrs[1:], ".")
 					value := ExtractValue(rec, attr)
 					if daskey == "lumi.number" {
 						value = joinLumis(strings.Split(value, ","))
@@ -362,7 +362,7 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 				var value string
 				switch vvv := rec.(type) {
 				case mongo.DASRecord:
-					value = ExtractValue(vvv, strings.Join(keys[count:len(keys)], "."))
+					value = ExtractValue(vvv, strings.Join(keys[count:], "."))
 				default:
 					value = fmt.Sprintf("%v", vvv)
 				}
@@ -371,7 +371,7 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 			break
 		default:
 			if count != len(keys) {
-				return ExtractValue(value.(mongo.DASRecord), strings.Join(keys[count:len(keys)], "."))
+				return ExtractValue(value.(mongo.DASRecord), strings.Join(keys[count:], "."))
 			}
 			if strings.HasSuffix(key, "urls") {
 				out = append(out, urlsFormat(value))

@@ -132,9 +132,9 @@ func (LocalAPIs) L_dbs3_block_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.
 		for _, key := range keys {
 			// put into file das record, internal type must be list
 			if key == "run_num" {
-				row["run"] = []mongo.DASRecord{mongo.DASRecord{"run_number": rec[key]}}
+				row["run"] = []mongo.DASRecord{{"run_number": rec[key]}}
 			} else if key == "lumi_section_num" {
-				row["lumi"] = []mongo.DASRecord{mongo.DASRecord{"number": rec[key]}}
+				row["lumi"] = []mongo.DASRecord{{"number": rec[key]}}
 			} else if key == "block_name" {
 				rurl, err := url.QueryUnescape(rec["url"].(string))
 				if err != nil {
@@ -143,7 +143,7 @@ func (LocalAPIs) L_dbs3_block_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.
 				}
 				arr := strings.Split(rurl, "block_name=")
 				blk := arr[1]
-				row["block"] = []mongo.DASRecord{mongo.DASRecord{"name": blk}}
+				row["block"] = []mongo.DASRecord{{"name": blk}}
 			}
 		}
 		out = append(out, row)

@@ -67,7 +67,7 @@ func GetValue(rec DASRecord, key string) interface{} {
 		if len(keys) == 2 {
 			return GetValue(val, keys[1])
 		}
-		return GetValue(val, strings.Join(keys[1:len(keys)], "."))
+		return GetValue(val, strings.Join(keys[1:], "."))
 	}
 	value := rec[key]
 	return value

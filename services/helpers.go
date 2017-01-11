@@ -177,11 +177,11 @@ func file_run_lumi(dasquery dasql.DASQuery, keys []string) []mongo.DASRecord {
 		for _, key := range keys {
 			// put into file das record, internal type must be list
 			if key == "run_num" {
-				row["run"] = []mongo.DASRecord{mongo.DASRecord{"run_number": rec[key]}}
+				row["run"] = []mongo.DASRecord{{"run_number": rec[key]}}
 			} else if key == "lumi_section_num" {
-				row["lumi"] = []mongo.DASRecord{mongo.DASRecord{"number": rec[key]}}
+				row["lumi"] = []mongo.DASRecord{{"number": rec[key]}}
 			} else if key == "logical_file_name" {
-				row["file"] = []mongo.DASRecord{mongo.DASRecord{"name": rec[key]}}
+				row["file"] = []mongo.DASRecord{{"name": rec[key]}}
 			}
 		}
 		out = append(out, row)

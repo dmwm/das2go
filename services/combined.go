@@ -162,7 +162,7 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 		rf := fmt.Sprintf("%5.2f%%", 100*nfiles/bfiles)
 		// put into file das record, internal type must be list
 		rec := make(mongo.DASRecord)
-		rec["site"] = []mongo.DASRecord{mongo.DASRecord{"name": key,
+		rec["site"] = []mongo.DASRecord{{"name": key,
 			"dataset_fraction": pfiles, "block_fraction": pblks, "block_completion": bc,
 			"se": row["se"].(string), "replica_fraction": rf, "kind": row["kind"].(string)}}
 		out = append(out, rec)
@@ -210,7 +210,7 @@ func files4db_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
 	for _, fname := range filterFiles(fileList, site) {
 		row := make(mongo.DASRecord)
 		// put into file das record, internal type must be list
-		row["file"] = []mongo.DASRecord{mongo.DASRecord{"name": fname}}
+		row["file"] = []mongo.DASRecord{{"name": fname}}
 		out = append(out, row)
 	}
 	return out
