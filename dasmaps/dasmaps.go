@@ -15,6 +15,7 @@ import (
 	"strings"
 )
 
+// DASMaps structure holds all information about DAS records
 type DASMaps struct {
 	records       []mongo.DASRecord
 	services      []string
@@ -23,11 +24,12 @@ type DASMaps struct {
 	daskeys       []string
 }
 
+// Maps provides access to DAS records
 func (m *DASMaps) Maps() []mongo.DASRecord {
 	return m.records
 }
 
-// DASMaps interface method to get list of DAS keys
+// DASKyes provides list of DAS keys
 func (m *DASMaps) DASKeys() []string {
 	if len(m.daskeys) != 0 {
 		return m.daskeys
@@ -55,7 +57,7 @@ func (m *DASMaps) DASKeys() []string {
 	return m.daskeys
 }
 
-// DASMaps interface method to get list of services
+// Services provides list of services
 func (m *DASMaps) Services() []string {
 	if len(m.services) != 0 {
 		return m.services
@@ -80,7 +82,7 @@ func (m *DASMaps) Services() []string {
 	return m.services
 }
 
-// DASMaps interface method to get notation maps
+// NotationMaps provides notation maps
 func (m *DASMaps) NotationMaps() []mongo.DASRecord {
 	if len(m.notations) != 0 {
 		return m.notations
@@ -100,7 +102,7 @@ func (m *DASMaps) NotationMaps() []mongo.DASRecord {
 	return m.notations
 }
 
-// DASMaps interface method to get notation maps
+// PresentationMap provides presentation map of DAS maps
 func (m *DASMaps) PresentationMap() mongo.DASRecord {
 	if len(m.presentations) != 0 {
 		return m.presentations
@@ -136,12 +138,12 @@ func (m *DASMaps) FindNotations(system string) []mongo.DASRecord {
 	return out
 }
 
-// Find presentation maps for given primary DAS key
+// FindPresentation returns presentations for given das key
 func (m *DASMaps) FindPresentation(daskey string) []mongo.DASRecord {
 	return m.presentations[daskey].([]mongo.DASRecord)
 }
 
-// get DAS map from given record
+// GetDASMaps returns das maps for given entry
 func GetDASMaps(entry interface{}) []mongo.DASRecord {
 	var maps []mongo.DASRecord
 	if val, ok := entry.([]interface{}); ok {
@@ -203,7 +205,7 @@ func getAllArgs(rec mongo.DASRecord) []string {
 	return out
 }
 
-// helper function for DASRecord type similar to utils.InList
+// MapInList helper functions check if given map exists in given list
 func MapInList(a mongo.DASRecord, list []mongo.DASRecord) bool {
 	check := 0
 	for _, b := range list {
@@ -217,7 +219,7 @@ func MapInList(a mongo.DASRecord, list []mongo.DASRecord) bool {
 	return false
 }
 
-// Find services for given set fields and spec pair, return DAS maps associated with found services
+// FindServices look-up DAS services for given set fields and spec pair, return DAS maps associated with found services
 func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mongo.DASRecord {
 	keys := utils.MapKeys(spec)
 	var cond_records, out []mongo.DASRecord
@@ -265,12 +267,12 @@ func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mong
 	return out
 }
 
-// Load maps DASMaps API
+// LoadMaps loads DAS maps from given database collection
 func (m *DASMaps) LoadMaps(dbname, dbcoll string) {
 	m.records = mongo.Get(dbname, dbcoll, bson.M{}, 0, -1) // index=0, limit=-1
 }
 
-// Get string value from DAS map for a given key
+// GetString provides value from DAS map for a given key
 func GetString(dmap mongo.DASRecord, key string) string {
 	val, ok := dmap[key].(string)
 	if !ok {
@@ -279,7 +281,7 @@ func GetString(dmap mongo.DASRecord, key string) string {
 	return val
 }
 
-// Get int value from DAS map for a given key
+// GetInt provides value from DAS map for a given key
 func GetInt(dmap mongo.DASRecord, key string) int {
 	val, ok := dmap[key].(int)
 	if !ok {
@@ -288,7 +290,7 @@ func GetInt(dmap mongo.DASRecord, key string) int {
 	return val
 }
 
-// Get float value from DAS map for a given key
+// GetFloat provides value from DAS map for a given key
 func GetFloat(dmap mongo.DASRecord, key string) float64 {
 	val, ok := dmap[key].(float64)
 	if !ok {
@@ -297,7 +299,7 @@ func GetFloat(dmap mongo.DASRecord, key string) float64 {
 	return val
 }
 
-// Get notation values from notation map
+// GetNotation provides values from notation map
 func GetNotation(nmap mongo.DASRecord) (string, string, string) {
 	api_output := GetString(nmap, "api_output")
 	rec_key := GetString(nmap, "rec_key")
