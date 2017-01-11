@@ -26,10 +26,8 @@ import (
 	"time"
 )
 
-/*
- * Return array of certificates
- */
-func Certs() (tls_certs []tls.Certificate) {
+// Certs returns array of certificates
+func Certs() (tlsCerts []tls.Certificate) {
 	uproxy := os.Getenv("X509_USER_PROXY")
 	uckey := os.Getenv("X509_USER_KEY")
 	ucert := os.Getenv("X509_USER_CERT")
@@ -45,23 +43,21 @@ func Certs() (tls_certs []tls.Certificate) {
 			log.Println("Fail to parser proxy X509 certificate", err)
 			return
 		}
-		tls_certs = []tls.Certificate{x509cert}
+		tlsCerts = []tls.Certificate{x509cert}
 	} else if len(uckey) > 0 {
 		x509cert, err := tls.LoadX509KeyPair(ucert, uckey)
 		if err != nil {
 			log.Println("Fail to parser user X509 certificate", err)
 			return
 		}
-		tls_certs = []tls.Certificate{x509cert}
+		tlsCerts = []tls.Certificate{x509cert}
 	} else {
 		return
 	}
 	return
 }
 
-/*
- * HTTP client for urlfetch server
- */
+// HttpClient is HTTP client for urlfetch server
 func HttpClient() (client *http.Client) {
 	// create HTTP client
 	certs := Certs()
@@ -94,6 +90,7 @@ type ResponseType struct {
 	Error error
 }
 
+// UrlRequest structure holds details about url request's attributes
 type UrlRequest struct {
 	rurl string
 	args string
@@ -104,13 +101,22 @@ type UrlRequest struct {
 // A UrlFetchQueue implements heap.Interface and holds UrlRequests
 type UrlFetchQueue []*UrlRequest
 
-func (q UrlFetchQueue) Len() int           { return len(q) }
+// Len provides len implemenation for UrlFetchQueue
+func (q UrlFetchQueue) Len() int { return len(q) }
+
+// Less provides Less implemenation for UrlFetchQueue
 func (q UrlFetchQueue) Less(i, j int) bool { return q[i].ts < q[j].ts }
-func (q UrlFetchQueue) Swap(i, j int)      { q[i], q[j] = q[j], q[i] }
+
+// Swap provides swap implemenation for UrlFetchQueue
+func (q UrlFetchQueue) Swap(i, j int) { q[i], q[j] = q[j], q[i] }
+
+// Push provides push implemenation for UrlFetchQueue
 func (q *UrlFetchQueue) Push(x interface{}) {
 	item := x.(*UrlRequest)
 	*q = append(*q, item)
 }
+
+// Pop provides Pop implemenation for UrlFetchQueue
 func (q *UrlFetchQueue) Pop() interface{} {
 	old := *q
 	n := len(old)
@@ -133,7 +139,7 @@ func init() {
 	go URLFetchWorker(UrlRequestChannel)
 }
 
-// A URL fetch Worker. It has three channels: in channel for incoming requests
+// URLFetchWorker has three channels: in channel for incoming requests
 // (in a form of URL strings), out channel for outgoing responses in a form of
 // ResponseType structure and quit channel
 func URLFetchWorker(in <-chan UrlRequest) {
@@ -162,7 +168,7 @@ func URLFetchWorker(in <-chan UrlRequest) {
 // Problem with too many open files
 // http://craigwickesser.com/2015/01/golang-http-to-many-open-files/
 
-// Fetch data for provided URL, args is a json dump of arguments
+// FetchResponse fetches data for provided URL, args is a json dump of arguments
 func FetchResponse(rurl, args string) ResponseType {
 	// increment UrlQueueSize since we'll process request
 	atomic.AddInt32(&UrlQueueSize, 1)
@@ -273,7 +279,7 @@ func validate_url(rurl string) bool {
 	return false
 }
 
-// represent final response in a form of JSON structure
+// Response represents final response in a form of JSON structure
 // we use custorm representation
 func Response(rurl string, data []byte) []byte {
 	b := []byte(`{"url":`)
