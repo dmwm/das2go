@@ -26,7 +26,7 @@ func loadPhedexData(api string, data []byte) []mongo.DASRecord {
 	return out
 }
 
-// Unmarshal Phedex data stream and return DAS records based on api
+// PhedexUnmarshal unmarshals Phedex data stream and return DAS records based on api
 func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	records := loadPhedexData(api, data)

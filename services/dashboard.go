@@ -39,7 +39,7 @@ func loadDashboardData(api string, data []byte) []mongo.DASRecord {
 	return out
 }
 
-// Unmarshal Dashboard data stream and return DAS records based on api
+// DashboardUnmarshal unmarshals Dashboard data stream and return DAS records based on api
 func DashboardUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadDashboardData(api, data)
 	return records
