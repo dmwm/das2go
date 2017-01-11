@@ -200,7 +200,7 @@ func filterFiles(files []string, site string) []string {
 }
 
 // helper function to get list of files for given dataset/block and run/site
-func files4db_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
+func files4dbRunsSite(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "files"
@@ -224,10 +224,10 @@ func files4db_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
 
 // L_combined_files4dataset_runs_site combined APIs to lookup file list for give dataset/run/site
 func (LocalAPIs) L_combined_files4dataset_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
-	return files4db_runs_site(dasquery)
+	return files4dbRunsSite(dasquery)
 }
 
 // L_combined_files4block_runs_site combined APIs to lookup file list for give block/run/site
 func (LocalAPIs) L_combined_files4block_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
-	return files4db_runs_site(dasquery)
+	return files4dbRunsSite(dasquery)
 }
