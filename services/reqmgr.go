@@ -49,7 +49,7 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 	return out
 }
 
-// Unmarshal ReqMgr data stream and return DAS records based on api
+// ReqMgrUnmarshal unmarshals ReqMgr data stream and return DAS records based on api
 func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadReqMgrData(api, data)
 	var out []mongo.DASRecord
@@ -167,7 +167,7 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	return utils.List2Set(out), idict
 }
 
-// reqmgr APIs to lookup configs for given dataset
+// L_reqmgr_configs reqmgr APIs to lookup configs for given dataset
 // The logic: we look-up ReqMgr ids for given dataset and scan them
 // if id has length 32 we use configFile URL, otherwise we look-up record
 // in couchdb and fetch ConfigIDs to construct configFile URL

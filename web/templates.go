@@ -27,11 +27,12 @@ func parseTmpl(tdir, tmpl string, data interface{}) string {
 	return buf.String()
 }
 
-// Templates interface
+// DASTemplates structure
 type DASTemplates struct {
 	top, bottom, searchForm, cards, dasError string
 }
 
+// Top method for DASTemplates structure
 func (q DASTemplates) Top(tdir string, tmplData map[string]interface{}) string {
 	if q.top != "" {
 		return q.top
@@ -40,6 +41,7 @@ func (q DASTemplates) Top(tdir string, tmplData map[string]interface{}) string {
 	return q.top
 }
 
+// Bottom method for DASTemplates structure
 func (q DASTemplates) Bottom(tdir string, tmplData map[string]interface{}) string {
 	if q.bottom != "" {
 		return q.bottom
@@ -48,6 +50,7 @@ func (q DASTemplates) Bottom(tdir string, tmplData map[string]interface{}) strin
 	return q.bottom
 }
 
+// SearchForm method for DASTemplates structure
 func (q DASTemplates) SearchForm(tdir string, tmplData map[string]interface{}) string {
 	if q.searchForm != "" {
 		return q.searchForm
@@ -56,6 +59,7 @@ func (q DASTemplates) SearchForm(tdir string, tmplData map[string]interface{}) s
 	return q.searchForm
 }
 
+// Cards method for DASTemplates structure
 func (q DASTemplates) Cards(tdir string, tmplData map[string]interface{}) string {
 	tmplData["CardsClass"] = "hide"
 	if q.cards != "" {
@@ -65,6 +69,7 @@ func (q DASTemplates) Cards(tdir string, tmplData map[string]interface{}) string
 	return q.cards
 }
 
+// Pagination  method for DASTemplates structure
 func (q DASTemplates) Pagination(tdir string, tmplData map[string]interface{}) string {
 	if q.searchForm != "" {
 		return q.searchForm
@@ -73,6 +78,7 @@ func (q DASTemplates) Pagination(tdir string, tmplData map[string]interface{}) s
 	return q.searchForm
 }
 
+// DASError method for DASTemplates structure
 func (q DASTemplates) DASError(tdir string, tmplData map[string]interface{}) string {
 	if q.dasError != "" {
 		return q.dasError
