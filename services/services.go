@@ -26,15 +26,15 @@ func remap(api string, records []mongo.DASRecord, notations []mongo.DASRecord) [
 	keys := utils.MapKeys(records[0])
 	for _, rec := range records {
 		for _, row := range notations {
-			apiname, api_key, rec_key := dasmaps.GetNotation(row)
+			apiname, apiKey, recKey := dasmaps.GetNotation(row)
 			if apiname != "" {
-				if apiname == api && utils.InList(api_key, keys) {
-					rec[rec_key] = rec[api_key]
-					delete(rec, api_key)
+				if apiname == api && utils.InList(apiKey, keys) {
+					rec[recKey] = rec[apiKey]
+					delete(rec, apiKey)
 				}
 			} else {
-				if utils.InList(api_key, keys) {
-					rec[rec_key] = rec[api_key]
+				if utils.InList(apiKey, keys) {
+					rec[recKey] = rec[apiKey]
 				}
 			}
 		}
@@ -43,6 +43,7 @@ func remap(api string, records []mongo.DASRecord, notations []mongo.DASRecord) [
 	return out
 }
 
+// Unmarshal generic function to unmarshal DAS record for given system/api/data/notations
 func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	switch {
@@ -66,6 +67,7 @@ func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []m
 	return remap(api, out, notations)
 }
 
+// DASHeader represents DAS Header
 func DASHeader() mongo.DASRecord {
 	das := make(mongo.DASRecord)
 	das["expire"] = 60 // default expire
@@ -77,7 +79,7 @@ func DASHeader() mongo.DASRecord {
 
 }
 
-// adjust DAS record and add (if necessary) leading key from DAS query
+// AdjustRecords adjusts DAS record and add (if necessary) leading key from DAS query
 func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.DASRecord, expire int, pkeys []string) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	fields := dasquery.Fields
@@ -118,7 +120,7 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 	return out
 }
 
-// create DAS record for DAS cache
+// CreateDASRecord creates DAS record for DAS cache
 func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRecord {
 	dasrecord := make(mongo.DASRecord)
 	dasrecord["query"] = dasquery.Query
@@ -139,7 +141,7 @@ func CreateDASRecord(dasquery dasql.DASQuery, srvs, pkeys []string) mongo.DASRec
 	return dasrecord
 }
 
-// create DAS record for DAS cache
+// CreateDASErrorRecord creates DAS record for DAS cache
 func CreateDASErrorRecord(dasquery dasql.DASQuery, pkeys []string) mongo.DASRecord {
 	dasrecord := make(mongo.DASRecord)
 	dasrecord["query"] = dasquery.Query
@@ -160,7 +162,7 @@ func CreateDASErrorRecord(dasquery dasql.DASQuery, pkeys []string) mongo.DASReco
 	return dasrecord
 }
 
-// get DAS record from das cache
+// GetDASRecord gets DAS record from das cache
 func GetDASRecord(dasquery dasql.DASQuery) mongo.DASRecord {
 	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 0}
 	rec := mongo.Get("das", "cache", spec, 0, 1)
@@ -170,7 +172,7 @@ func GetDASRecord(dasquery dasql.DASQuery) mongo.DASRecord {
 	return CreateDASErrorRecord(dasquery, []string{})
 }
 
-// get DAS record from das cache
+// GetMinExpire gets DAS min expire timestamp out of DAS record
 func GetMinExpire(dasquery dasql.DASQuery) int64 {
 	expire := utils.Expire(3600)
 	spec := bson.M{"qhash": dasquery.Qhash}
@@ -184,21 +186,21 @@ func GetMinExpire(dasquery dasql.DASQuery) int64 {
 	return expire
 }
 
-// update DAS record in das cache
+// UpdateDASRecord updates DAS record in das cache
 func UpdateDASRecord(qhash string, dasrecord mongo.DASRecord) {
 	spec := bson.M{"qhash": qhash, "das.record": 0}
 	newdata := bson.M{"query": dasrecord["query"], "qhash": dasrecord["qhash"], "instance": dasrecord["instance"], "das": dasrecord["das"]}
 	mongo.Update("das", "cache", spec, newdata)
 }
 
-// helper function to get expire value from DAS/data record
+// GetExpire helper function to get expire value from DAS/data record
 func GetExpire(rec mongo.DASRecord) int64 {
 	das := rec["das"].(mongo.DASRecord)
 	expire := das["expire"].(int64)
 	return expire
 }
 
-// merge DAS data records
+// MergeDASRecords merges DAS data records
 func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	// get DAS record and extract primary key
 	spec := bson.M{"qhash": dasquery.Qhash, "das.record": 0}
@@ -335,7 +337,7 @@ func mergeDASparts(das1, das2 mongo.DASRecord) mongo.DASRecord {
 	return das
 }
 
-// helper function to fix all DAS cache record expire timestamps
+// UpdateExpire helper function to fix all DAS cache record expire timestamps
 func UpdateExpire(qhash string, records []mongo.DASRecord, dasexpire int64) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	for _, rec := range records {

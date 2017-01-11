@@ -143,9 +143,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write(js)
 		}
 	}()
-	dasquery, err := dasql.Parse(query, inst, _dasmaps.DASKeys())
-	if err != "" {
-		panic(err)
+	dasquery, err2 := dasql.Parse(query, inst, _dasmaps.DASKeys())
+	if err2 != "" {
+		panic(err2)
 	}
 	if pid == "" {
 		pid = dasquery.Qhash
