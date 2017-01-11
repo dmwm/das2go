@@ -44,23 +44,23 @@ func (r *DASRecord) Services() []string {
 
 // Extract API call parameters from das map entry
 func getApiParams(dasmap mongo.DASRecord) (string, string, string, string) {
-	das_key, ok := dasmap["das_key"].(string)
+	dasKey, ok := dasmap["das_key"].(string)
 	if !ok {
-		das_key = ""
+		dasKey = ""
 	}
-	rec_key, ok := dasmap["rec_key"].(string)
+	recKey, ok := dasmap["rec_key"].(string)
 	if !ok {
-		rec_key = ""
+		recKey = ""
 	}
-	api_arg, ok := dasmap["api_arg"].(string)
+	apiArg, ok := dasmap["api_arg"].(string)
 	if !ok {
-		api_arg = ""
+		apiArg = ""
 	}
 	pattern, ok := dasmap["pattern"].(string)
 	if !ok {
 		pattern = ""
 	}
-	return das_key, rec_key, api_arg, pattern
+	return dasKey, recKey, apiArg, pattern
 }
 
 // FormUrlCall forms appropriate URL from given dasquery and dasmap, the final URL
@@ -103,7 +103,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	}
 	dasmaps := dasmaps.GetDASMaps(dasmap["das_map"])
 	vals := url.Values{}
-	var use_args []string
+	var useArgs []string
 	for _, dmap := range dasmaps {
 		dkey, rkey, arg, pat := getApiParams(dmap)
 		if utils.InList(dkey, skeys) {
@@ -130,11 +130,11 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 						vals.Add("startTime", utils.ConddbTime(val))
 						eval := utils.Unix2DASTime(utils.UnixTime(val) + 37*3660)
 						vals.Add("endTime", utils.ConddbTime(eval))
-						use_args = append(use_args, arg)
+						useArgs = append(useArgs, arg)
 					} else {
 						vals.Add(arg, val)
 					}
-					use_args = append(use_args, arg)
+					useArgs = append(useArgs, arg)
 				}
 			} else { // let's try array of strings
 				arr, ok := spec[dkey].([]string)
@@ -145,26 +145,26 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 				if dkey == "date" && system == "dbs3" {
 					vals.Add("min_cdate", fmt.Sprintf("%d", utils.UnixTime(arr[0])))
 					vals.Add("max_cdate", fmt.Sprintf("%d", utils.UnixTime(arr[1])))
-					use_args = append(use_args, arg)
+					useArgs = append(useArgs, arg)
 				} else if dkey == "date" && system == "dashboard" {
 					vals.Add("date1", utils.DashboardTime(arr[0]))
 					vals.Add("date2", utils.DashboardTime(arr[1]))
-					use_args = append(use_args, arg)
+					useArgs = append(useArgs, arg)
 				} else if dkey == "date" && system == "conddb" {
 					vals.Add("startTime", utils.ConddbTime(arr[0]))
 					vals.Add("endTime", utils.ConddbTime(arr[1]))
-					use_args = append(use_args, arg)
+					useArgs = append(useArgs, arg)
 				} else if system == "conddb" && arg == "Runs" {
 					if len(arr) > 0 {
 						vals.Add(arg, strings.Join(arr, ","))
-						use_args = append(use_args, arg)
+						useArgs = append(useArgs, arg)
 					}
 				} else {
 					for _, val := range arr {
 						matched, _ := regexp.MatchString(pat, val)
 						if matched || pat == "" {
 							vals.Add(arg, val)
-							use_args = append(use_args, arg)
+							useArgs = append(useArgs, arg)
 						}
 					}
 				}
@@ -177,7 +177,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	params := dasmap["params"].(mongo.DASRecord)
 	for key, val := range params {
 		vvv := val.(string)
-		if !utils.InList(key, use_args) && !utils.InList(vvv, skipList) {
+		if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) {
 			vals.Add(key, vvv)
 		}
 	}
@@ -223,9 +223,8 @@ func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 				if matched || pat == "" {
 					if !(strings.HasSuffix(base, "/") && strings.HasPrefix(val, "/")) {
 						return base + "/" + val
-					} else {
-						return base + val
 					}
+					return base + val
 				}
 			case []string:
 				val, _ := spec[dkey].([]string)
@@ -411,7 +410,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	maps := dmaps.FindServices(dasquery.Instance, dasquery.Fields, dasquery.Spec)
 	var srvs, pkeys []string
 	urls := make(map[string]string)
-	var local_apis []mongo.DASRecord
+	var localApis []mongo.DASRecord
 	var furl string
 	// loop over services and fetch data
 	for _, dmap := range maps {
@@ -430,8 +429,8 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 		} else {
 			furl = FormUrlCall(dasquery, dmap)
 		}
-		if furl == "local_api" && !dasmaps.MapInList(dmap, local_apis) {
-			local_apis = append(local_apis, dmap)
+		if furl == "local_api" && !dasmaps.MapInList(dmap, localApis) {
+			localApis = append(localApis, dmap)
 		} else if furl != "" {
 			if _, ok := urls[furl]; !ok {
 				urls[furl] = args
@@ -469,8 +468,8 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 
 	// process local_api calls, we use GoDeferFunc to run processLocalApis as goroutine in defer/silent mode
 	// panic errors will be captured in GoDeferFunc and passed again into this local function
-	if len(local_apis) > 0 {
-		utils.GoDeferFunc("go processLocalApis", func() { processLocalApis(dasquery, local_apis, pkeys) })
+	if len(localApis) > 0 {
+		utils.GoDeferFunc("go processLocalApis", func() { processLocalApis(dasquery, localApis, pkeys) })
 	}
 	// process URLs which will insert records into das cache and merge them into das merge collection
 	if urls != nil {
@@ -525,9 +524,9 @@ func modSpec(spec bson.M, filter string) {
 	spec[key] = cond
 }
 
-// GetGata for given pid (DAS Query qhash)
+// GetData for given pid (DAS Query qhash)
 func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mongo.DASRecord) {
-	var empty_data, data []mongo.DASRecord
+	var emptyData, data []mongo.DASRecord
 	pid := dasquery.Qhash
 	filters := dasquery.Filters
 	aggrs := dasquery.Aggregators
@@ -563,13 +562,13 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 	}
 	// Get DAS status from cache collection
 	spec = bson.M{"qhash": pid, "das.record": 0}
-	das_data := mongo.Get("das", "cache", spec, 0, 1)
-	status, err := mongo.GetStringValue(das_data[0], "das.status")
+	dasData := mongo.Get("das", "cache", spec, 0, 1)
+	status, err := mongo.GetStringValue(dasData[0], "das.status")
 	if err != nil {
-		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), empty_data
+		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), emptyData
 	}
 	if len(data) == 0 {
-		return status, empty_data
+		return status, emptyData
 	}
 	return status, data
 }
@@ -630,7 +629,7 @@ func aggregate(data []mongo.DASRecord, agg, key string, ch chan mongo.DASRecord)
 	ch <- rec
 }
 
-// Get number of records for given DAS query qhash
+// Count gets number of records for given DAS query qhash
 func Count(pid string) int {
 	spec := bson.M{"qhash": pid}
 	return mongo.Count("das", "merge", spec)

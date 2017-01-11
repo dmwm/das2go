@@ -139,7 +139,7 @@ func parseQuotes(query string, idx int, quote string) (string, int) {
 	step := 1
 	return out, step
 }
-func spec_entry(key, oper string, val interface{}) bson.M {
+func specEntry(key, oper string, val interface{}) bson.M {
 	rec := bson.M{}
 	if oper == "=" || oper == "last" {
 		rec[key] = val
@@ -199,7 +199,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	}
 	nan := "_NA_"
 	specials := []string{"date", "system", "instance"}
-	spec_ops := []string{"in", "between"}
+	specOps := []string{"in", "between"}
 	fields := []string{}
 	spec := bson.M{}
 	arr := strings.Split(relaxedQuery, " ")
@@ -233,31 +233,31 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 			idx += 1
 			continue
 		} else if utils.InList(nval, operators()) {
-			first_nnval := string(nnval[0])
+			firstNextNextValue := string(nnval[0])
 			if !utils.InList(val, append(daskeys, specials...)) {
 				qlerr = qlError(relaxedQuery, idx, "Wrong DAS key: "+val)
 				return rec, qlerr
 			}
-			if first_nnval == "[" {
+			if firstNextNextValue == "[" {
 				value, step, qlerr := parseArray(relaxedQuery, idx+2, nval, val)
 				if qlerr != "" {
 					return rec, qlerr
 				}
-				updateSpec(spec, spec_entry(val, nval, value))
+				updateSpec(spec, specEntry(val, nval, value))
 				idx += step
-			} else if utils.InList(nval, spec_ops) {
+			} else if utils.InList(nval, specOps) {
 				msg := "operator " + nval + " should be followed by square bracket"
 				qlerr = qlError(relaxedQuery, idx, msg)
 				return rec, qlerr
 			} else if nval == "last" {
-				updateSpec(spec, spec_entry(val, nval, parseLastValue(nnval)))
+				updateSpec(spec, specEntry(val, nval, parseLastValue(nnval)))
 				idx += 2
-			} else if first_nnval == "\"" || first_nnval == "'" {
-				value, step := parseQuotes(relaxedQuery, idx, first_nnval)
-				updateSpec(spec, spec_entry(val, nval, value))
+			} else if firstNextNextValue == "\"" || firstNextNextValue == "'" {
+				value, step := parseQuotes(relaxedQuery, idx, firstNextNextValue)
+				updateSpec(spec, specEntry(val, nval, value))
 				idx += step
 			} else {
-				updateSpec(spec, spec_entry(val, nval, nnval))
+				updateSpec(spec, specEntry(val, nval, nnval))
 				idx += 2
 			}
 			idx += 1
