@@ -126,9 +126,13 @@ func (q *UrlFetchQueue) Pop() interface{} {
 }
 
 var (
-	UrlQueueSize      int32 // keep track of running URL requests
-	UrlQueueLimit     int32 // how many URL requests we can handle at a time, 0 means no limit
-	UrlRetry          int   // how many times we'll retry given url call
+	// UrlQueueSize keeps track of running URL requests
+	UrlQueueSize int32
+	// UrlQueueLimit knows how many URL requests we can handle at a time, 0 means no limit
+	UrlQueueLimit int32
+	// UrlRetry knows  how many times we'll retry given url call
+	UrlRetry int
+	// UrlRequestChannel is a UrlRequest channel
 	UrlRequestChannel = make(chan UrlRequest)
 )
 
@@ -179,7 +183,7 @@ func FetchResponse(rurl, args string) ResponseType {
 	var response ResponseType
 	response.Url = rurl
 	response.Data = []byte{}
-	if validate_url(rurl) == false {
+	if validateUrl(rurl) == false {
 		response.Error = errors.New("Invalid URL")
 		return response
 	}
@@ -265,7 +269,7 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 }
 
 // Helper function which validates given URL
-func validate_url(rurl string) bool {
+func validateUrl(rurl string) bool {
 	if len(rurl) > 0 {
 		pat := "(https|http)://[-A-Za-z0-9_+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]"
 		matched, err := regexp.MatchString(pat, rurl)
