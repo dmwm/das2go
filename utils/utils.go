@@ -17,9 +17,13 @@ import (
 	"time"
 )
 
-// global variable for this module which we're going to use across
-// many modules
-var VERBOSE, WEBSERVER int
+// global variable for this module which we're going to use across many modules
+
+// VERBOSE holds level of verbosity, it is set in main
+var VERBOSE int
+
+// WEBSERVER declares that web server will run, it is set in main
+var WEBSERVER int
 
 // Stack helper function to return Stack
 func Stack() string {

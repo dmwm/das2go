@@ -17,13 +17,17 @@ import (
 // global variables used in this module
 var _phedexNodes PhedexNodes
 
-// combined service APIs
+// L_combined_dataset4site_release returns dataset for given site and release
 func (LocalAPIs) L_combined_dataset4site_release(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return dataset4siteRelease(dasquery)
 }
+
+// L_combined_dataset4site_release_parent returns dataset for given site release parent
 func (LocalAPIs) L_combined_dataset4site_release_parent(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return dataset4siteRelease(dasquery)
 }
+
+// L_combined_child4site_release_dataset returns child dataset for site, release and dataset
 func (LocalAPIs) L_combined_child4site_release_dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	inst := dasquery.Instance
@@ -88,6 +92,8 @@ func (LocalAPIs) L_combined_child4site_release_dataset(dasquery dasql.DASQuery) 
 	}
 	return out
 }
+
+// L_combined_site4dataset returns site info for given dataset
 func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	inst := dasquery.Instance
@@ -170,7 +176,7 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 	return out
 }
 
-// Seems to me it is too much to look-up, user can use file,lumi or block,run,lumi for dataset APIs
+// L_combined_lumi4dataset returns lumi info for given dataset
 func (LocalAPIs) L_combined_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	out = append(out, mongo.DASErrorRecord("combined_lumi4dataset API is not implemented"))
@@ -216,12 +222,12 @@ func files4db_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return out
 }
 
-// combined APIs to lookup file list for give dataset/run/site
+// L_combined_files4dataset_runs_site combined APIs to lookup file list for give dataset/run/site
 func (LocalAPIs) L_combined_files4dataset_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return files4db_runs_site(dasquery)
 }
 
-// combined APIs to lookup file list for give block/run/site
+// L_combined_files4block_runs_site combined APIs to lookup file list for give block/run/site
 func (LocalAPIs) L_combined_files4block_runs_site(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return files4db_runs_site(dasquery)
 }
