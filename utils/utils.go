@@ -5,6 +5,8 @@
 package utils
 
 import (
+	"bytes"
+	"encoding/gob"
 	"fmt"
 	"log"
 	"regexp"
@@ -16,7 +18,7 @@ import (
 
 // global variable for this module which we're going to use across
 // many modules
-var VERBOSE int
+var VERBOSE, WEBSERVER int
 
 // helper function to return Stack
 func Stack() string {
@@ -315,3 +317,13 @@ type StringList []string
 func (s StringList) Len() int           { return len(s) }
 func (s StringList) Swap(i, j int)      { s[i], s[j] = s[j], s[i] }
 func (s StringList) Less(i, j int) bool { return s[i] < s[j] }
+
+func GetBytes(data interface{}) ([]byte, error) {
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(data)
+	if err != nil {
+		return nil, err
+	}
+	return buf.Bytes(), nil
+}

@@ -60,7 +60,7 @@ func getApiParams(dasmap mongo.DASRecord) (string, string, string, string) {
 
 // Form appropriate URL from given dasquery and dasmap, the final URL
 // contains all parameters
-func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
+func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
@@ -190,7 +190,7 @@ func formUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 
 // Form appropriate URL from given dasquery and dasmap, the final URL
 // contains all parameters
-func formRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
+func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
@@ -420,9 +420,9 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 			}
 			furl, _ = dmap["url"].(string)
 		} else if system == "reqmgr" || system == "mcm" {
-			furl = formRESTUrl(dasquery, dmap)
+			furl = FormRESTUrl(dasquery, dmap)
 		} else {
-			furl = formUrlCall(dasquery, dmap)
+			furl = FormUrlCall(dasquery, dmap)
 		}
 		if furl == "local_api" && !dasmaps.MapInList(dmap, local_apis) {
 			local_apis = append(local_apis, dmap)

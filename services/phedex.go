@@ -33,6 +33,11 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadPhedexData(api, data)
 	for _, rec := range records {
 		if api == "fileReplicas4dataset" || api == "fileReplicas" || api == "fileReplicas4file" {
+			data := rec["phedex"]
+			if data == nil {
+				continue
+			}
+
 			val := rec["phedex"].(map[string]interface{})
 			blocks := val["block"].([]interface{})
 			for _, item := range blocks {

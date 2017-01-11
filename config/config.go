@@ -6,6 +6,7 @@ package config
 
 import (
 	"encoding/json"
+	"github.com/vkuznet/das2go/utils"
 	"log"
 	"os"
 	"strings"
@@ -30,7 +31,9 @@ func ParseConfig() Configuration {
 	if fname == "" {
 		panic("DAS_CONFIG environment variable is not set")
 	}
-	log.Println("DAS_CONFIG", fname)
+	if utils.WEBSERVER > 0 {
+		log.Println("DAS_CONFIG", fname)
+	}
 	file, _ := os.Open(fname)
 	decoder := json.NewDecoder(file)
 	conf := Configuration{}
@@ -38,7 +41,9 @@ func ParseConfig() Configuration {
 	if err != nil {
 		panic(err)
 	}
-	log.Println("DAS configuration", conf)
+	if utils.WEBSERVER > 0 {
+		log.Println("DAS configuration", conf)
+	}
 	return conf
 }
 

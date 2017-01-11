@@ -32,9 +32,11 @@ func Certs() (tls_certs []tls.Certificate) {
 	uproxy := os.Getenv("X509_USER_PROXY")
 	uckey := os.Getenv("X509_USER_KEY")
 	ucert := os.Getenv("X509_USER_CERT")
-	log.Println("X509_USER_PROXY", uproxy)
-	log.Println("X509_USER_KEY", uckey)
-	log.Println("X509_USER_CERT", ucert)
+	if WEBSERVER > 0 {
+		log.Println("X509_USER_PROXY", uproxy)
+		log.Println("X509_USER_KEY", uckey)
+		log.Println("X509_USER_CERT", ucert)
+	}
 	if len(uproxy) > 0 {
 		// use local implementation of LoadX409KeyPair instead of tls one
 		x509cert, err := x509proxy.LoadX509Proxy(uproxy)
@@ -62,7 +64,9 @@ func Certs() (tls_certs []tls.Certificate) {
 func HttpClient() (client *http.Client) {
 	// create HTTP client
 	certs := Certs()
-	log.Println("Number of certificates", len(certs))
+	if WEBSERVER > 0 {
+		log.Println("Number of certificates", len(certs))
+	}
 	if len(certs) == 0 {
 		client = &http.Client{}
 		return
@@ -71,7 +75,9 @@ func HttpClient() (client *http.Client) {
 		TLSClientConfig: &tls.Config{Certificates: certs,
 			InsecureSkipVerify: true},
 	}
-	log.Println("Create TLSClientConfig")
+	if WEBSERVER > 0 {
+		log.Println("Create TLSClientConfig")
+	}
 	client = &http.Client{Transport: tr}
 	return
 }
@@ -120,7 +126,9 @@ var (
 )
 
 func init() {
-	log.Println("DAS URLFetchWorker")
+	if WEBSERVER > 0 {
+		log.Println("DAS URLFetchWorker")
+	}
 	go URLFetchWorker(UrlRequestChannel)
 }
 
