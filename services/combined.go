@@ -112,7 +112,7 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 	resp = utils.FetchResponse(furl, "") // "" specify optional args
 	records = PhedexUnmarshal(api, resp.Data)
 	siteInfo := make(mongo.DASRecord)
-	var b_complete, nfiles, nblks, bfiles float64
+	var bComplete, nfiles, nblks, bfiles float64
 	bfiles = 0
 	for _, rec := range records {
 		bfiles += rec["files"].(float64)
@@ -123,9 +123,9 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 			se := row["se"].(string)
 			complete := row["complete"].(string)
 			if complete == "y" {
-				b_complete = 1
+				bComplete = 1
 			} else {
-				b_complete = 0
+				bComplete = 0
 			}
 			nfiles = row["files"].(float64)
 			skeys := utils.MapKeys(siteInfo)
@@ -135,14 +135,14 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 				nblks = sInfo["blocks"].(float64) + 1
 				bc := sInfo["block_complete"].(float64)
 				if complete == "y" {
-					b_complete = bc + 1
+					bComplete = bc + 1
 				} else {
-					b_complete = bc
+					bComplete = bc
 				}
 			} else {
 				nblks = 1
 			}
-			siteInfo[node] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "block_complete": b_complete, "se": se, "kind": _phedexNodes.NodeType(node)}
+			siteInfo[node] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "block_complete": bComplete, "se": se, "kind": _phedexNodes.NodeType(node)}
 		}
 	}
 	var pfiles, pblks string
