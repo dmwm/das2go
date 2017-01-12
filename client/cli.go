@@ -15,6 +15,7 @@ import (
 	"github.com/vkuznet/das2go/mongo"
 	"github.com/vkuznet/das2go/services"
 	"github.com/vkuznet/das2go/utils"
+	"reflect"
 	"strings"
 	"time"
 )
@@ -81,45 +82,54 @@ func Process(query, inst string, jsonout bool) {
 		fmt.Println("urls", urls)
 		fmt.Println("localApis", localApis)
 	}
-	if len(urls) > 0 {
-		dasrecords := processURLs(dasquery, urls, maps, dmaps, pkeys)
-		var keys []string
-		for _, pkey := range pkeys {
-			for _, kkk := range strings.Split(pkey, ".") {
-				if !utils.InList(kkk, keys) {
-					keys = append(keys, kkk)
-					if len(keys) == 1 {
-						keys = append(keys, "[0]") // to hadle DAS records lists
-					}
+	// extract list of select keys we'll need to display on stdout
+	var keys []string
+	for _, pkey := range pkeys {
+		for _, kkk := range strings.Split(pkey, ".") {
+			if !utils.InList(kkk, keys) {
+				keys = append(keys, kkk)
+				if len(keys) == 1 {
+					keys = append(keys, "[0]") // to hadle DAS records lists
 				}
 			}
 		}
-		for _, rec := range dasrecords {
-			if jsonout {
-				out, err := json.Marshal(rec)
-				if err == nil {
-					fmt.Println(string(out))
-				} else {
-					fmt.Println("DAS record", rec, "fail to mashal it to JSON stream")
-				}
-				continue
+	}
+	var dasrecords []mongo.DASRecord
+	if len(urls) > 0 {
+		dasrecords = processURLs(dasquery, urls, maps, dmaps, pkeys)
+	} else if len(localApis) > 0 {
+		dasrecords = processLocalApis(dasquery, localApis, pkeys)
+	}
+	printRecords(dasrecords, keys, jsonout)
+}
+
+// helper function to print DAS records on stdout
+func printRecords(dasrecords []mongo.DASRecord, keys []string, jsonout bool) {
+	for _, rec := range dasrecords {
+		if jsonout {
+			out, err := json.Marshal(rec)
+			if err == nil {
+				fmt.Println(string(out))
+			} else {
+				fmt.Println("DAS record", rec, "fail to mashal it to JSON stream")
 			}
-			rbytes, err := mongo.GetBytesFromDASRecord(rec)
-			if err != nil {
+			continue
+		}
+		rbytes, err := mongo.GetBytesFromDASRecord(rec)
+		if err != nil {
+			if utils.VERBOSE > 0 {
+				fmt.Println("Fail to parse DAS record", keys, err, rec)
+			}
+			fmt.Println(rec)
+		} else {
+			val, _, _, err := jsonparser.Get(rbytes, keys...)
+			if err == nil {
+				fmt.Println(string(val))
+			} else {
 				if utils.VERBOSE > 0 {
-					fmt.Println("Fail to parse DAS record", pkeys, keys, err, rec)
+					fmt.Println("Fail to parse DAS record", keys, err, rec)
 				}
 				fmt.Println(rec)
-			} else {
-				val, _, _, err := jsonparser.Get(rbytes, keys...)
-				if err == nil {
-					fmt.Println(string(val))
-				} else {
-					if utils.VERBOSE > 0 {
-						fmt.Println("Fail to parse DAS record", pkeys, keys, err, rec)
-					}
-					fmt.Println(rec)
-				}
 			}
 		}
 	}
@@ -185,6 +195,38 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 		}
 		if exit {
 			break
+		}
+	}
+	return dasrecords
+}
+
+// helper function to process given set of URLs associted with dasquery
+func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []string) []mongo.DASRecord {
+	var dasrecords []mongo.DASRecord
+	for _, dmap := range dmaps {
+		urn := dasmaps.GetString(dmap, "urn")
+		system := dasmaps.GetString(dmap, "system")
+		expire := dasmaps.GetInt(dmap, "expire")
+		api := fmt.Sprintf("L_%s_%s", system, urn)
+		if utils.VERBOSE > 0 {
+			fmt.Println("DAS local API", api)
+		}
+		// we use reflection to look-up api from our services/localapis.go functions
+		// for details on reflection see
+		// http://stackoverflow.com/questions/12127585/go-lookup-function-by-name
+		t := reflect.ValueOf(services.LocalAPIs{})         // type of LocalAPIs struct
+		m := t.MethodByName(api)                           // associative function name for given api
+		args := []reflect.Value{reflect.ValueOf(dasquery)} // list of function arguments
+		vals := m.Call(args)[0]                            // return value
+		records := vals.Interface().([]mongo.DASRecord)    // cast reflect value to its type
+		if utils.VERBOSE > 0 {
+			fmt.Println("### LOCAL APIS", urn, system, expire, dmap, api, m, len(records))
+		}
+
+		records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
+		// add records
+		for _, rec := range records {
+			dasrecords = append(dasrecords, rec)
 		}
 	}
 	return dasrecords
