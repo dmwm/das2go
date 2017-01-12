@@ -342,9 +342,8 @@ func GetInt(dmap mongo.DASRecord, key string) int {
 		val, err := strconv.Atoi(v)
 		if err == nil {
 			return val
-		} else {
-			log.Fatal("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
 		}
+		log.Fatal("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
 	}
 	return 0
 }
@@ -360,9 +359,8 @@ func GetFloat(dmap mongo.DASRecord, key string) float64 {
 		val, err := strconv.ParseFloat(v, 64)
 		if err == nil {
 			return val
-		} else {
-			log.Fatal("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
 		}
+		log.Fatal("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
 	}
 	return 0
 }
