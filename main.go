@@ -7,7 +7,6 @@ package main
 
 import (
 	"flag"
-	"github.com/vkuznet/das2go/client"
 	"github.com/vkuznet/das2go/utils"
 	"github.com/vkuznet/das2go/web"
 )
@@ -17,12 +16,6 @@ func main() {
 	flag.StringVar(&afile, "afile", "", "DAS authentication key file")
 	var port string
 	flag.StringVar(&port, "port", "8212", "DAS server port number")
-	var query string
-	flag.StringVar(&query, "query", "", "DAS query to run")
-	var inst string
-	flag.StringVar(&inst, "inst", "prod/global", "DBS instance to use")
-	var jsonout bool
-	flag.BoolVar(&jsonout, "json", false, "Return results from DAS CLI in json form")
 	var verbose int
 	flag.IntVar(&verbose, "verbose", 0, "Verbose level, support 0,1,2")
 	var urlQueueLimit int
@@ -33,11 +26,6 @@ func main() {
 	utils.VERBOSE = verbose
 	utils.UrlQueueLimit = int32(urlQueueLimit)
 	utils.UrlRetry = urlRetry
-	if query != "" {
-		utils.WEBSERVER = 0
-		client.Process(query, inst, jsonout)
-	} else {
-		utils.WEBSERVER = 1
-		web.Server(port, afile)
-	}
+	utils.WEBSERVER = 1
+	web.Server(port, afile)
 }
