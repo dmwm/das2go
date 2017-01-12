@@ -23,7 +23,8 @@ import (
 // Process function process' given query and return back results
 func Process(query, inst string, jsonout bool) {
 	var dmaps dasmaps.DASMaps
-	dmaps.LoadMaps("mapping", "db")
+	dmaps.LoadMapsFromFile()
+	//     dmaps.LoadMaps("mapping", "db")
 	if inst == "" {
 		inst = "prod/global"
 	}
@@ -67,7 +68,7 @@ func Process(query, inst string, jsonout bool) {
 		lkeys := strings.Split(dmap["lookup"].(string), ",")
 		for _, pkey := range lkeys {
 			for _, item := range dmap["das_map"].([]interface{}) {
-				rec := item.(mongo.DASRecord)
+				rec := mongo.Convert2DASRecord(item)
 				daskey := rec["das_key"].(string)
 				reckey := rec["rec_key"].(string)
 				if daskey == pkey {

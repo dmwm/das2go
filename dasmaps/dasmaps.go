@@ -6,12 +6,16 @@ package dasmaps
 //
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/vkuznet/das2go/mongo"
 	"github.com/vkuznet/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
+	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -148,7 +152,7 @@ func GetDASMaps(entry interface{}) []mongo.DASRecord {
 	var maps []mongo.DASRecord
 	if val, ok := entry.([]interface{}); ok {
 		for _, item := range val {
-			rec := item.(mongo.DASRecord)
+			rec := mongo.Convert2DASRecord(item)
 			maps = append(maps, rec)
 		}
 	}
@@ -158,7 +162,7 @@ func GetDASMaps(entry interface{}) []mongo.DASRecord {
 // helper function to extract all required arguments for given dasmap record
 func getRequiredArgs(rec mongo.DASRecord) []string {
 	var out, args []string
-	params := rec["params"].(mongo.DASRecord)
+	params := mongo.Convert2DASRecord(rec["params"])
 	for k, v := range params {
 		if v == "required" {
 			args = append(args, k)
@@ -184,7 +188,7 @@ func getRequiredArgs(rec mongo.DASRecord) []string {
 // helper function to extract all required arguments for given dasmap record
 func getAllArgs(rec mongo.DASRecord) []string {
 	var out, args []string
-	params := rec["params"].(mongo.DASRecord)
+	params := mongo.Convert2DASRecord(rec["params"])
 	for k := range params {
 		args = append(args, k)
 	}
@@ -272,31 +276,95 @@ func (m *DASMaps) LoadMaps(dbname, dbcoll string) {
 	m.records = mongo.Get(dbname, dbcoll, bson.M{}, 0, -1) // index=0, limit=-1
 }
 
+// LoadMapsFromFile loads DAS maps from github or local file
+func (m *DASMaps) LoadMapsFromFile() {
+	githubUrl := "https://raw.githubusercontent.com/dmwm/DASMaps/master/js/das_maps_dbs_prod.js"
+	var home string
+	for _, item := range os.Environ() {
+		value := strings.Split(item, "=")
+		if value[0] == "HOME" {
+			home = value[1]
+			break
+		}
+	}
+	dname := fmt.Sprintf("%s/.dasmaps", home)
+	if _, err := os.Stat(dname); err != nil {
+		os.Mkdir(dname, 0777)
+	}
+	fname := fmt.Sprintf("%s/.dasmaps/das_maps_dbs_prod.js", home)
+	if _, err := os.Stat(fname); err != nil {
+		// download maps from github
+		resp := utils.FetchResponse(githubUrl, "")
+		if resp.Error == nil {
+			// write data to local area
+			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)
+			if err != nil {
+				msg := fmt.Sprintf("Unable to write DAS maps, error %s", err)
+				panic(msg)
+			}
+		} else {
+			msg := fmt.Sprintf("Unable to get DAS maps from github, error %s", resp.Error)
+			panic(msg)
+		}
+	}
+	data, err := ioutil.ReadFile(fname)
+	if err != nil {
+		msg := fmt.Sprintf("Unable to read DAS maps from %s, error %s", fname, err)
+		panic(msg)
+	}
+	records := string(data)
+	for _, rec := range strings.Split(records, "\n") {
+		if strings.Contains(rec, "hash") {
+			var dmap mongo.DASRecord
+			err := json.Unmarshal([]byte(rec), &dmap)
+			if err == nil {
+				m.records = append(m.records, dmap)
+			}
+		}
+	}
+}
+
 // GetString provides value from DAS map for a given key
 func GetString(dmap mongo.DASRecord, key string) string {
 	val, ok := dmap[key].(string)
 	if !ok {
-		log.Fatal("Unable to extract key ", key, " from DAS map", dmap)
+		log.Fatal("GetString, unable to extract key ", key, " from DAS map: ", dmap)
 	}
 	return val
 }
 
 // GetInt provides value from DAS map for a given key
 func GetInt(dmap mongo.DASRecord, key string) int {
-	val, ok := dmap[key].(int)
-	if !ok {
-		log.Fatal("Unable to extract key ", key, " from DAS map", dmap)
+	switch v := dmap[key].(type) {
+	case int:
+		return v
+	case string:
+		val, err := strconv.Atoi(v)
+		if err == nil {
+			return val
+		} else {
+			log.Fatal("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
+		}
 	}
-	return val
+	return 0
 }
 
 // GetFloat provides value from DAS map for a given key
 func GetFloat(dmap mongo.DASRecord, key string) float64 {
-	val, ok := dmap[key].(float64)
-	if !ok {
-		log.Fatal("Unable to extract key ", key, " from DAS map", dmap)
+	switch v := dmap[key].(type) {
+	case int:
+		return float64(v)
+	case float64:
+		return v
+	case string:
+		val, err := strconv.ParseFloat(v, 64)
+		if err == nil {
+			return val
+		} else {
+			log.Fatal("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
+		}
 	}
-	return val
+	return 0
 }
 
 // GetNotation provides values from notation map

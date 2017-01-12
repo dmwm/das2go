@@ -282,3 +282,18 @@ func GetBytesFromDASRecord(data DASRecord) ([]byte, error) {
 	}
 	return buf.Bytes(), nil
 }
+
+// Convert2DASRecord converts given interface to DAS Record data type
+func Convert2DASRecord(item interface{}) DASRecord {
+	switch r := item.(type) {
+	case map[string]interface{}:
+		rec := make(DASRecord)
+		for kkk, vvv := range r {
+			rec[kkk] = vvv
+		}
+		return rec
+	case DASRecord:
+		return r
+	}
+	return nil
+}

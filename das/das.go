@@ -174,7 +174,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	// loop over params in DAS maps and add additional arguments which have
 	// non empty, non optional and non required values
 	skipList := []string{"optional", "required"}
-	params := dasmap["params"].(mongo.DASRecord)
+	params := mongo.Convert2DASRecord(dasmap["params"])
 	for key, val := range params {
 		vvv := val.(string)
 		if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) {
