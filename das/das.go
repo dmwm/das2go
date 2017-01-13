@@ -177,7 +177,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	params := mongo.Convert2DASRecord(dasmap["params"])
 	for key, val := range params {
 		vvv := val.(string)
-		if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) {
+		if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) && vvv != "*" {
 			vals.Add(key, vvv)
 		}
 	}
