@@ -23,6 +23,7 @@ type DASQuery struct {
 	Fields                     []string
 	Pipe                       string
 	Instance                   string
+	System                     string
 	Filters                    map[string][]string
 	Aggregators                [][]string
 	Error                      string
@@ -32,7 +33,7 @@ type DASQuery struct {
 // former will be invoked on both pointer and values and therefore used by fmt/log
 // http://stackoverflow.com/questions/16976523/in-go-why-isnt-my-stringer-interface-method-getting-invoked-when-using-fmt-pr
 func (q DASQuery) String() string {
-	return fmt.Sprintf("<DASQuery=\"%s\", inst=%s, hash=%s>", q.Query, q.Instance, q.Qhash)
+	return fmt.Sprintf("<DASQuery=\"%s\", inst=%s, hash=%s, system=%s>", q.Query, q.Instance, q.Qhash, q.System)
 }
 
 func operators() []string {
@@ -295,6 +296,13 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		delete(spec, "instance")
 	}
 
+	// find out which system to use
+	var system string
+	if spec["system"] != nil {
+		system = spec["system"].(string)
+		delete(spec, "system")
+	}
+
 	rec.Query = query
 	rec.relaxedQuery = relaxedQuery
 	rec.Spec = spec
@@ -304,6 +312,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	rec.Instance = inst
 	rec.Filters = filters
 	rec.Aggregators = aggregators
+	rec.System = system
 	return rec, qlerror
 }
 
