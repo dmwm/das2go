@@ -139,7 +139,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 			} else { // let's try array of strings
 				arr, ok := spec[dkey].([]string)
 				if !ok {
-					log.Println("WARNING, unable to get value(s) for daskey=", dkey,
+					fmt.Println("WARNING, unable to get value(s) for daskey=", dkey,
 						", reckey=", rkey, " from spec=", spec, " das map=", dmap)
 				}
 				if dkey == "date" && system == "dbs3" {
@@ -254,7 +254,7 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		expire := dasmaps.GetInt(dmap, "expire")
 		api := fmt.Sprintf("L_%s_%s", system, urn)
 		if utils.VERBOSE > 0 {
-			log.Println("DAS local API", api)
+			fmt.Println("DAS local API", api)
 		}
 		// we use reflection to look-up api from our services/localapis.go functions
 		// for details on reflection see
@@ -453,7 +453,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	}
 
 	if len(srvs) == 0 {
-		log.Println("DAS WARNING", dasquery, "unable to find any CMS service to fullfil this request")
+		fmt.Println("DAS WARNING", dasquery, "unable to find any CMS service to fullfil this request")
 		dasrecord := services.CreateDASErrorRecord(dasquery, pkeys)
 		var records []mongo.DASRecord
 		records = append(records, dasrecord)

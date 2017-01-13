@@ -195,7 +195,6 @@ func (LocalAPIs) L_dbs3_blocks4tier_dates(dasquery dasql.DASQuery) []mongo.DASRe
 	maxd := utils.UnixTime(dates[1])
 	api := "blocks"
 	furl := fmt.Sprintf("%s/%s?data_tier_name=%s&min_cdate=%d&max_cdate=%d", dbsUrl(inst), api, tier, mind, maxd)
-	log.Println(furl)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var blocks []string
@@ -235,7 +234,6 @@ func (LocalAPIs) L_dbs3_datasetlist(dasquery dasql.DASQuery) []mongo.DASRecord {
 		msg := fmt.Sprintf("DBS datasetlist unable to marshal the spec %v, error %v", spec, err)
 		panic(msg)
 	}
-	log.Println(furl, string(args))
 	resp := utils.FetchResponse(furl, string(args)) // POST request
 	records := DBSUnmarshal(api, resp.Data)
 	return records
