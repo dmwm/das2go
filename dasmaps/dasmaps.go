@@ -257,7 +257,7 @@ func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mong
 		rkeys := getRequiredArgs(rec)
 		akeys := getAllArgs(rec)
 		if utils.VERBOSE > 1 {
-			log.Printf("DAS map lookup, urn %v, lookup %v, required keys %v, all keys %v", rec["urn"].(string), lkeys, rkeys, akeys)
+			fmt.Printf("DAS map lookup, system %s, urn %s, lookup %v, required keys %v, all keys %v\n", rec["system"].(string), rec["urn"].(string), lkeys, rkeys, akeys)
 		}
 		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) {
 			// adjust DBS instance

@@ -33,7 +33,10 @@ type DASQuery struct {
 // former will be invoked on both pointer and values and therefore used by fmt/log
 // http://stackoverflow.com/questions/16976523/in-go-why-isnt-my-stringer-interface-method-getting-invoked-when-using-fmt-pr
 func (q DASQuery) String() string {
-	return fmt.Sprintf("<DASQuery=\"%s\", inst=%s, hash=%s, system=%s>", q.Query, q.Instance, q.Qhash, q.System)
+	if utils.VERBOSE == 0 {
+		return fmt.Sprintf("<DASQuery=\"%s\", inst=%s, system=%s>", q.Query, q.Instance, q.Qhash, q.System)
+	}
+	return fmt.Sprintf("<DASQuery=\"%s\", inst=%s, hash=%s, system=%s, fields=%s, spec=%s, filters=%s, aggrs=%s>", q.Query, q.Instance, q.Qhash, q.System, q.Fields, q.Spec, q.Filters, q.Aggregators)
 }
 
 func operators() []string {
