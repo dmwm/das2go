@@ -178,7 +178,7 @@ func FetchResponse(rurl, args string) ResponseType {
 	atomic.AddInt32(&UrlQueueSize, 1)
 	defer atomic.AddInt32(&UrlQueueSize, -1) // decrement UrlQueueSize since we done with this request
 	if VERBOSE > 1 {
-		log.Println("### HTTP request, UrlQueueSize", UrlQueueSize, "UrlQueueLimit", UrlQueueLimit)
+		fmt.Println("### HTTP request, UrlQueueSize", UrlQueueSize, "UrlQueueLimit", UrlQueueLimit)
 	}
 	var response ResponseType
 	response.Url = rurl
@@ -201,12 +201,12 @@ func FetchResponse(rurl, args string) ResponseType {
 	}
 	if VERBOSE > 1 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
-		log.Println("### HTTP request", string(dump1), err1)
+		fmt.Println("### HTTP request", string(dump1), err1)
 	}
 	resp, err := client.Do(req)
 	if VERBOSE > 1 {
 		dump2, err2 := httputil.DumpResponse(resp, true)
-		log.Println("### HTTP response", string(dump2), err2)
+		fmt.Println("### HTTP response", string(dump2), err2)
 	}
 	if err != nil {
 		response.Error = err
@@ -237,12 +237,11 @@ func Fetch(rurl string, args string, out chan<- ResponseType) {
 // local function which fetch response for given url/args and place it into response channel
 // By defat
 func fetch(rurl string, args string, ch chan<- ResponseType) {
-	//    log.Println("Receive", rurl)
 	var resp, r ResponseType
 	startTime := time.Now()
 	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
-		log.Println("DAS WARNING, fail to fetch data", rurl, "error", resp.Error)
+		fmt.Println("DAS WARNING, fail to fetch data", rurl, "error", resp.Error)
 		for i := 1; i <= UrlRetry; i++ {
 			sleep := time.Duration(i) * time.Second
 			time.Sleep(sleep)
@@ -250,19 +249,19 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 			if r.Error == nil {
 				break
 			}
-			log.Println("DAS WARNING", rurl, "retry", i, "error", r.Error)
+			fmt.Println("DAS WARNING", rurl, "retry", i, "error", r.Error)
 		}
 		resp = r
 	}
 	if resp.Error != nil {
-		log.Println("DAS ERROR, fail to fetch data", rurl, "retries", UrlRetry, "error", resp.Error)
+		fmt.Println("DAS ERROR, fail to fetch data", rurl, "retries", UrlRetry, "error", resp.Error)
 	}
 	endTime := time.Now()
 	if VERBOSE > 0 {
 		if args == "" {
-			log.Println("DAS GET", rurl, endTime.Sub(startTime))
+			fmt.Println("DAS GET", rurl, endTime.Sub(startTime))
 		} else {
-			log.Println("DAS POST", rurl, args, endTime.Sub(startTime))
+			fmt.Println("DAS POST", rurl, args, endTime.Sub(startTime))
 		}
 	}
 	ch <- resp
@@ -278,7 +277,7 @@ func validateUrl(rurl string) bool {
 				return true
 			}
 		}
-		log.Println("ERROR invalid URL:", rurl)
+		fmt.Println("ERROR invalid URL:", rurl)
 	}
 	return false
 }
