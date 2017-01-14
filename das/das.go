@@ -178,6 +178,12 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	for key, val := range params {
 		switch v := val.(type) {
 		case string:
+			// speed-up query by NOT fetching details
+			if system == "dbs3" && key == "detail" {
+				if urn == "file4DatasetRunLumi" || urn == "files_via_block" {
+					v = "False"
+				}
+			}
 			vvv := v
 			if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) && vvv != "*" {
 				vals.Add(key, vvv)
