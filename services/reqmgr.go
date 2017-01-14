@@ -19,7 +19,7 @@ import (
 // helper function to load ReqMgr data stream
 func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	if api == "configIDs" || api == "datasetByPrepID" {
+	if api == "configIDs" || api == "datasetByPrepID" || api == "outputdataset" || api == "inputdataset" {
 		var rec mongo.DASRecord
 		err := json.Unmarshal(data, &rec)
 		if err != nil {
@@ -65,15 +65,12 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
 		return out
 	} else if api == "outputdataset" {
 		for _, rec := range records {
-			row := rec["WMCore.RequestManager.DataStructs.Request.Request"].(map[string]interface{})
-			val := row["OutputDatasets"].([]interface{})
+			val := rec["OutputDatasets"]
 			if val != nil {
-				for _, vvv := range val {
-					dset := vvv.([]interface{}) // OutputDatasets is a [[name], [name]] in reqmgr record
-					rec["name"] = dset[0].(string)
-					out = append(out, rec)
-				}
+				datasets := val.([]string)
+				rec["name"] = datasets[0]
 			}
+			out = append(out, rec)
 		}
 		return out
 	} else if api == "configIDs" {
@@ -167,11 +164,20 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	return utils.List2Set(out), idict
 }
 
-// L_reqmgr_configs reqmgr APIs to lookup configs for given dataset
+// L_reqmgr2_configs reqmgr APIs to lookup configs for given dataset
 // The logic: we look-up ReqMgr ids for given dataset and scan them
 // if id has length 32 we use configFile URL, otherwise we look-up record
 // in couchdb and fetch ConfigIDs to construct configFile URL
+func (LocalAPIs) L_reqmgr2_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
+	return reqmgrConfigs(dasquery)
+}
+
+// L_reqmgr_configs reqmgr APIs
 func (LocalAPIs) L_reqmgr_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
+	return reqmgrConfigs(dasquery)
+}
+
+func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	base := "https://cmsweb.cern.ch"
 	// find ReqMgr Ids for given dataset
@@ -203,16 +209,19 @@ func (LocalAPIs) L_reqmgr_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
 		case r := <-ch:
 			var data mongo.DASRecord
 			err := json.Unmarshal(r.Data, &data)
+			configIDs := []string{"DQMConfigCacheID", "ConfigCacheID"}
 			if err == nil {
-				val := data["ConfigCacheID"]
-				switch v := val.(type) {
-				case string:
-					rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
-					urls = append(urls, rurl)
-				case []string:
-					for _, u := range v {
-						rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, u)
+				for _, attr := range configIDs {
+					val := data[attr]
+					switch v := val.(type) {
+					case string:
+						rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
 						urls = append(urls, rurl)
+					case []string:
+						for _, u := range v {
+							rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, u)
+							urls = append(urls, rurl)
+						}
 					}
 				}
 				// look for configs in tasks
@@ -226,16 +235,18 @@ func (LocalAPIs) L_reqmgr_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
 						default:
 							continue
 						}
-						val := vvv["ConfigCacheID"]
-						if val != nil {
-							switch v := val.(type) {
-							case string:
-								rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
-								urls = append(urls, rurl)
-							case []string:
-								for _, u := range v {
-									rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, u)
+						for _, attr := range configIDs {
+							val := vvv[attr]
+							if val != nil {
+								switch v := val.(type) {
+								case string:
+									rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
 									urls = append(urls, rurl)
+								case []string:
+									for _, u := range v {
+										rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, u)
+										urls = append(urls, rurl)
+									}
 								}
 							}
 						}
