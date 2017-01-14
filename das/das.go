@@ -176,9 +176,19 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	skipList := []string{"optional", "required"}
 	params := mongo.Convert2DASRecord(dasmap["params"])
 	for key, val := range params {
-		vvv := val.(string)
-		if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) && vvv != "*" {
-			vals.Add(key, vvv)
+		switch v := val.(type) {
+		case string:
+			vvv := v
+			if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) && vvv != "*" {
+				vals.Add(key, vvv)
+			}
+		case []interface{}:
+			for _, value := range v {
+				vvv := fmt.Sprintf("%s", value)
+				if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) && vvv != "*" {
+					vals.Add(key, vvv)
+				}
+			}
 		}
 	}
 
