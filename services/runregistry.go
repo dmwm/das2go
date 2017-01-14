@@ -35,9 +35,11 @@ func RunRegistryUnmarshal(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	if api == "rr_xmlrpc2" {
 		for _, rec := range records {
-			rec["run_number"] = fmt.Sprintf("%d", int(rec["number"].(float64)))
-			delete(rec, "number")
-			out = append(out, rec)
+			if rec["number"] != nil {
+				rec["run_number"] = fmt.Sprintf("%d", int(rec["number"].(float64)))
+				delete(rec, "number")
+				out = append(out, rec)
+			}
 		}
 		return out
 	}
