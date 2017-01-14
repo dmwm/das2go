@@ -39,7 +39,7 @@ func DASLocalAPIs() []string {
 		"file_run_lumi4dataset", "file_run_lumi4block",
 		"file_lumi4dataset", "file_lumi4block", "run_lumi4dataset", "run_lumi4block",
 		"block_run_lumi4dataset", "file4dataset_run_lumi", "blocks4tier_dates",
-		"lumi4block_run", "datasetlist"}
+		"lumi4block_run", "datasetlist", "configs"}
 	return out
 }
 
