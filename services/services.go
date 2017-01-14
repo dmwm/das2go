@@ -49,9 +49,9 @@ func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []m
 	switch {
 	case system == "phedex":
 		out = PhedexUnmarshal(api, data)
-	case system == "dbs3":
+	case system == "dbs3" || system == "dbs":
 		out = DBSUnmarshal(api, data)
-	case system == "reqmgr":
+	case system == "reqmgr" || system == "reqmgr2":
 		out = ReqMgrUnmarshal(api, data)
 	case system == "mcm":
 		out = McMUnmarshal(api, data)
