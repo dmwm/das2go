@@ -196,13 +196,13 @@ func FetchResponse(rurl, args string) ResponseType {
 	} else {
 		req, _ = http.NewRequest("GET", rurl, nil)
 		req.Header.Add("Accept-Encoding", "identity")
-		if strings.Contains(rurl, "sitedb") {
+		if strings.Contains(rurl, "sitedb") || strings.Contains(rurl, "reqmgr") {
 			req.Header.Add("Accept", "application/json")
 		}
 	}
 	if VERBOSE > 1 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
-		fmt.Println("### HTTP request", string(dump1), err1)
+		fmt.Println("### HTTP request", req, string(dump1), err1)
 	}
 	resp, err := client.Do(req)
 	if VERBOSE > 1 {
