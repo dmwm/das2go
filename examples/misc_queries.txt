@@ -26,3 +26,21 @@ summary dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO
 summary dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO run=149011
 summary dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO run in [177718, 177053]
 summary block=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO#ee89be3a-5a9a-46a7-91eb-28c4728f3aaa
+
+# examples of finding file, run, lumis for a given dataset/block and run conditions
+run,lumi dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO
+run,lumi dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO run in [177718, 177053]
+run,lumi block=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO#19110c74-1b66-11e1-a98b-003048f02c8a
+run,lumi block=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO#19110c74-1b66-11e1-a98b-003048f02c8a run in [177487, 177878]
+file,lumi dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO
+file,lumi dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO run in [177718, 177053]
+file,lumi block=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO#19110c74-1b66-11e1-a98b-003048f02c8a
+file,lumi block=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO#19110c74-1b66-11e1-a98b-003048f02c8a run in [177487, 177878]
+file,run,lumi dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO
+file,run,lumi dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO run in [177718, 177053]
+file,run,lumi block=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO#19110c74-1b66-11e1-a98b-003048f02c8a
+file,run,lumi block=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO#19110c74-1b66-11e1-a98b-003048f02c8a run in [177487, 177878]
+
+# examples of using between clause and status fields 
+file,run,lumi dataset=/DoubleMu/Run2012A-22Jan2013-v1/AOD run between [190456,190500]
+file,run,lumi dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO status=VALID
