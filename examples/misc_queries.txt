@@ -1,8 +1,28 @@
-#monitor date last 24h
-records primary_dataset=Cosmics
-#DBS3
-#group group=T*
-# New SiteDB
-user=valya
-user=vkuznet@gmail.com
+# find primary datasets for given pattern
+primary_dataset=Cosmics*
+# find release info
+release=CMSSW_2_0_8
+release dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD
+release file=/store/data/Run2011A/ElectronHad/AOD/05Aug2011-v1/0000/00157DBB-0AC0-E011-AB7A-0019BB3DE6F4.root
+
+# find configuration for a given dataset
+config dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO
+
+# find info about given user name
+user=YOUR_USER_NAME
+user=YOUR_EMAIL@gmail.com
+
+# find info about specific data-ops group
 group=DataOps
+
+# find parent/child info about dataset
+child dataset=/QCDpt30/Summer08_IDEAL_V9_v1/GEN-SIM-RAW
+parent dataset=/QCDpt30/Summer08_IDEAL_V9_skim_hlt_v1/USER
+child file=/store/mc/Summer08/QCDpt30/GEN-SIM-RAW/IDEAL_V9_v1/0000/1C3B1D33-027C-DD11-A62B-001CC4A63C2A.root
+parent file=/store/mc/Summer08/QCDpt30/USER/IDEAL_V9_skim_hlt_v1/0003/367E05A0-707E-DD11-B0B9-001CC4A6AE4E.root
+
+# summary information about dataset/block
+summary dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO
+summary dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO run=149011
+summary dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO run in [177718, 177053]
+summary block=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO#ee89be3a-5a9a-46a7-91eb-28c4728f3aaa

@@ -1,19 +1,20 @@
+# find blocks for a given dataset/block/file
 block dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD
-block=/Cosmics/Run2010B-TkAlCosmics0T* site=T1_DE_KIT
-block=/Cosmics/Run2010B-TkAlCosmics0T* site=T1_DE_KIT*
-# this should yield warning in phedex, since phedex requires full block path
+block=/EG/Run2010A-Dec4ReReco_v1/AOD#f15ed71e-6491-4f73-a0e3-ac4248a6367d
+block file=/store/data/Run2010B/ZeroBias/RAW-RECO/v2/000/145/820/784478E3-52C2-DF11-A0CC-0018F3D0969A.root
+
+# find blocks for a given block/dataset and site name
 block block=/Cosmics/Run2010B-TkAlCosmics0T* site=T1_DE_KIT*
 block dataset=/AlCaP0/Run2011A-ALCARECOEcalCalEtaCalib-v4/ALCARECO site=T1_US_FNAL*
-block site=T3_US_Cornell
-block site=cmsdcatape01.fnal.gov
-block site=osg-se.cac.cornell.edu
-block=/EG/Run2010A-Dec4ReReco_v1/AOD#f15ed71e-6491-4f73-a0e3-ac4248a6367d
-block dataset=/SingleElectron/Run2011A-414_preprod_GR_H_V16-v1/RAW run=161311
 
-block file=/store/data/Run2010B/ZeroBias/RAW-RECO/v2/000/145/820/784478E3-52C2-DF11-A0CC-0018F3D0969A.root
+# find blocks for a give site/SE
+block site=T3_US_Cornell
+block site=osg-se.cac.cornell.edu
+
+# find blocks for a given dataset and run conditions
+block dataset=/SingleElectron/Run2011A-414_preprod_GR_H_V16-v1/RAW run=161311
 block dataset=/SingleMu/Run2012A-v1/RAW run in [191842, 191845]
 block dataset=/SingleMu/Run2012A-v1/RAW run between [191840, 191845]
-block dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep block.name,block.is_open=n | count(block.name)
 
-# oli's request
+# find blocks for a given data tier and date range
 block tier=GEN-SIM date between [20120223, 20120224]

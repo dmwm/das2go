@@ -1,3 +1,4 @@
+# find run information for various set of conditions
 run dataset=/Monitor/Commissioning08-v1/RAW
 run block=/SingleElectron/Run2011A-414_preprod_GR_H_V16-v1/RAW#12ac2478-3b25-4a02-a7d4-6f2138f35171
 run file=/store/data/Commissioning11/Commissioning/RAW/v3/000/160/292/E863DF08-024C-E011-B2ED-0030487A3232.root

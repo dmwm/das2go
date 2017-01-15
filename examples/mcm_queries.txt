@@ -1,9 +1,5 @@
+# find McM information for various set of conditions
 mcm prepid=HIG-Summer12-01312
 mcm dataset=/GluGluToHToWWTo2LAndTau2Nu_M-115_8TeV-minloHJJ-pythia6-tauola/Summer12-START53_V7C-v3/GEN
-dataset dataset=/GluGluToHToWWTo2LAndTau2Nu_M-115_8TeV-minloHJJ-pythia6-tauola/Summer12-START53_V7C-v3/GEN
-dataset dataset=/AxiToQjet_QToEtaJet_EtaToBBar_1000-3000-667-200-500_TuneZ2Star_8TeV-MadGraph5/Summer12-START53_V7C-v1/GEN-SIM
-# reqmgr dataset
-dataset=/GluGluToHToWWTo2LAndTau2Nu_M-115_8TeV-minloHJJ-pythia6-tauola/None-v0/GEN-SIM
-# check if both direction works
 dataset prepid=TSG-Fall13dr-00015
 mcm dataset=/WToENu_Tune4C_13TeV-pythia8/Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/GEN-SIM-RAW

@@ -1,12 +1,5 @@
-site=T2_*
+# find site information for various set of conditions
 site=T3_*
 site=T1_CH_CERN
 site dataset=/WJets_matchingup_7TeV-madgraph/Summer10-START36_V10_FastSim-v3/DQM
 site dataset=/QCD_Pt_0to5_TuneZ2_7TeV_pythia6/wteo-qcd_tunez2_pt0to5_pythia_fall10_387-250136cb6ade55a0822a3f1b6b851d5a/USER instance=cms_dbs_ph_analysis_02
-site dataset=/Cosmics/Run2010B-TkAlCosmics0T-v1/ALCARECO
-
-# find site for PRODUCTION dataset
-site dataset=/tt1j_mT_70-alpgen/CMSSW_1_5_2-CSA07-2211/GEN-SIM-DIGI-RECO
-
-# find site info of dataset from local instance (should yield DBS3 origin_site_name)
-site dataset=/SingleLongLivedFlatPt_M_1000_CTau350_cfi_py_GEN_SIM/zhenhu-SingleLongLivedFlatPt_M_1000_CTau350_cfi_py_GEN_SIM-6db2d900755bd45dd25b8bfc112dfb1f/USER instance=prod/phys03

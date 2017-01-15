@@ -1,4 +1,0 @@
-child dataset=/QCDpt30/Summer08_IDEAL_V9_v1/GEN-SIM-RAW
-parent dataset=/QCDpt30/Summer08_IDEAL_V9_skim_hlt_v1/USER
-child file=/store/mc/Summer08/QCDpt30/GEN-SIM-RAW/IDEAL_V9_v1/0000/1C3B1D33-027C-DD11-A62B-001CC4A63C2A.root
-parent file=/store/mc/Summer08/QCDpt30/USER/IDEAL_V9_skim_hlt_v1/0003/367E05A0-707E-DD11-B0B9-001CC4A6AE4E.root

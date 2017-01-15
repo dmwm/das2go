@@ -1,48 +1,37 @@
-dataset primary_dataset=ZJetToEE_Pt* tier=*GEN*
+# find dataset for given primary dataset pattern and data tiers
 dataset primary_dataset=ZJetToEE_Pt*
+dataset primary_dataset=ZJetToEE_Pt* tier=*GEN*
+
+# get information about dataset
 dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD
-# this should yield warning since reqmgr requires full path
-dataset dataset=/A*/A*herwig/AODSIM
+
+# find datasets for given tier/group/site
 dataset tier=*GEN-SIM-RECO*
 dataset group=Top
 dataset group=local site=T2_CH_CERN
-dataset=*ZMM*
-dataset=/ZMM*/*/*
-dataset=/ZMM*/*/* | sort dataset.nfiles
-dataset=/ZMM*/*/* | sort dataset.nfiles-
-# should show hints from global/phys01 instance
-dataset=/ZMM_7TeV*/*/*
-dataset=/ZMM_7TeV*
 
-dataset=/*/Run2013A-PromptReco*/* | sort dataset.name
-dataset=/Cosmics/Run2010B-TkAlCosmics0T*/* site=T1_DE_KIT
+# find datasets for given dataset pattern
+dataset=/ZMM*/*/*
+
+# find datasets for given pattern and site
 dataset dataset=/Cosmics/Run2010B-TkAlCosmics0T*/* site=T1_DE_KIT
-#dataset release=CMSSW_4_2_0 site=T2_EE_Estonia
-dataset release=CMSSW_7_1_0 site=T0_CH_CERN
-dataset release=CMSSW_7_4_14 site=T2_FI_HIP
+
+# find datasets for given release and/or site
 dataset release=CMSSW_2_0_8
+dataset release=CMSSW_7_4_14 site=T2_FI_HIP
+
+# find datasets for given dataset name and run
 dataset dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO run=149011
-# check parent queries
+
+# parent/child queries
 parent dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO
 dataset parent=/Cosmics/Run2010B-v1/RAW site=T1_US_FNAL release=CMSSW_3_9_7
 child dataset=/Cosmics/Run2010B-v1/RAW site=T1_US_FNAL release=CMSSW_3_9_7
 
+# find datasets for given block/file/run/status/dates
 dataset block=/ZG_Inclusive_8TeV-madgraph_v2/Summer12_DR53X-PU_S10_START53_V7A-v1/AODSIM#8ce42772-2410-11e2-85d7-003048f02c8a
-
+dataset file=/store/data/Run2010B/ZeroBias/RAW-RECO/v2/000/145/820/784478E3-52C2-DF11-A0CC-0018F3D0969A.root
 dataset run=148126
+dataset status=PRODUCTION
 dataset date=20141103
 dataset date between [20101001, 20101002]
-
-dataset status=PRODUCTION
-dataset file=/store/data/Run2010B/ZeroBias/RAW-RECO/v2/000/145/820/784478E3-52C2-DF11-A0CC-0018F3D0969A.root
-dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep dataset.nevents, dataset.status, dataset.creation_time, dataset.modification_time, dataset.nblocks, dataset.nfiles
-
-# dbs_phedex query
-dataset release=CMSSW_8_0_3_patch1 site=T2_IT_Bari
-dataset site=T2_IT_Bari
-
-# wild-card (underscore) query
-dataset=/RelValZpMM/CMSSW_6_2_0_pre7_*v1/GEN-SIM-RECO
-
-# Melo's use case
-dataset dataset in [/ZMM/Summer11-DESIGN42_V11_428_SLHC1-v1/GEN-SIM,/ZMM_14TeV/Summer12-DESIGN42_V17_SLHCTk-v1/GEN-SIM]

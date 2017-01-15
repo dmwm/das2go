@@ -1,15 +1,10 @@
+# find file info
 file=/store/data/Run2010A/EG/AOD/Dec4ReReco_v1/0031/E26F28FC-4A07-E011-9CF3-0030487F1653.root
-file=/store/data/Run2011A/AlCaP0/ALCARECO/ALCARECOEcalCalEtaCalib-Jun3ReReco-v1/0000/785C8376-518F-E011-B3CC-002618943852.root
-# file from invalid dataset
-dataset dataset=/Z*/*/* status=INVALID
-file=/store/mc/Summer10/Ztautau_M20_CTEQ66-powheg/GEN-SIM-RECO/START36_V9_S09-v1/0026/02579C1B-E276-DF11-949B-00261894380D.root
 
+# find files for different set of conditions
 file block=/EG/Run2010A-Dec4ReReco_v1/AOD#f15ed71e-6491-4f73-a0e3-ac4248a6367d
 file run=148126 dataset=/ZeroBias/Run2010B-Dec4ReReco_v1/RECO
-
 file dataset=/ZeroBias/Run2010B-Skim_logerror-v2/RAW-RECO run=145820 lumi=1
-file,lumi dataset=/ZMM/Summer11-DESIGN42_V11_428_SLHC1-v1/GEN-SIM
-
 file dataset=/AlCaP0/Run2011A-ALCARECOEcalCalEtaCalib-Jun3ReReco-v1/ALCARECO run between [160383,160400]
 file dataset=/AlCaP0/Run2011A-ALCARECOEcalCalEtaCalib-Jun3ReReco-v1/ALCARECO run=160383
 file dataset=/AlCaP0/Run2011A-ALCARECOEcalCalEtaCalib-Jun3ReReco-v1/ALCARECO run=160383 site=T1_US_FNAL
@@ -18,12 +13,13 @@ file dataset=/AlCaP0/Run2011A-ALCARECOEcalCalEtaCalib-Jun3ReReco-v1/ALCARECO run
 file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD
 file block=/Cosmics/Run2010B-TkAlCosmics0T-v1/ALCARECO#* site=T1_US_FNAL
 file dataset=/Cosmics/Run2010B-TkAlCosmics0T-v1/ALCARECO site=T1_US_FNAL_Buffer
-file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep file.name, file.size, file.size>0
-file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep file.name, file.size, file.size<2000000000
-file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep file.name, file.size, file.size<2000000000 | sort file.size
-file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep file.name, file.size, file.size<2000000000 | sort file.size-
-file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | sum(file.size), min(file.size), max(file.size), avg(file.size), median(file.size)
 file dataset=/WGstarToLNu2Tau_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM status=INVALID
-
-# not valid files
 file block=/WGstarToLNu2Tau_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM#29e86674-fe2d-11e0-a5f0-00221959e69e status=*
+
+
+file dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO run=177718
+file dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO run in [177718, 177053]
+file block=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO#19110c74-1b66-11e1-a98b-003048f02c8a run=177487
+file block=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO#19110c74-1b66-11e1-a98b-003048f02c8a run in [177487,177878]
+file dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO run in [177487,177878] site=T2_CH_CERN
+file block=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO#19110c74-1b66-11e1-a98b-003048f02c8a run in [177487,177878] site=T2_CH_CERN

@@ -1,7 +1,0 @@
-# summary queries
-summary dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO run=149011
-summary dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO
-summary block=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO#ee89be3a-5a9a-46a7-91eb-28c4728f3aaa
-summary dataset=/SingleMu/Run2011B-WMu-19Nov2011-v1/RAW-RECO run in [177718, 177053]
-# this is a dataset with mixed file content (valid and invalid files)
-summary dataset=/TrackerTIF/Online-CMSSW_1_1_0/RAW
