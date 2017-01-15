@@ -343,3 +343,42 @@ func GetBytes(data interface{}) ([]byte, error) {
 	}
 	return buf.Bytes(), nil
 }
+
+// LoadExamples loads DAS examples from github or local file
+func LoadExamples(ename string) {
+	githubUrl := fmt.Sprintf("https://raw.githubusercontent.com/vkuznet/das2go/master/examples/%s", ename)
+	var home string
+	for _, item := range os.Environ() {
+		value := strings.Split(item, "=")
+		if value[0] == "HOME" {
+			home = value[1]
+			break
+		}
+	}
+	dname := fmt.Sprintf("%s/.dasexamples", home)
+	if _, err := os.Stat(dname); err != nil {
+		os.Mkdir(dname, 0777)
+	}
+	fname := fmt.Sprintf("%s/.dasexamples/%s", home, ename)
+	if _, err := os.Stat(fname); err != nil {
+		// download maps from github
+		resp := utils.FetchResponse(githubUrl, "")
+		if resp.Error == nil {
+			// write data to local area
+			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)
+			if err != nil {
+				msg := fmt.Sprintf("Unable to write DAS example file, error %s", err)
+				panic(msg)
+			}
+		} else {
+			msg := fmt.Sprintf("Unable to get DAS example from github, error %s", resp.Error)
+			panic(msg)
+		}
+	}
+	data, err := ioutil.ReadFile(fname)
+	if err != nil {
+		msg := fmt.Sprintf("Unable to read DAS example from %s, error %s", fname, err)
+		panic(msg)
+	}
+	return string(data)
+}
