@@ -1,0 +1,15 @@
+zmm run 160915
+/DoubleMu/Run2012A-Zmmg-13Jul2012-v1/RAW-RECO magnetic field>3.5
+/DoubleMu/Run2012A-Zmmg-13Jul2012-v1/RAW-RECO magnetic field and run number
+Zmm complete block replicas
+number of lumis in run 176304
+Zmm event number
+Zmm "event number"
+Zmm "number of events"
+delivered lumimosity in run 176304
+where is dataset=/DoubleMu/Run2012A-Zmmg-13Jul2012-v1/RAW-RECO located
+configuration of /*Zmm*/*/*
+"number of files" dataset=*ZMM*
+number of files dataset=*ZMM*
+files of dataset=ZMM
+files in dataset=*ZMM*

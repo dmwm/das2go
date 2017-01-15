@@ -1,0 +1,13 @@
+# check reqmgr presence and absence
+dataset=/SUSY_LM9_sftsht_8TeV-pythia6/Summer12-START50_V13-v1/GEN-SIM
+dataset=/DoubleMu/aburgmei-DoubleMu_2012D_PromptReco_v1_embedded_trans1_tau123_pttau1_18tau2_8_v1-f456bdbb960236e5c696adfe9b04eaae/USER
+
+dataset=/WJetsToLNu_HT-400To600_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISpring16MiniAODv1-PUSpring16_80X_mcRun2_asymptotic_2016_v3_ext1-v1/MINIAODSIM
+# check configs coming from ReqMgr, should see urls
+config dataset=/4B_TuneZ2_7TeV-alpgen-pythia6/Summer11-START311_V2-v3/GEN-SIM
+config dataset=/RelValSingleMuPt10/CMSSW_6_2_0-PRE_ST62_V8-v1/GEN-SIM-RECO
+
+#
+config dataset=/Neutrino_Pt_2to20_gun/Summer12-rundepMC_PU_RD1_START53_V7N-v1/RAWRECOSIMHLT
+config dataset=/Neutrino_Pt_2to20_gun/Summer12-ShoLibRD202299_PU50nsExtM300nsTP_START53_V7N-v1/RAWRECOSIMHLT
+config dataset=/RelValPyquen_ZeemumuJets_pt10_2760GeV/CMSSW_5_3_15-PU_STARTHI53V10A_TEST_feb14-v3/GEN-SIM-RECO

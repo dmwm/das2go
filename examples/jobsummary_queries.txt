@@ -1,0 +1,4 @@
+jobsummary date last 24h
+jobsummary site=T1_DE_KIT date last 24h
+jobsummary user=AlekoKhukhunaishvili
+jobsummary date between [20110208, 20110209]

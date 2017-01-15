@@ -1,0 +1,8 @@
+#monitor date last 24h
+records primary_dataset=Cosmics
+#DBS3
+#group group=T*
+# New SiteDB
+user=valya
+user=vkuznet@gmail.com
+group=DataOps

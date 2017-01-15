@@ -1,0 +1,8 @@
+
+lumi file=/store/data/Run2010B/ZeroBias/RAW-RECO/v2/000/145/820/784478E3-52C2-DF11-A0CC-0018F3D0969A.root
+lumi file=/store/data/Run2010B/Cosmics/ALCARECO/TkAlCosmics0T-Dec22ReReco_v2/0153/9221DEAF-7223-E011-B79F-002618943886.root run=149011
+lumi block=/ZeroBias/Run2010B-Skim_logerror-v2/RAW-RECO#a14a71ba-055f-4469-9180-4653f8db4fe6
+
+
+
+lumi block=/HPlusPlusHMinusMinusHTo4L_M-300_8TeV-pythia6/Summer12-START53_V7C-v1/GEN-SIM#f69ecdb6-86ad-11e2-8309-003048f0e7dc | count(lumi)

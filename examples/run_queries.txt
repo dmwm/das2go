@@ -1,0 +1,11 @@
+run dataset=/Monitor/Commissioning08-v1/RAW
+run block=/SingleElectron/Run2011A-414_preprod_GR_H_V16-v1/RAW#12ac2478-3b25-4a02-a7d4-6f2138f35171
+run file=/store/data/Commissioning11/Commissioning/RAW/v3/000/160/292/E863DF08-024C-E011-B2ED-0030487A3232.root
+run=160915
+run between [160910, 160920]
+run between [160910, 160920] |  sum(run.delivered_lumi), sum(run.nevents), sum(run.nlumis)
+run in [160915,190595]
+run in [160915,190595] | sum(run.delivered_lumi), sum(run.nevents), sum(run.nlumis)
+run between [148124,148126]
+run date = 20110320
+run date between [20101001, 20101002]

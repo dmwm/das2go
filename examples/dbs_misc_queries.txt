@@ -1,0 +1,9 @@
+primary_dataset=Cosmics
+release=CMSSW_2_0_8
+config dataset=/Cosmics/Run2010B-TkAlCosmics0T-Dec22ReReco_v2/ALCARECO
+config dataset=/SingleMu/CMSSW_6_2_0_pre4-PRE_61_V1_RelVal_mu2012A-v1/RECO | grep config.global_tag
+# should report 7140309 events (only valid files) instead of 7143406 (all files)
+dataset=/TrackerTIF/Online-CMSSW_1_1_0/RAW
+release dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD
+release file=/store/data/Run2011A/ElectronHad/AOD/05Aug2011-v1/0000/00157DBB-0AC0-E011-AB7A-0019BB3DE6F4.root
+
