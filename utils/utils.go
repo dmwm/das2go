@@ -9,11 +9,14 @@ import (
 	"bytes"
 	"encoding/gob"
 	"fmt"
+	"io/ioutil"
 	"log"
+	"os"
 	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -345,7 +348,7 @@ func GetBytes(data interface{}) ([]byte, error) {
 }
 
 // LoadExamples loads DAS examples from github or local file
-func LoadExamples(ename string) {
+func LoadExamples(ename string) string {
 	githubUrl := fmt.Sprintf("https://raw.githubusercontent.com/vkuznet/das2go/master/examples/%s", ename)
 	var home string
 	for _, item := range os.Environ() {
@@ -362,7 +365,7 @@ func LoadExamples(ename string) {
 	fname := fmt.Sprintf("%s/.dasexamples/%s", home, ename)
 	if _, err := os.Stat(fname); err != nil {
 		// download maps from github
-		resp := utils.FetchResponse(githubUrl, "")
+		resp := FetchResponse(githubUrl, "")
 		if resp.Error == nil {
 			// write data to local area
 			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)
