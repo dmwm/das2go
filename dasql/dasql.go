@@ -227,7 +227,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		} else {
 			nnval = nan
 		}
-		if utils.VERBOSE > 1 {
+		if utils.VERBOSE > 2 {
 			fmt.Printf("Process idx='%d', val='%s', nval='%s', nnval='%s'\n", idx, val, nval, nnval)
 		}
 		if nval != nan && (nval == "," || utils.InList(nval, daskeys) == true) {
