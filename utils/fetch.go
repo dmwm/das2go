@@ -21,47 +21,58 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"os"
+	"os/user"
 	"regexp"
 	"strings"
 	"sync/atomic"
 	"time"
 )
 
-// Certs returns array of certificates
-func Certs() (tlsCerts []tls.Certificate) {
+// client X509 certificates
+func tlsCerts() ([]tls.Certificate, error) {
 	uproxy := os.Getenv("X509_USER_PROXY")
 	uckey := os.Getenv("X509_USER_KEY")
 	ucert := os.Getenv("X509_USER_CERT")
-	if WEBSERVER > 0 {
-		log.Println("X509_USER_PROXY", uproxy)
-		log.Println("X509_USER_KEY", uckey)
-		log.Println("X509_USER_CERT", ucert)
+
+	// check if /tmp/x509up_u$UID exists, if so setup X509_USER_PROXY env
+	u, err := user.Current()
+	if err == nil {
+		fname := fmt.Sprintf("/tmp/x509up_u%s", u.Uid)
+		if _, err := os.Stat(fname); err == nil {
+			uproxy = fname
+		}
 	}
-	if len(uproxy) > 0 {
+	if VERBOSE > 0 {
+		fmt.Println("uproxy", uproxy)
+		fmt.Println("uckey", uckey)
+		fmt.Println("ucert", ucert)
+	}
+
+	if uproxy == "" && uckey == "" { // user doesn't have neither proxy or user certs
+		return nil, nil
+	}
+	if uproxy != "" {
 		// use local implementation of LoadX409KeyPair instead of tls one
 		x509cert, err := x509proxy.LoadX509Proxy(uproxy)
 		if err != nil {
-			log.Println("Fail to parser proxy X509 certificate", err)
-			return
+			return nil, fmt.Errorf("failed to parse proxy X509 proxy set by X509_USER_PROXY: %v", err)
 		}
-		tlsCerts = []tls.Certificate{x509cert}
-	} else if len(uckey) > 0 {
-		x509cert, err := tls.LoadX509KeyPair(ucert, uckey)
-		if err != nil {
-			log.Println("Fail to parser user X509 certificate", err)
-			return
-		}
-		tlsCerts = []tls.Certificate{x509cert}
-	} else {
-		return
+		return []tls.Certificate{x509cert}, nil
 	}
-	return
+	x509cert, err := tls.LoadX509KeyPair(ucert, uckey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse user X509 certificate: %v", err)
+	}
+	return []tls.Certificate{x509cert}, nil
 }
 
 // HttpClient is HTTP client for urlfetch server
 func HttpClient() (client *http.Client) {
-	// create HTTP client
-	certs := Certs()
+	// get X509 certs
+	certs, err := tlsCerts()
+	if err != nil {
+		panic(err.Error())
+	}
 	if WEBSERVER > 0 {
 		log.Println("Number of certificates", len(certs))
 	}
