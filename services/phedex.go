@@ -77,8 +77,14 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 					replicas := brec["replica"].([]interface{})
 					for _, val := range replicas {
 						row := val.(map[string]interface{})
-						node := row["node"].(string)
-						se := row["se"].(string)
+						node := ""
+						if row["node"] != nil {
+							node = row["node"].(string)
+						}
+						se := ""
+						if row["se"] != nil {
+							se = row["se"].(string)
+						}
 						rec := mongo.DASRecord{"name": node, "se": se}
 						out = append(out, rec)
 					}
