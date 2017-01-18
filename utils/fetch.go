@@ -225,12 +225,10 @@ func FetchResponse(rurl, args string) ResponseType {
 		return response
 	}
 	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	response.Data, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		response.Error = err
-		return response
 	}
-	response.Data = body
 	return response
 }
 
