@@ -186,6 +186,7 @@ func URLFetchWorker(in <-chan UrlRequest) {
 
 // FetchResponse fetches data for provided URL, args is a json dump of arguments
 func FetchResponse(rurl, args string) ResponseType {
+	startTime := time.Now()
 	// increment UrlQueueSize since we'll process request
 	atomic.AddInt32(&UrlQueueSize, 1)
 	defer atomic.AddInt32(&UrlQueueSize, -1) // decrement UrlQueueSize since we done with this request
@@ -229,6 +230,13 @@ func FetchResponse(rurl, args string) ResponseType {
 	if err != nil {
 		response.Error = err
 	}
+	if VERBOSE > 0 {
+		if args == "" {
+			fmt.Println("DAS GET", rurl, time.Now().Sub(startTime))
+		} else {
+			fmt.Println("DAS POST", rurl, args, time.Now().Sub(startTime))
+		}
+	}
 	return response
 }
 
@@ -248,7 +256,6 @@ func Fetch(rurl string, args string, out chan<- ResponseType) {
 // By defat
 func fetch(rurl string, args string, ch chan<- ResponseType) {
 	var resp, r ResponseType
-	startTime := time.Now()
 	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
 		fmt.Println("DAS WARNING, fail to fetch data", rurl, "error", resp.Error)
@@ -265,14 +272,6 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 	}
 	if resp.Error != nil {
 		fmt.Println("DAS ERROR, fail to fetch data", rurl, "retries", UrlRetry, "error", resp.Error)
-	}
-	endTime := time.Now()
-	if VERBOSE > 0 {
-		if args == "" {
-			fmt.Println("DAS GET", rurl, endTime.Sub(startTime))
-		} else {
-			fmt.Println("DAS POST", rurl, args, endTime.Sub(startTime))
-		}
 	}
 	ch <- resp
 }
