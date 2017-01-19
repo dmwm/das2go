@@ -23,6 +23,7 @@ type DASQuery struct {
 	Fields                     []string
 	Pipe                       string
 	Instance                   string
+	Detail                     bool
 	System                     string
 	Filters                    map[string][]string
 	Aggregators                [][]string
@@ -202,7 +203,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		pipe = strings.Trim(parts[1], " ")
 	}
 	nan := "_NA_"
-	specials := []string{"date", "system", "instance"}
+	specials := []string{"date", "system", "instance", "detail"}
 	specOps := []string{"in", "between"}
 	fields := []string{}
 	spec := bson.M{}
@@ -299,6 +300,13 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		delete(spec, "instance")
 	}
 
+	// remove detail from spec
+	detail := false
+	if spec["detail"] != nil {
+		detail = true
+		delete(spec, "detail")
+	}
+
 	// find out which system to use
 	var system string
 	if spec["system"] != nil {
@@ -313,6 +321,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	rec.Qhash = qhash(relaxedQuery, inst)
 	rec.Pipe = pipe
 	rec.Instance = inst
+	rec.Detail = detail
 	rec.Filters = filters
 	rec.Aggregators = aggregators
 	rec.System = system
