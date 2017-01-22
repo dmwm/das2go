@@ -195,7 +195,6 @@ func FetchResponse(rurl, args string) ResponseType {
 	}
 	var response ResponseType
 	response.Url = rurl
-	response.Data = []byte{}
 	if validateUrl(rurl) == false {
 		response.Error = errors.New("Invalid URL")
 		return response
