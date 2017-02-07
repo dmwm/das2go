@@ -7,21 +7,32 @@ package services
 //
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/vkuznet/das2go/dasql"
-	"github.com/vkuznet/das2go/mongo"
-	"github.com/vkuznet/das2go/utils"
 	"log"
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/vkuznet/das2go/dasql"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/utils"
 )
 
 // helper function to load DBS data stream
 func loadDBSData(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	err := json.Unmarshal(data, &out)
+
+	// to prevent json.Unmarshal behavior to convert all numbers to float
+	// we'll use json decode method with instructions to use numbers as is
+	buf := bytes.NewBuffer(data)
+	dec := json.NewDecoder(buf)
+	dec.UseNumber()
+	err := dec.Decode(&out)
+
+	// original way to decode data
+	// err := json.Unmarshal(data, &out)
 	if err != nil {
 		msg := fmt.Sprintf("DBS unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 		out = append(out, mongo.DASErrorRecord(msg))
