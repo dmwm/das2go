@@ -7,8 +7,10 @@ package services
 //
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+
 	"github.com/vkuznet/das2go/mongo"
 )
 
@@ -16,7 +18,16 @@ import (
 func loadMcMData(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	var rec mongo.DASRecord
-	err := json.Unmarshal(data, &rec)
+
+	// to prevent json.Unmarshal behavior to convert all numbers to float
+	// we'll use json decode method with instructions to use numbers as is
+	buf := bytes.NewBuffer(data)
+	dec := json.NewDecoder(buf)
+	dec.UseNumber()
+	err := dec.Decode(&rec)
+
+	// original way to decode data
+	// err := json.Unmarshal(data, &rec)
 	if err != nil {
 		msg := fmt.Sprintf("McM unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 		out = append(out, mongo.DASErrorRecord(msg))

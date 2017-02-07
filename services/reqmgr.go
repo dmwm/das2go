@@ -7,13 +7,15 @@ package services
 //
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/vkuznet/das2go/dasql"
 	"github.com/vkuznet/das2go/mongo"
 	"github.com/vkuznet/das2go/utils"
-	"strings"
-	"time"
 )
 
 // helper function to load ReqMgr data stream
@@ -21,7 +23,15 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	if api == "configIDs" || api == "datasetByPrepID" || api == "outputdataset" || api == "inputdataset" {
 		var rec mongo.DASRecord
-		err := json.Unmarshal(data, &rec)
+		// to prevent json.Unmarshal behavior to convert all numbers to float
+		// we'll use json decode method with instructions to use numbers as is
+		buf := bytes.NewBuffer(data)
+		dec := json.NewDecoder(buf)
+		dec.UseNumber()
+		err := dec.Decode(&rec)
+
+		// original way to decode data
+		// err := json.Unmarshal(data, &rec)
 		if err != nil {
 			msg := fmt.Sprintf("ReqMgr unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 			out = append(out, mongo.DASErrorRecord(msg))

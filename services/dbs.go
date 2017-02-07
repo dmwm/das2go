@@ -75,11 +75,12 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 		return out
 	} else if api == "runs_via_dataset" || api == "runs" {
 		for _, rec := range records {
-			for _, v := range rec["run_num"].([]interface{}) {
-				r := make(mongo.DASRecord)
-				r["run_number"] = fmt.Sprintf("%d", int(v.(float64)))
-				out = append(out, r)
-			}
+			//             for _, v := range rec["run_num"].([]interface{}) {
+			//                 r := make(mongo.DASRecord)
+			//                 r["run_number"] = fmt.Sprintf("%d", int(v.(float64)))
+			//                 out = append(out, r)
+			//             }
+			out = append(out, rec)
 		}
 		return out
 	}
