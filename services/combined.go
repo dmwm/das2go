@@ -7,11 +7,14 @@ package services
 //
 
 import (
+	"encoding/json"
 	"fmt"
+	"log"
+	"strings"
+
 	"github.com/vkuznet/das2go/dasql"
 	"github.com/vkuznet/das2go/mongo"
 	"github.com/vkuznet/das2go/utils"
-	"strings"
 )
 
 // global variables used in this module
@@ -93,6 +96,21 @@ func (LocalAPIs) L_combined_child4site_release_dataset(dasquery dasql.DASQuery) 
 	return out
 }
 
+func rec2num(rec interface{}) int64 {
+	var out int64
+	switch val := rec.(type) {
+	case int64:
+		out = val
+	case json.Number:
+		v, e := val.Int64()
+		if e != nil {
+			log.Println("Unable to convert json.Number to int64", rec, e)
+		}
+		out = v
+	}
+	return out
+}
+
 // L_combined_site4dataset returns site info for given dataset
 func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
@@ -103,19 +121,19 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(inst), api, dataset)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
-	var totblocks, totfiles float64
-	totblocks = records[0]["num_block"].(float64)
-	totfiles = records[0]["num_file"].(float64)
+	var totblocks, totfiles int64
+	totblocks = rec2num(records[0]["num_block"])
+	totfiles = rec2num(records[0]["num_file"])
 	// Phedex part find block replicas for given dataset
 	api = "blockReplicas"
 	furl = fmt.Sprintf("%s/%s?dataset=%s", phedexUrl(), api, dataset)
 	resp = utils.FetchResponse(furl, "") // "" specify optional args
 	records = PhedexUnmarshal(api, resp.Data)
 	siteInfo := make(mongo.DASRecord)
-	var bComplete, nfiles, nblks, bfiles float64
+	var bComplete, nfiles, nblks, bfiles int64
 	bfiles = 0
 	for _, rec := range records {
-		bfiles += rec["files"].(float64)
+		bfiles += rec2num(rec["files"])
 		replicas := rec["replica"].([]interface{})
 		for _, val := range replicas {
 			row := val.(map[string]interface{})
@@ -127,13 +145,13 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 			} else {
 				bComplete = 0
 			}
-			nfiles = row["files"].(float64)
+			nfiles = rec2num(row["files"])
 			skeys := utils.MapKeys(siteInfo)
 			if utils.InList(node, skeys) {
 				sInfo := siteInfo[node].(mongo.DASRecord)
-				nfiles += sInfo["files"].(float64)
-				nblks = sInfo["blocks"].(float64) + 1
-				bc := sInfo["block_complete"].(float64)
+				nfiles += rec2num(sInfo["files"])
+				nblks = rec2num(sInfo["blocks"]) + 1
+				bc := rec2num(sInfo["block_complete"])
 				if complete == "y" {
 					bComplete = bc + 1
 				} else {
@@ -150,22 +168,22 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 	for key, val := range siteInfo {
 		row := val.(mongo.DASRecord)
 		if totfiles > 0 {
-			nfiles := row["files"].(float64)
-			pfiles = fmt.Sprintf("%5.2f%%", 100*nfiles/totfiles)
+			nfiles := rec2num(row["files"])
+			pfiles = fmt.Sprintf("%5.2f%%", 100*float64(nfiles)/float64(totfiles))
 		} else {
 			pfiles = "N/A"
 			pblks = "N/A"
 		}
 		if totblocks > 0 {
-			nblks := row["blocks"].(float64)
-			pblks = fmt.Sprintf("%5.2f%%", 100*nblks/totblocks)
+			nblks := rec2num(row["blocks"])
+			pblks = fmt.Sprintf("%5.2f%%", 100*float64(nblks)/float64(totblocks))
 		} else {
 			pfiles = "N/A"
 			pblks = "N/A"
 		}
-		ratio := row["block_complete"].(float64) / row["blocks"].(float64)
+		ratio := float64(rec2num(row["block_complete"])) / float64(rec2num(row["blocks"]))
 		bc := fmt.Sprintf("%5.2f%%", 100*ratio)
-		rf := fmt.Sprintf("%5.2f%%", 100*nfiles/bfiles)
+		rf := fmt.Sprintf("%5.2f%%", 100*float64(nfiles)/float64(bfiles))
 		// put into file das record, internal type must be list
 		rec := make(mongo.DASRecord)
 		rec["site"] = []mongo.DASRecord{{"name": key,
