@@ -15,7 +15,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"github.com/vkuznet/x509proxy"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -26,6 +25,8 @@ import (
 	"strings"
 	"sync/atomic"
 	"time"
+
+	"github.com/vkuznet/x509proxy"
 )
 
 // client X509 certificates
@@ -55,7 +56,7 @@ func tlsCerts() ([]tls.Certificate, error) {
 		// use local implementation of LoadX409KeyPair instead of tls one
 		x509cert, err := x509proxy.LoadX509Proxy(uproxy)
 		if err != nil {
-			return nil, fmt.Errorf("failed to parse proxy X509 proxy set by X509_USER_PROXY: %v", err)
+			return nil, fmt.Errorf("failed to parse X509 proxy: %v", err)
 		}
 		return []tls.Certificate{x509cert}, nil
 	}
