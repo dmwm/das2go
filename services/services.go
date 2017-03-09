@@ -7,13 +7,14 @@ package services
 //
 
 import (
+	"strings"
+	"time"
+
 	"github.com/vkuznet/das2go/dasmaps"
 	"github.com/vkuznet/das2go/dasql"
 	"github.com/vkuznet/das2go/mongo"
 	"github.com/vkuznet/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
-	"strings"
-	"time"
 )
 
 // remap function uses DAS notations and convert series of DAS records
@@ -34,7 +35,9 @@ func remap(api string, records []mongo.DASRecord, notations []mongo.DASRecord) [
 				}
 			} else {
 				if utils.InList(apiKey, keys) {
-					rec[recKey] = rec[apiKey]
+					if _, ok := rec[recKey]; !ok {
+						rec[recKey] = rec[apiKey]
+					}
 				}
 			}
 		}
