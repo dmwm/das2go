@@ -7,14 +7,16 @@ package services
 //
 
 import (
+	"encoding/json"
 	"fmt"
-	"github.com/vkuznet/das2go/dasql"
-	"github.com/vkuznet/das2go/mongo"
-	"github.com/vkuznet/das2go/utils"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/vkuznet/das2go/dasql"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/utils"
 )
 
 // LocalAPIs structure to hold information about local APIs
@@ -199,20 +201,20 @@ func fileRunLumi(dasquery dasql.DASQuery, keys []string) []mongo.DASRecord {
 // OrderByRunLumis helper function to sort records by run and then merge lumis within a run
 func OrderByRunLumis(records []mongo.DASRecord) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	rmap := make(map[float64][]float64)
+	rmap := make(map[json.Number][]json.Number)
 	for _, r := range records {
 		lumiList := mongo.GetValue(r, "lumi.number").([]interface{})
-		run := mongo.GetValue(r, "run.run_number").(float64)
+		run := mongo.GetValue(r, "run.run_number").(json.Number)
 		lumis, ok := rmap[run]
 		if ok {
 			for _, v := range lumiList {
-				lumis = append(lumis, v.(float64))
+				lumis = append(lumis, v.(json.Number))
 			}
 			rmap[run] = lumis
 		} else {
-			var lumiValues []float64
+			var lumiValues []json.Number
 			for _, v := range lumiList {
-				lumiValues = append(lumiValues, v.(float64))
+				lumiValues = append(lumiValues, v.(json.Number))
 			}
 			rmap[run] = lumiValues
 		}
