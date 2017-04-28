@@ -8,15 +8,16 @@ package dasmaps
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/vkuznet/das2go/mongo"
-	"github.com/vkuznet/das2go/utils"
-	"gopkg.in/mgo.v2/bson"
 	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/utils"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // DASMaps structure holds all information about DAS records
