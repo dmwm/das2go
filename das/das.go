@@ -7,12 +7,6 @@ package das
 
 import (
 	"fmt"
-	"github.com/vkuznet/das2go/dasmaps"
-	"github.com/vkuznet/das2go/dasql"
-	"github.com/vkuznet/das2go/mongo"
-	"github.com/vkuznet/das2go/services"
-	"github.com/vkuznet/das2go/utils"
-	"gopkg.in/mgo.v2/bson"
 	"log"
 	"net/url"
 	"reflect"
@@ -20,6 +14,13 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/vkuznet/das2go/dasmaps"
+	"github.com/vkuznet/das2go/dasql"
+	"github.com/vkuznet/das2go/mongo"
+	"github.com/vkuznet/das2go/services"
+	"github.com/vkuznet/das2go/utils"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // Record is a main entity DAS server operates
@@ -124,6 +125,10 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 						}
 					} else if system == "dbs3" && arg == "min_cdate" {
 						vals.Add(arg, fmt.Sprintf("%d", utils.UnixTime(val)))
+						maxd := utils.UnixTime(val) + 24*60*60
+						vals.Add("max_cdate", fmt.Sprintf("%d", maxd))
+					} else if system == "dbs3" && arg == "cdate" {
+						vals.Add("min_cdate", fmt.Sprintf("%d", utils.UnixTime(val)))
 						maxd := utils.UnixTime(val) + 24*60*60
 						vals.Add("max_cdate", fmt.Sprintf("%d", maxd))
 					} else if dkey == "date" && system == "conddb" {
