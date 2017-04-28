@@ -112,7 +112,7 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
 
 // helper function to find ReqMgr ids
 func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
-	var out, urls []string
+	var inputOut, outputOut, ids, urls []string
 	var rurl string
 	exit := false
 	rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/_design/ReqMgr/_view/byoutputdataset?key=\"%s\"&include_docs=true&stale=update_after", base, dataset)
@@ -135,6 +135,13 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 		select {
 		case r := <-ch:
 			var data mongo.DASRecord
+			view := ""
+			if strings.Contains(strings.ToLower(r.Url), "inputdataset") {
+				view = "input"
+			}
+			if strings.Contains(strings.ToLower(r.Url), "outputdataset") {
+				view = "output"
+			}
 			err := json.Unmarshal(r.Data, &data)
 			if err == nil {
 				values := data["rows"]
@@ -142,24 +149,28 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 					rows := values.([]interface{})
 					for _, rec := range rows {
 						row := rec.(map[string]interface{})
-						out = append(out, row["id"].(string))
 						doc := row["doc"].(map[string]interface{})
-						val := doc["ProcConfigCacheID"]
-						if val != nil {
-							out = append(out, val.(string))
-						}
-						val = doc["ConfigCacheID"]
-						if val != nil {
-							out = append(out, val.(string))
-						}
-						val = doc["SkimConfigCacheID"]
-						if val != nil {
-							out = append(out, val.(string))
+						for kkk, vvv := range doc {
+							if strings.Contains(kkk, "ConfigCacheID") {
+								val := vvv.(string)
+								if len(val) == 32 {
+									if view == "input" && !utils.InList(val, inputOut) {
+										inputOut = append(inputOut, val)
+									}
+									if view == "output" && !utils.InList(val, outputOut) {
+										outputOut = append(outputOut, val)
+									}
+									if !utils.InList(val, ids) {
+										ids = append(ids, val)
+									}
+								}
+							}
 						}
 					}
 				}
 			}
-			idict[r.Url] = out
+			idict["byinputdataset"] = inputOut
+			idict["byoutputdataset"] = outputOut
 			delete(umap, r.Url) // remove Url from map
 		default:
 			if len(umap) == 0 { // no more requests, merge data records
@@ -171,7 +182,7 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 			break
 		}
 	}
-	return utils.List2Set(out), idict
+	return utils.List2Set(ids), idict
 }
 
 // L_reqmgr2_configs reqmgr APIs to lookup configs for given dataset
@@ -193,7 +204,7 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	// find ReqMgr Ids for given dataset
 	dataset := spec["dataset"].(string)
 	ids, idict := findReqMgrIds(base, dataset)
-	var urls, rurls []string
+	var urls, rurls, uids []string
 	var rurl string
 	for _, v := range ids {
 		if len(v) == 32 {
@@ -219,46 +230,13 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 		case r := <-ch:
 			var data mongo.DASRecord
 			err := json.Unmarshal(r.Data, &data)
-			configIDs := []string{"DQMConfigCacheID", "ConfigCacheID"}
 			if err == nil {
-				for _, attr := range configIDs {
-					val := data[attr]
-					switch v := val.(type) {
-					case string:
-						rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
-						urls = append(urls, rurl)
-					case []string:
-						for _, u := range v {
-							rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, u)
+				for key, val := range data {
+					if strings.Contains(key, "ConfigCacheID") {
+						rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, val)
+						if !utils.InList(rurl, urls) {
 							urls = append(urls, rurl)
-						}
-					}
-				}
-				// look for configs in tasks
-				for _, key := range utils.MapKeys(data) {
-					if strings.HasPrefix(key, "Task") {
-						rec := data[key]
-						var vvv map[string]interface{}
-						switch r := rec.(type) {
-						case map[string]interface{}:
-							vvv = r
-						default:
-							continue
-						}
-						for _, attr := range configIDs {
-							val := vvv[attr]
-							if val != nil {
-								switch v := val.(type) {
-								case string:
-									rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
-									urls = append(urls, rurl)
-								case []string:
-									for _, u := range v {
-										rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, u)
-										urls = append(urls, rurl)
-									}
-								}
-							}
+							uids = append(uids, fmt.Sprintf("%s", val))
 						}
 					}
 				}
@@ -278,10 +256,25 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	// Construct final record
 	rec := make(mongo.DASRecord)
 	rec["dataset"] = dataset
-	rec["name"] = "ReqMgr/WMStats"
-	rec["urls"] = mongo.DASRecord{"output": urls}
+	rec["name"] = "ReqMgr2"
 	rec["ids"] = ids
 	rec["idict"] = idict
+	var outputUrls, inputUrls []string
+	for _, uid := range idict["byinputdataset"] {
+		for _, rurl := range urls {
+			if strings.Contains(rurl, uid) {
+				inputUrls = append(inputUrls, rurl)
+			}
+		}
+	}
+	for _, uid := range idict["byoutputdataset"] {
+		for _, rurl := range urls {
+			if strings.Contains(rurl, uid) {
+				outputUrls = append(outputUrls, rurl)
+			}
+		}
+	}
+	rec["urls"] = mongo.DASRecord{"output": outputUrls, "input": inputUrls}
 	var out []mongo.DASRecord
 	out = append(out, rec)
 	return out
