@@ -9,11 +9,12 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/vkuznet/das2go/utils"
-	"gopkg.in/mgo.v2/bson"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/vkuznet/das2go/utils"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // DASQuery provides basic structure to hold DAS query record
@@ -35,9 +36,9 @@ type DASQuery struct {
 // http://stackoverflow.com/questions/16976523/in-go-why-isnt-my-stringer-interface-method-getting-invoked-when-using-fmt-pr
 func (q DASQuery) String() string {
 	if utils.VERBOSE == 0 {
-		return fmt.Sprintf("<DASQuery=\"%s\", inst=%s, system=%s>", q.Query, q.Instance, q.Qhash, q.System)
+		return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s system=%s>", q.Query, q.Instance, q.Qhash, q.System)
 	}
-	return fmt.Sprintf("<DASQuery=\"%s\", inst=%s, hash=%s, system=%s, fields=%s, spec=%s, filters=%s, aggrs=%s>", q.Query, q.Instance, q.Qhash, q.System, q.Fields, q.Spec, q.Filters, q.Aggregators)
+	return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s system=%s fields=%s spec=%s filters=%s aggrs=%s>", q.Query, q.Instance, q.Qhash, q.System, q.Fields, q.Spec, q.Filters, q.Aggregators)
 }
 
 func operators() []string {
@@ -45,7 +46,7 @@ func operators() []string {
 }
 func relax(query string) string {
 	for _, oper := range operators() {
-		if oper == "in" || oper == "between" {
+		if oper == "in" || oper == "between" || oper == "last" {
 			continue
 		} else {
 			newOp := " " + oper + " "
