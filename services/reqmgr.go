@@ -152,16 +152,18 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 						doc := row["doc"].(map[string]interface{})
 						for kkk, vvv := range doc {
 							if strings.Contains(kkk, "ConfigCacheID") {
-								val := vvv.(string)
-								if len(val) == 32 {
-									if view == "input" && !utils.InList(val, inputOut) {
-										inputOut = append(inputOut, val)
-									}
-									if view == "output" && !utils.InList(val, outputOut) {
-										outputOut = append(outputOut, val)
-									}
-									if !utils.InList(val, ids) {
-										ids = append(ids, val)
+								switch val := vvv.(type) {
+								case string:
+									if len(val) == 32 {
+										if view == "input" && !utils.InList(val, inputOut) {
+											inputOut = append(inputOut, val)
+										}
+										if view == "output" && !utils.InList(val, outputOut) {
+											outputOut = append(outputOut, val)
+										}
+										if !utils.InList(val, ids) {
+											ids = append(ids, val)
+										}
 									}
 								}
 							}
