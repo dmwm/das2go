@@ -137,9 +137,19 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 		replicas := rec["replica"].([]interface{})
 		for _, val := range replicas {
 			row := val.(map[string]interface{})
-			node := row["node"].(string)
-			se := row["se"].(string)
-			complete := row["complete"].(string)
+			var node, se, complete string
+			switch v := row["node"].(type) {
+			case string:
+				node = v
+			}
+			switch v := row["se"].(type) {
+			case string:
+				se = v
+			}
+			switch v := row["complete"].(type) {
+			case string:
+				complete = v
+			}
 			if complete == "y" {
 				bComplete = 1
 			} else {
