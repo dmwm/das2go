@@ -8,6 +8,7 @@ package dasql
 import (
 	"crypto/md5"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -19,16 +20,18 @@ import (
 
 // DASQuery provides basic structure to hold DAS query record
 type DASQuery struct {
-	Query, relaxedQuery, Qhash string
-	Spec                       bson.M
-	Fields                     []string
-	Pipe                       string
-	Instance                   string
-	Detail                     bool
-	System                     string
-	Filters                    map[string][]string
-	Aggregators                [][]string
-	Error                      string
+	relaxedQuery string
+	Query        string              `json:"query"`
+	Qhash        string              `json:"hash"`
+	Spec         bson.M              `json:"spec"`
+	Fields       []string            `json:"fields"`
+	Pipe         string              `json:"pipe"`
+	Instance     string              `json:"instance"`
+	Detail       bool                `json:"detail"`
+	System       string              `json:"system"`
+	Filters      map[string][]string `json:"filters"`
+	Aggregators  [][]string          `json:"aggregators"`
+	Error        string              `json:"error"`
 }
 
 // String method implements own formatter using DASQuery rather then *DASQuery, since
@@ -39,6 +42,15 @@ func (q DASQuery) String() string {
 		return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s system=%s>", q.Query, q.Instance, q.Qhash, q.System)
 	}
 	return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s system=%s fields=%s spec=%s filters=%s aggrs=%s>", q.Query, q.Instance, q.Qhash, q.System, q.Fields, q.Spec, q.Filters, q.Aggregators)
+}
+
+// Marshall method return query representation in JSON format
+func (q DASQuery) Marshall() string {
+	rec, err := json.Marshal(q)
+	if err != nil {
+		return fmt.Sprintf("DASQuery fail to parse, error %v", err)
+	}
+	return string(rec)
 }
 
 func operators() []string {
