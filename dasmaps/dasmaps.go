@@ -266,6 +266,10 @@ func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mong
 			if utils.WEBSERVER > 0 {
 				log.Println("DAS match", rec["system"], rec["urn"], rec["url"], "spec keys", keys, "required keys", rkeys, "all api keys", akeys)
 			}
+			if utils.VERBOSE > 1 && utils.WEBSERVER == 0 {
+				msg := utils.Color(utils.RED, fmt.Sprintf("DAS match: system=%s urn=%s url=%s spec keys=%s requested keys=%s all api keys %s", rec["system"], rec["urn"], rec["url"], keys, rkeys, akeys))
+				fmt.Println(msg)
+			}
 			out = append(out, rec)
 		}
 	}
