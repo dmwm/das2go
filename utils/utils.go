@@ -12,7 +12,6 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"regexp"
 	"runtime"
 	"sort"
 	"strconv"
@@ -235,12 +234,7 @@ func SizeFormat(val float64) string {
 
 // IsInt helper function to test if given value is integer
 func IsInt(val string) bool {
-	pat := "(^[0-9-]$|^[0-9-][0-9]*$)"
-	matched, _ := regexp.MatchString(pat, val)
-	if matched {
-		return true
-	}
-	return false
+	return PatternInt.MatchString(val)
 }
 
 // Sum helper function to perform sum operation over provided array of values
@@ -385,3 +379,38 @@ func LoadExamples(ename string) string {
 	}
 	return string(data)
 }
+
+// Color prints given string in color based on ANSI escape codes, see
+// http://www.wikiwand.com/en/ANSI_escape_code#/Colors
+func Color(col, text string) string {
+	return BOLD + "\x1b[" + col + text + PLAIN
+}
+
+// ColorUrl returns colored string of given url
+func ColorUrl(rurl string) string {
+	return Color(BLUE, rurl)
+}
+
+// DASError prints DAS error message with given arguments
+func DASError(args ...interface{}) {
+	fmt.Println(Color(RED, "DAS ERROR"), args)
+}
+
+// DASWarning prints DAS error message with given arguments
+func DASWarning(args ...interface{}) {
+	fmt.Println(Color(BROWN, "DAS WARNING"), args)
+}
+
+// colors
+const BLACK = "0;30m"
+const RED = "0;31m"
+const GREEN = "0;32m"
+const BROWN = "0;33m"
+const BLUE = "0;34m"
+const PURPLE = "0;35m"
+const CYAN = "0;36m"
+const LIGHT_PURPLE = "1;35m"
+const LIGHT_CYAN = "1;36m"
+
+const BOLD = "\x1b[1m"
+const PLAIN = "\x1b[0m"
