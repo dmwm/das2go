@@ -10,7 +10,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 
@@ -256,8 +255,8 @@ func dataset4release(dasquery dasql.DASQuery) []string {
 // helper function to construct Phedex node API argument from given site
 func phedexNode(site string) string {
 	var node string
-	nodeMatch, _ := regexp.MatchString("^T[0-9]_[A-Z]+(_)[A-Z]+", site)
-	seMatch, _ := regexp.MatchString("^[a-z]+(\\.)[a-z]+(\\.)", site)
+	nodeMatch := utils.PatternSite.MatchString(site)
+	seMatch := utils.PatternSE.MatchString(site)
 	if nodeMatch {
 		node = fmt.Sprintf("node=%s", site)
 		if !strings.HasSuffix(node, "*") {
@@ -323,8 +322,8 @@ func (p *PhedexNodes) Nodes() []mongo.DASRecord {
 
 // NodeType API returns type of given node
 func (p *PhedexNodes) NodeType(site string) string {
-	nodeMatch, _ := regexp.MatchString("^T[0-9]_[A-Z]+(_)[A-Z]+", site)
-	seMatch, _ := regexp.MatchString("^[a-z]+(\\.)[a-z]+(\\.)", site)
+	nodeMatch := utils.PatternSite.MatchString(site)
+	seMatch := utils.PatternSE.MatchString(site)
 	nodes := p.Nodes()
 	var siteName, seName, kind string
 	for _, rec := range nodes {
