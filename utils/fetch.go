@@ -21,7 +21,6 @@ import (
 	"net/http/httputil"
 	"os"
 	"os/user"
-	"regexp"
 	"strings"
 	"sync/atomic"
 	"time"
@@ -29,8 +28,15 @@ import (
 	"github.com/vkuznet/x509proxy"
 )
 
+// global variable keeps user x509 certificates
+var _certs []tls.Certificate
+var _client = HttpClient()
+
 // client X509 certificates
 func tlsCerts() ([]tls.Certificate, error) {
+	if len(_certs) > 0 {
+		return _certs, nil
+	}
 	uproxy := os.Getenv("X509_USER_PROXY")
 	uckey := os.Getenv("X509_USER_KEY")
 	ucert := os.Getenv("X509_USER_CERT")
@@ -58,17 +64,19 @@ func tlsCerts() ([]tls.Certificate, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse X509 proxy: %v", err)
 		}
-		return []tls.Certificate{x509cert}, nil
+		_certs = []tls.Certificate{x509cert}
+		return _certs, nil
 	}
 	x509cert, err := tls.LoadX509KeyPair(ucert, uckey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse user X509 certificate: %v", err)
 	}
-	return []tls.Certificate{x509cert}, nil
+	_certs = []tls.Certificate{x509cert}
+	return _certs, nil
 }
 
 // HttpClient is HTTP client for urlfetch server
-func HttpClient() (client *http.Client) {
+func HttpClient() *http.Client {
 	// get X509 certs
 	certs, err := tlsCerts()
 	if err != nil {
@@ -78,8 +86,7 @@ func HttpClient() (client *http.Client) {
 		log.Println("Number of certificates", len(certs))
 	}
 	if len(certs) == 0 {
-		client = &http.Client{}
-		return
+		return &http.Client{}
 	}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{Certificates: certs,
@@ -88,12 +95,8 @@ func HttpClient() (client *http.Client) {
 	if WEBSERVER > 0 {
 		log.Println("Create TLSClientConfig")
 	}
-	client = &http.Client{Transport: tr}
-	return
+	return &http.Client{Transport: tr}
 }
-
-// create global HTTP client and re-use it through the code
-var client = HttpClient()
 
 // ResponseType structure is what we expect to get for our URL call.
 // It contains a request URL, the data chunk and possible error from remote
@@ -216,7 +219,7 @@ func FetchResponse(rurl, args string) ResponseType {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
 		fmt.Println("### HTTP request", req, string(dump1), err1)
 	}
-	resp, err := client.Do(req)
+	resp, err := _client.Do(req)
 	if VERBOSE > 1 {
 		dump2, err2 := httputil.DumpResponse(resp, true)
 		fmt.Println("### HTTP response", string(dump2), err2)
@@ -232,9 +235,9 @@ func FetchResponse(rurl, args string) ResponseType {
 	}
 	if VERBOSE > 0 {
 		if args == "" {
-			fmt.Println("DAS GET", rurl, time.Now().Sub(startTime))
+			fmt.Println(Color(CYAN, "DAS GET"), ColorUrl(rurl), time.Now().Sub(startTime))
 		} else {
-			fmt.Println("DAS POST", rurl, args, time.Now().Sub(startTime))
+			fmt.Println(Color(PURPLE, "DAS POST"), ColorUrl(rurl), args, time.Now().Sub(startTime))
 		}
 	}
 	return response
@@ -258,7 +261,7 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 	var resp, r ResponseType
 	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
-		fmt.Println("DAS WARNING, fail to fetch data", rurl, "error", resp.Error)
+		fmt.Println("DAS WARNING, fail to fetch data", ColorUrl(rurl), "error", resp.Error)
 		for i := 1; i <= UrlRetry; i++ {
 			sleep := time.Duration(i) * time.Second
 			time.Sleep(sleep)
@@ -266,12 +269,12 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 			if r.Error == nil {
 				break
 			}
-			fmt.Println("DAS WARNING", rurl, "retry", i, "error", r.Error)
+			fmt.Println("DAS WARNING", ColorUrl(rurl), "retry", i, "error", r.Error)
 		}
 		resp = r
 	}
 	if resp.Error != nil {
-		fmt.Println("DAS ERROR, fail to fetch data", rurl, "retries", UrlRetry, "error", resp.Error)
+		fmt.Println("DAS ERROR, fail to fetch data", ColorUrl(rurl), "retries", UrlRetry, "error", resp.Error)
 	}
 	ch <- resp
 }
@@ -279,14 +282,10 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 // Helper function which validates given URL
 func validateUrl(rurl string) bool {
 	if len(rurl) > 0 {
-		pat := "(https|http)://[-A-Za-z0-9_+&@#/%?=~_|!:,.;]*[-A-Za-z0-9+&@#/%=~_|]"
-		matched, err := regexp.MatchString(pat, rurl)
-		if err == nil {
-			if matched == true {
-				return true
-			}
+		if PatternUrl.MatchString(rurl) {
+			return true
 		}
-		fmt.Println("ERROR invalid URL:", rurl)
+		fmt.Println("ERROR invalid URL:", ColorUrl(rurl))
 	}
 	return false
 }
