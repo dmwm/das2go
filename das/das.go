@@ -67,6 +67,7 @@ func getApiParams(dasmap mongo.DASRecord) (string, string, string, string) {
 // FormUrlCall forms appropriate URL from given dasquery and dasmap, the final URL
 // contains all parameters
 func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
+	vals := url.Values{}
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
@@ -76,6 +77,10 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		dbsInst := dasquery.Instance
 		if len(dbsInst) > 0 && dbsInst != "prod/global" {
 			base = strings.Replace(base, "prod/global", dbsInst, -1)
+		}
+		// return only valid files by default
+		if strings.Contains(base, "file") && !utils.InList("status", skeys) {
+			vals.Add("validFileOnly", "1")
 		}
 	}
 	if system == "sitedb2" {
@@ -103,7 +108,6 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		log.Fatal("Unable to extract url from DAS map", dasmap)
 	}
 	dasmaps := dasmaps.GetDASMaps(dasmap["das_map"])
-	vals := url.Values{}
 	var useArgs []string
 	for _, dmap := range dasmaps {
 		dkey, rkey, arg, pat := getApiParams(dmap)
