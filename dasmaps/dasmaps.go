@@ -329,6 +329,31 @@ func (m *DASMaps) LoadMapsFromFile() {
 	}
 }
 
+// ChangeUrl changes url of dasmaps from old to new pattern
+func (m *DASMaps) ChangeUrl(old, pat string) {
+	var records []mongo.DASRecord
+	for _, dmap := range m.records {
+		if v, ok := dmap["url"]; ok {
+			url := v.(string)
+			if strings.Contains(url, "http://") || strings.Contains(url, "https://") {
+				url = strings.Replace(url, old, pat, -1)
+				dmap["url"] = url
+			} else if strings.Contains(url, "combined") {
+				services := dmap["services"].(map[string]interface{})
+				new_services := make(map[string]string)
+				for key, val := range services {
+					url := val.(string)
+					url = strings.Replace(url, old, pat, -1)
+					new_services[key] = url
+				}
+				dmap["services"] = services
+			}
+			records = append(records, dmap)
+		}
+	}
+	m.records = records
+}
+
 // GetString provides value from DAS map for a given key
 func GetString(dmap mongo.DASRecord, key string) string {
 	val, ok := dmap[key].(string)
