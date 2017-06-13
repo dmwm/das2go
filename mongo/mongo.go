@@ -11,12 +11,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/vkuznet/das2go/config"
-	"github.com/vkuznet/das2go/utils"
-	"gopkg.in/mgo.v2"
-	"gopkg.in/mgo.v2/bson"
 	"log"
 	"strings"
+
+	"github.com/dmwm/das2go/config"
+	"github.com/dmwm/das2go/utils"
+	"gopkg.in/mgo.v2"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // DASRecord define DAS record

@@ -1,9 +1,9 @@
 das2go
 ======
 
-[![Build Status](https://travis-ci.org/vkuznet/das2go.svg?branch=master)](https://travis-ci.org/vkuznet/das2go)
-[![Go Report Card](https://goreportcard.com/badge/github.com/vkuznet/das2go)](https://goreportcard.com/report/github.com/vkuznet/das2go)
-[![GoDoc](https://godoc.org/github.com/vkuznet/das2go?status.svg)](https://godoc.org/github.com/vkuznet/das2go)
+[![Build Status](https://travis-ci.org/dmwm/das2go.svg?branch=master)](https://travis-ci.org/dmwm/das2go)
+[![Go Report Card](https://goreportcard.com/badge/github.com/dmwm/das2go)](https://goreportcard.com/report/github.com/dmwm/das2go)
+[![GoDoc](https://godoc.org/github.com/dmwm/das2go?status.svg)](https://godoc.org/github.com/dmwm/das2go)
 
 Go implementation of DAS (Data Aggregation System for CMS)
 
@@ -13,7 +13,7 @@ To compile the server you need a Go compiler, then perform the following:
 
 ```
 # one time operation, setup your GOPATH and download the following
-go get github.com/vkuznet/cmsauth
+go get github.com/dmwm/cmsauth
 go get github.com/vkuznet/x509proxy
 go get gopkg.in/mgo.v2
 

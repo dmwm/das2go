@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/vkuznet/das2go/mongo"
+	"github.com/dmwm/das2go/mongo"
 )
 
 // helper function to load data stream and return DAS records

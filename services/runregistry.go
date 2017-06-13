@@ -14,7 +14,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/vkuznet/das2go/mongo"
+	"github.com/dmwm/das2go/mongo"
 )
 
 // helper function to load RunRegistry data stream

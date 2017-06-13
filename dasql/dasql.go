@@ -14,7 +14,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vkuznet/das2go/utils"
+	"github.com/dmwm/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
 )
 

@@ -15,18 +15,19 @@ package web
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/vkuznet/cmsauth"
-	"github.com/vkuznet/das2go/das"
-	"github.com/vkuznet/das2go/dasmaps"
-	"github.com/vkuznet/das2go/dasql"
-	"github.com/vkuznet/das2go/mongo"
-	"github.com/vkuznet/das2go/utils"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dmwm/cmsauth"
+	"github.com/dmwm/das2go/das"
+	"github.com/dmwm/das2go/dasmaps"
+	"github.com/dmwm/das2go/dasql"
+	"github.com/dmwm/das2go/mongo"
+	"github.com/dmwm/das2go/utils"
 )
 
 // import _ "net/http/pprof" is profiler, see https://golang.org/pkg/net/http/pprof/

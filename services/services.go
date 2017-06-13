@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/vkuznet/das2go/dasmaps"
-	"github.com/vkuznet/das2go/dasql"
-	"github.com/vkuznet/das2go/mongo"
-	"github.com/vkuznet/das2go/utils"
+	"github.com/dmwm/das2go/dasmaps"
+	"github.com/dmwm/das2go/dasql"
+	"github.com/dmwm/das2go/mongo"
+	"github.com/dmwm/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
 )
 

@@ -4,15 +4,16 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
-	"github.com/vkuznet/das2go/dasql"
-	"github.com/vkuznet/das2go/mongo"
-	"github.com/vkuznet/das2go/utils"
-	"gopkg.in/mgo.v2/bson"
 	"net/url"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/dmwm/das2go/dasql"
+	"github.com/dmwm/das2go/mongo"
+	"github.com/dmwm/das2go/utils"
+	"gopkg.in/mgo.v2/bson"
 )
 
 // helper function to make a link

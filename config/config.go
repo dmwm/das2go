@@ -7,10 +7,11 @@ package config
 
 import (
 	"encoding/json"
-	"github.com/vkuznet/das2go/utils"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/dmwm/das2go/utils"
 )
 
 // Configuration structure

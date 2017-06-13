@@ -15,9 +15,9 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/vkuznet/das2go/dasql"
-	"github.com/vkuznet/das2go/mongo"
-	"github.com/vkuznet/das2go/utils"
+	"github.com/dmwm/das2go/dasql"
+	"github.com/dmwm/das2go/mongo"
+	"github.com/dmwm/das2go/utils"
 )
 
 // helper function to load DBS data stream
