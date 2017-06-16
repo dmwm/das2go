@@ -219,7 +219,11 @@ func OrderByRunLumis(records []mongo.DASRecord) []mongo.DASRecord {
 		}
 	}
 	for run, lumis := range rmap {
-		rec := mongo.DASRecord{"run": mongo.DASRecord{"run_number": run}, "lumi": mongo.DASRecord{"number": lumis}}
+		var runlist, lumilist []mongo.DASRecord
+		runlist = append(runlist, mongo.DASRecord{"run_number": run})
+		lumilist = append(lumilist, mongo.DASRecord{"number": lumis})
+		// final record should have list to be consistent with DAS record output
+		rec := mongo.DASRecord{"run": runlist, "lumi": lumilist}
 		out = append(out, rec)
 	}
 	return out
