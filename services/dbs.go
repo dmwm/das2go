@@ -66,29 +66,30 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 		return out
 	} else if api == "fileparents" {
 		for _, rec := range records {
-			for _, v := range rec["parent_logical_file_name"].([]interface{}) {
-				r := make(mongo.DASRecord)
-				r["name"] = v.(string)
-				out = append(out, r)
+			switch val := rec["parent_logical_file_name"].(type) {
+			case []interface{}:
+				for _, v := range val {
+					r := make(mongo.DASRecord)
+					r["name"] = v.(string)
+					out = append(out, r)
+				}
 			}
 		}
 		return out
 	} else if api == "filechildren" {
 		for _, rec := range records {
-			for _, v := range rec["child_logical_file_name"].([]interface{}) {
-				r := make(mongo.DASRecord)
-				r["name"] = v.(string)
-				out = append(out, r)
+			switch val := rec["child_logical_file_name"].(type) {
+			case []interface{}:
+				for _, v := range val {
+					r := make(mongo.DASRecord)
+					r["name"] = v.(string)
+					out = append(out, r)
+				}
 			}
 		}
 		return out
 	} else if api == "runs_via_dataset" || api == "runs" {
 		for _, rec := range records {
-			//             for _, v := range rec["run_num"].([]interface{}) {
-			//                 r := make(mongo.DASRecord)
-			//                 r["run_number"] = fmt.Sprintf("%d", int(v.(float64)))
-			//                 out = append(out, r)
-			//             }
 			out = append(out, rec)
 		}
 		return out
