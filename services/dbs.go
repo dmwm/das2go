@@ -90,7 +90,14 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 		return out
 	} else if api == "runs_via_dataset" || api == "runs" {
 		for _, rec := range records {
-			out = append(out, rec)
+			switch val := rec["run_num"].(type) {
+			case []interface{}:
+				for _, v := range val {
+					r := make(mongo.DASRecord)
+					r["run_number"] = v
+					out = append(out, r)
+				}
+			}
 		}
 		return out
 	}
