@@ -87,16 +87,19 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 	var out []mongo.DASRecord
 	fields := dasquery.Fields
 	qhash := dasquery.Qhash
-	//     spec := dasquery.Spec
+	spec := dasquery.Spec
 	skey := fields[0]
 	for _, rec := range records {
+		if rec == nil {
+			rec = make(mongo.DASRecord)
+		}
 		// Check that spec key:values are presented in a record
-		//         prim_key := strings.Split(pkeys[0], ".")
-		//         for key, val := range spec {
-		//             if key == prim_key[0] {
-		//                 rec[prim_key[1]] = val
-		//             }
-		//         }
+		prim_key := strings.Split(pkeys[0], ".")
+		for key, val := range spec {
+			if key == prim_key[0] {
+				rec[prim_key[1]] = val
+			}
+		}
 		// DAS header for records
 		dasheader := DASHeader()
 		srvs := dasheader["services"].([]string)
