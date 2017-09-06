@@ -15,6 +15,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
@@ -225,7 +226,11 @@ func MapInList(a mongo.DASRecord, list []mongo.DASRecord) bool {
 }
 
 // FindServices look-up DAS services for given set fields and spec pair, return DAS maps associated with found services
-func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mongo.DASRecord {
+func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
+	inst := dasquery.Instance
+	fields := dasquery.Fields
+	spec := dasquery.Spec
+	system := dasquery.System
 	keys := utils.MapKeys(spec)
 	var condRecords, out []mongo.DASRecord
 	for _, rec := range m.records {
@@ -259,6 +264,11 @@ func (m *DASMaps) FindServices(inst string, fields []string, spec bson.M) []mong
 		akeys := getAllArgs(rec)
 		if utils.VERBOSE > 1 {
 			fmt.Printf("DAS map lookup, system %s, urn %s, lookup %v, required keys %v, all keys %v\n", rec["system"].(string), rec["urn"].(string), lkeys, rkeys, akeys)
+		}
+		if system != "" && rec["system"] != system { // requested system does not match the record one
+			if system != rec["system"] {
+				continue
+			}
 		}
 		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) {
 			// adjust DBS instance

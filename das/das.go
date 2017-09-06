@@ -81,7 +81,9 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		// return only valid files by default
 		if strings.Contains(base, "file") && !utils.InList("status", skeys) {
 			if !strings.Contains(base, "filechildren") && !strings.Contains(base, "fileparents") {
-				vals.Add("validFileOnly", "1")
+				if _, ok := vals["validFileOnly"]; !ok {
+					vals.Add("validFileOnly", "1")
+				}
 			}
 		}
 	}
@@ -125,8 +127,10 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 						// This may need revision, probably better to properly
 						// adjust DAS maps
 						if strings.ToLower(val) == "valid" {
+							delete(vals, "validFileOnly")
 							vals.Add("validFileOnly", "1")
 						} else {
+							delete(vals, "validFileOnly")
 							vals.Add("validFileOnly", "0")
 						}
 					} else if system == "dbs3" && arg == "min_cdate" {
@@ -197,13 +201,17 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 			}
 			vvv := v
 			if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) && vvv != "*" {
-				vals.Add(key, vvv)
+				if _, ok := vals[key]; !ok {
+					vals.Add(key, vvv)
+				}
 			}
 		case []interface{}:
 			for _, value := range v {
 				vvv := fmt.Sprintf("%s", value)
 				if !utils.InList(key, useArgs) && !utils.InList(vvv, skipList) && vvv != "*" {
-					vals.Add(key, vvv)
+					if _, ok := vals[key]; !ok {
+						vals.Add(key, vvv)
+					}
 				}
 			}
 		}
@@ -434,7 +442,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	//     defer utils.ErrPropagate("Process")
 
 	// find out list of APIs/CMS services which can process this query request
-	maps := dmaps.FindServices(dasquery.Instance, dasquery.Fields, dasquery.Spec)
+	maps := dmaps.FindServices(dasquery)
 	var srvs, pkeys []string
 	urls := make(map[string]string)
 	var localApis []mongo.DASRecord

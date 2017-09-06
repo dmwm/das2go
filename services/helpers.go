@@ -157,7 +157,9 @@ func dbsUrls(dasquery dasql.DASQuery, api string) []string {
 			myurl += runsArgs // append run arguments
 		}
 		if validFile {
-			myurl += fmt.Sprintf("&validFileOnly=1") // append validFileOnly=1
+			if !strings.Contains(myurl, "validFileOnly") {
+				myurl += fmt.Sprintf("&validFileOnly=1") // append validFileOnly=1
+			}
 		}
 		urls = append(urls, myurl)
 	}
