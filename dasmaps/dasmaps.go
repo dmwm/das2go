@@ -14,6 +14,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
@@ -307,7 +308,11 @@ func (m *DASMaps) LoadMapsFromFile() {
 		os.Mkdir(dname, 0777)
 	}
 	fname := fmt.Sprintf("%s/.dasmaps/das_maps_dbs_prod.js", home)
-	if _, err := os.Stat(fname); err != nil {
+	stats, err := os.Stat(fname)
+	if err != nil || time.Now().Unix()-stats.ModTime().Unix() > 24*60*60 {
+		if utils.VERBOSE > 0 {
+			fmt.Println("### download dasmaps")
+		}
 		// download maps from github
 		resp := utils.FetchResponse(githubUrl, "")
 		if resp.Error == nil {
