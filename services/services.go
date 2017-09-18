@@ -95,7 +95,7 @@ func AdjustRecords(dasquery dasql.DASQuery, system, api string, records []mongo.
 		}
 		// Check that spec key:values are presented in a record
 		prim_key := strings.Split(pkeys[0], ".")
-		if !utils.InList(prim_key[0], utils.MapKeys(spec)) {
+		if len(prim_key) == 2 && !utils.InList(prim_key[1], utils.MapKeys(rec)) {
 			if val, ok := spec[prim_key[0]]; ok {
 				rec[prim_key[1]] = val
 			}
