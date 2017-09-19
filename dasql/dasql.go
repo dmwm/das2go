@@ -41,7 +41,7 @@ func (q DASQuery) String() string {
 	if utils.VERBOSE == 0 {
 		return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s system=%s>", q.Query, q.Instance, q.Qhash, q.System)
 	}
-	return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s system=%s fields=%s spec=%s filters=%s aggrs=%s>", q.Query, q.Instance, q.Qhash, q.System, q.Fields, q.Spec, q.Filters, q.Aggregators)
+	return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s system=%s fields=%s spec=%s filters=%s aggrs=%s detail=%v>", q.Query, q.Instance, q.Qhash, q.System, q.Fields, q.Spec, q.Filters, q.Aggregators, q.Detail)
 }
 
 // Marshall method return query representation in JSON format
@@ -323,7 +323,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 
 	// remove detail from spec
 	detail := false
-	if spec["detail"] != nil {
+	if spec["detail"] != nil || len(filters) != 0 {
 		detail = true
 		delete(spec, "detail")
 	}
