@@ -118,7 +118,7 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 	// DBS part, find total number of blocks and files for given dataset
 	dataset := spec["dataset"].(string)
 	api := "filesummaries"
-	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(inst), api, dataset)
+	furl := fmt.Sprintf("%s/%s?dataset=%s&validFileOnly=1", dbsUrl(inst), api, dataset)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var totblocks, totfiles int64
