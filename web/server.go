@@ -23,6 +23,7 @@ import (
 	"time"
 
 	"github.com/dmwm/cmsauth"
+	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/das"
 	"github.com/dmwm/das2go/dasmaps"
 	"github.com/dmwm/das2go/dasql"
@@ -66,6 +67,93 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 	response["idx"] = idx
 	response["limit"] = limit
 	return response
+}
+
+// CliHandler hadnlers cli requests
+func CliHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	page := "Please use dasgoclient which is available in any CMSSW releases"
+	w.Write([]byte(_top + page + _bottom))
+}
+
+// FAQHandler handlers FAQ requests
+func FAQHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var templates DASTemplates
+	tmplData := make(map[string]interface{})
+	tmplData["Operators"] = []string{"=", "between", "last", "in"}
+	tmplData["Daskeys"] = []string{}
+	tmplData["Aggregators"] = []string{}
+	tmplData["Guide"] = templates.Guide(_tdir, tmplData)
+	page := templates.FAQ(_tdir, tmplData)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(_top + page + _bottom))
+}
+
+// Examples returns list of DAS query examples
+func examples() []string {
+	examples := []string{"block_queries.txt", "file_queries.txt", "lumi_queries.txt", "mcm_queries.txt", "run_queries.txt", "dataset_queries.txt", "jobsummary_queries.txt", "misc_queries.txt", "site_queries.txt"}
+	var out []string
+	for _, fname := range examples {
+		arr := strings.Split(fname, "_")
+		msg := fmt.Sprintf("%s queries:", arr[0])
+		out = append(out, strings.ToTitle(msg))
+		for _, v := range strings.Split(utils.LoadExamples(fname), "\n") {
+			e := fmt.Sprintf("%s", v)
+			out = append(out, e)
+		}
+	}
+	return out
+}
+
+// KeysHandler handlers Keys requests
+func KeysHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var templates DASTemplates
+	tmplData := make(map[string]interface{})
+	tmplData["Keys"] = _dasmaps.DASKeys()
+	tmplData["Examples"] = examples()
+	page := templates.Keys(_tdir, tmplData)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(_top + page + _bottom))
+}
+
+// DBSDescription holds description of DBS instance
+type DBSDescription struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
+}
+
+// ServicesHandler handlers Services requests
+func ServicesHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var dbsList []DBSDescription
+	for _, v := range _dbses {
+		s := "physics instance"
+		if strings.Contains(v, "global") {
+			s = "global instance"
+		}
+		dbsList = append(dbsList, DBSDescription{Name: v, Description: s})
+	}
+	var templates DASTemplates
+	tmplData := make(map[string]interface{})
+	tmplData["DBSList"] = dbsList
+	page := templates.Services(_tdir, tmplData)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(_top + page + _bottom))
 }
 
 // RequestHandler is used by web server to handle incoming requests
@@ -229,6 +317,7 @@ func Server(port, afile string) {
 	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
 	tmplData["DBSes"] = _dbses
 	tmplData["CardClass"] = "show"
+	tmplData["Version"] = utils.VERSION
 	var templates DASTemplates
 	_top = templates.Top(_tdir, tmplData)
 	_bottom = templates.Bottom(_tdir, tmplData)
@@ -241,6 +330,10 @@ func Server(port, afile string) {
 	if len(_dasmaps.Services()) == 0 {
 		log.Println("Load DAS maps")
 		_dasmaps.LoadMaps("mapping", "db")
+		services := config.Services()
+		if len(services) > 0 {
+			_dasmaps.AssignServices(services)
+		}
 		log.Println("DAS services", _dasmaps.Services())
 		log.Println("DAS keys", _dasmaps.DASKeys())
 	}
@@ -255,6 +348,10 @@ func Server(port, afile string) {
 	http.Handle("/das/js/", http.StripPrefix("/das/js/", http.FileServer(http.Dir(tjs))))
 	http.Handle("/das/images/", http.StripPrefix("/das/images/", http.FileServer(http.Dir(timg))))
 	http.Handle("/das/yui/", http.StripPrefix("/das/yui/", http.FileServer(http.Dir(tyui))))
+	http.HandleFunc("/das/cli", CliHandler)
+	http.HandleFunc("/das/faq", FAQHandler)
+	http.HandleFunc("/das/keys", KeysHandler)
+	http.HandleFunc("/das/services", ServicesHandler)
 	http.HandleFunc("/das/", RequestHandler)
 	http.HandleFunc("/das", RequestHandler)
 	err := http.ListenAndServe(":"+port, nil)

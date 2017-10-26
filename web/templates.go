@@ -69,6 +69,42 @@ func (q DASTemplates) Cards(tdir string, tmplData map[string]interface{}) string
 	return q.cards
 }
 
+// FAQ method for DASTemplates structure
+func (q DASTemplates) FAQ(tdir string, tmplData map[string]interface{}) string {
+	if q.top != "" {
+		return q.top
+	}
+	q.top = parseTmpl(_tdir, "faq.tmpl", tmplData)
+	return q.top
+}
+
+// Guide method for DASTemplates structure
+func (q DASTemplates) Guide(tdir string, tmplData map[string]interface{}) string {
+	if q.top != "" {
+		return q.top
+	}
+	q.top = parseTmpl(_tdir, "dbsql_vs_dasql.tmpl", tmplData)
+	return q.top
+}
+
+// Keys method for DASTemplates structure
+func (q DASTemplates) Keys(tdir string, tmplData map[string]interface{}) string {
+	if q.top != "" {
+		return q.top
+	}
+	q.top = parseTmpl(_tdir, "keys.tmpl", tmplData)
+	return q.top
+}
+
+// Services method for DASTemplates structure
+func (q DASTemplates) Services(tdir string, tmplData map[string]interface{}) string {
+	if q.top != "" {
+		return q.top
+	}
+	q.top = parseTmpl(_tdir, "services.tmpl", tmplData)
+	return q.top
+}
+
 // Pagination  method for DASTemplates structure
 func (q DASTemplates) Pagination(tdir string, tmplData map[string]interface{}) string {
 	if q.searchForm != "" {

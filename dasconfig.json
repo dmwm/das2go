@@ -1,3 +1,4 @@
 {
-"Uri":"mongodb://localhost:8230"
+"Uri":"mongodb://localhost:8230",
+"Services": ["combined","conddb","dashboard","dbs3","mcm","phedex","reqmgr2","runregistry","sitedb2"]
 }

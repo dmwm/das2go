@@ -16,7 +16,8 @@ import (
 
 // Configuration structure
 type Configuration struct {
-	Uri string
+	Uri      string
+	Services []string
 }
 
 // global config object
@@ -57,4 +58,12 @@ func Uri() string {
 		_config = ParseConfig()
 	}
 	return _config.Uri
+}
+
+// Services function extracts URI from configuration
+func Services() []string {
+	if len(_config.Services) == 0 {
+		_config = ParseConfig()
+	}
+	return _config.Services
 }

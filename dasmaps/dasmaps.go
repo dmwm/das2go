@@ -64,6 +64,11 @@ func (m *DASMaps) DASKeys() []string {
 	return m.daskeys
 }
 
+// AssignServices assigns given services to dasmaps
+func (m *DASMaps) AssignServices(services []string) {
+	m.services = services
+}
+
 // Services provides list of services
 func (m *DASMaps) Services() []string {
 	if len(m.services) != 0 {

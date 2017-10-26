@@ -21,6 +21,9 @@ import (
 
 // global variable for this module which we're going to use across many modules
 
+// VERSION provides information about das2go build
+var VERSION string
+
 // VERBOSE holds level of verbosity, it is set in main
 var VERBOSE int
 
