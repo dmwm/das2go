@@ -1,0 +1,18 @@
+<!-- keys.tmpl -->
+<h3>List of known DAS keys</h3>
+<div>
+{{range $_, $v := .Keys}}
+<b>{{$v}}</b>
+<br/>
+{{end}}
+</div>
+<br />
+<h3>Examples:</h3>
+<div>
+{{range $_, $v := .Examples}}
+{{$v}}
+<br/>
+{{end}}
+</div>
+<!-- end of keys.tmpl -->
+

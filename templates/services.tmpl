@@ -1,0 +1,42 @@
+
+<!-- services.tmpl -->
+<div class="page">
+<b>DBS instances</b><br />
+DAS supports the following DBS instances:
+<ul>
+    {{range .DBSList}}
+    <li>{{.Name}} {{.Description}}</li>
+    {{end}}
+</ul>
+On web UI you can choose your favorite one via drop-down menu.
+For DAS CLI you can use them together with your DAS query using
+<b>instance</b> DAS keyword, for example:
+<pre>
+dataset dataset=/ZMM*/*/* instance=prod/global
+dataset dataset=/ZMM*/*/* instance=prod/phys03
+</pre>
+
+<b>DAS mapping</b><br />
+DAS provides a mapping between query keys, e.g. block, site and 
+their representation in DAS records. Use this table to identify
+what a given DAS key will be transformed to when querying relevant CMS data services.
+
+<div class="normal">
+
+<br />
+<b>Please note:</b> DAS also provide a special key <b>records</b> which can be
+used with any DAS condition to look-up all records in DAS cache for that condition.
+
+</div>
+
+<p></p>
+
+<b>Data-services APIs</b>
+<div class="normal">
+</div>
+
+<p></p>
+
+</div>
+<!-- end of services.tmpl -->
+
