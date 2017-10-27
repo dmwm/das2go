@@ -29,6 +29,28 @@ type DASMaps struct {
 	notations     []mongo.DASRecord
 	presentations mongo.DASRecord
 	daskeys       []string
+	systemApis    map[string][]string
+}
+
+// FindApiRecord finds DAS API record
+func (m *DASMaps) FindApiRecord(system, urn string) mongo.DASRecord {
+	var value string
+	for _, rec := range m.records {
+		rtype := rec["type"]
+		if val, ok := rtype.(string); ok {
+			value = val
+		} else {
+			continue
+		}
+		if value == "service" {
+			srv := rec["system"].(string)
+			api := rec["urn"].(string)
+			if srv == system && api == urn {
+				return rec
+			}
+		}
+	}
+	return nil
 }
 
 // Maps provides access to DAS records
@@ -62,6 +84,34 @@ func (m *DASMaps) DASKeys() []string {
 		}
 	}
 	return m.daskeys
+}
+
+// SystemApis provides map of DAS system and their apis
+func (m *DASMaps) SystemApis() map[string][]string {
+	if len(m.systemApis) != 0 {
+		return m.systemApis
+	}
+	m.systemApis = make(map[string][]string)
+	var value string
+	for _, rec := range m.records {
+		rtype := rec["type"]
+		if val, ok := rtype.(string); ok {
+			value = val
+		} else {
+			continue
+		}
+		if value == "service" {
+			api := rec["urn"].(string)
+			srv := rec["system"].(string)
+			if apis, ok := m.systemApis[srv]; ok {
+				apis = append(apis, api)
+				m.systemApis[srv] = apis
+			} else {
+				m.systemApis[srv] = []string{api}
+			}
+		}
+	}
+	return m.systemApis
 }
 
 // AssignServices assigns given services to dasmaps

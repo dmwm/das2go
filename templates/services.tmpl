@@ -1,11 +1,11 @@
-
+filenames...
 <!-- services.tmpl -->
 <div class="page">
 <b>DBS instances</b><br />
 DAS supports the following DBS instances:
 <ul>
     {{range .DBSList}}
-    <li>{{.Name}} {{.Description}}</li>
+    <li>{{.}}</li>
     {{end}}
 </ul>
 On web UI you can choose your favorite one via drop-down menu.
@@ -22,6 +22,27 @@ their representation in DAS records. Use this table to identify
 what a given DAS key will be transformed to when querying relevant CMS data services.
 
 <div class="normal">
+<table class="daskeys">
+<tr>
+<th>DAS keys\services</th>
+{{range $k, $v := .Systems}}
+<th>{{$v}}</th>
+{{end}}
+</tr>
+
+{{range $index, $rows := .Rows}}
+{{if oddFunc $index}}
+<tr class="odd">
+{{else}}
+<tr class="">
+{{end}}
+
+{{range $i, $r := $rows}}
+<td>{{$r}}</td>
+{{end}}
+</tr>
+{{end}}
+</table>
 
 <br />
 <b>Please note:</b> DAS also provide a special key <b>records</b> which can be
@@ -33,6 +54,25 @@ used with any DAS condition to look-up all records in DAS cache for that conditi
 
 <b>Data-services APIs</b>
 <div class="normal">
+<table class="daskeys">
+<tr style="text-align:left">
+{{range $i, $v := .Systems}}
+<th>{{$v}}</th>
+{{end}}
+</tr>
+
+<tr style="vertical-align:text-top">
+{{range $i, $apis := .Apis}}
+<td>
+{{range $j, $a := $apis}}
+    {{$s:= index $.Systems $i}}
+    <a href="{{$.Base}}/apis?system={{$s}}&api={{$a}}">{{$a}}</a>
+    <br/>
+{{end}}
+</td>
+{{end}}
+</tr>
+</table>
 </div>
 
 <p></p>

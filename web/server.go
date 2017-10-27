@@ -128,10 +128,85 @@ func KeysHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(_top + page + _bottom))
 }
 
-// DBSDescription holds description of DBS instance
-type DBSDescription struct {
-	Name        string `json:"name"`
-	Description string `json:"description"`
+// ApisHandler handlers Apis requests
+func ApisHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	system := r.FormValue("system")
+	api := r.FormValue("api")
+	var templates DASTemplates
+	tmplData := make(map[string]interface{})
+	tmplData["Record"] = _dasmaps.FindApiRecord(system, api).ToHtml()
+	page := templates.ApiRecord(_tdir, tmplData)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(_top + page + _bottom))
+}
+
+// helper function to build system-apis mapping
+func apisrows() [][]string {
+	var out [][]string
+	sdict := _dasmaps.SystemApis()
+	for _, srv := range _dasmaps.Services() {
+		if v, ok := sdict[srv]; ok {
+			out = append(out, v)
+		}
+	}
+	return out
+}
+
+// DASKeys provides information about DAS keys used by ServiceHandler
+type DASKeys struct {
+	System string
+	DKey   string
+	RKey   string
+}
+
+// helper function to build daskey-system-record keys mapping
+func keysrows() [][]string {
+	var out [][]string
+	var value string
+	var records []DASKeys
+	for _, rec := range _dasmaps.Maps() {
+		rtype := rec["type"]
+		if val, ok := rtype.(string); ok {
+			value = val
+		} else {
+			continue
+		}
+		if value == "service" {
+			dmaps := dasmaps.GetDASMaps(rec["das_map"])
+			for _, dmap := range dmaps {
+				dkey := dmap["das_key"].(string)
+				rkey := dmap["rec_key"].(string)
+				srv := rec["system"].(string)
+				rec := DASKeys{System: srv, DKey: dkey, RKey: rkey}
+				records = append(records, rec)
+			}
+		}
+	}
+	for _, key := range _dasmaps.DASKeys() {
+		var row []string
+		row = append(row, key)
+		for _, srv := range _dasmaps.Services() {
+			var entries []string
+			for _, rec := range records {
+				if key == rec.DKey {
+					if srv == rec.System {
+						entries = append(entries, rec.RKey)
+					}
+				}
+			}
+			if len(entries) == 0 {
+				entries = append(entries, "-")
+			}
+			val := strings.Join(utils.List2Set(entries), ", ")
+			row = append(row, val)
+		}
+		out = append(out, row)
+	}
+	return out
 }
 
 // ServicesHandler handlers Services requests
@@ -140,17 +215,13 @@ func ServicesHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	var dbsList []DBSDescription
-	for _, v := range _dbses {
-		s := "physics instance"
-		if strings.Contains(v, "global") {
-			s = "global instance"
-		}
-		dbsList = append(dbsList, DBSDescription{Name: v, Description: s})
-	}
 	var templates DASTemplates
 	tmplData := make(map[string]interface{})
-	tmplData["DBSList"] = dbsList
+	tmplData["DBSList"] = _dbses
+	tmplData["Systems"] = _dasmaps.Services()
+	tmplData["Base"] = _base
+	tmplData["Rows"] = keysrows()
+	tmplData["Apis"] = apisrows()
 	page := templates.Services(_tdir, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
@@ -351,6 +422,7 @@ func Server(port, afile string) {
 	http.HandleFunc("/das/cli", CliHandler)
 	http.HandleFunc("/das/faq", FAQHandler)
 	http.HandleFunc("/das/keys", KeysHandler)
+	http.HandleFunc("/das/apis", ApisHandler)
 	http.HandleFunc("/das/services", ServicesHandler)
 	http.HandleFunc("/das/", RequestHandler)
 	http.HandleFunc("/das", RequestHandler)

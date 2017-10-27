@@ -45,6 +45,28 @@ func (r DASRecord) ToString() string {
 	return strings.Join(out, "\n")
 }
 
+// ToHtml provides string representation of DAS record
+func (r DASRecord) ToHtml() string {
+	var out []string
+	for _, k := range utils.MapKeys(r) {
+		switch v := r[k].(type) {
+		case int:
+			out = append(out, fmt.Sprintf("%s:%d\n", k, v))
+		case float64:
+			d := int(v)
+			if float64(d) == v {
+				out = append(out, fmt.Sprintf("%s:%d\n", k, d))
+			} else {
+				out = append(out, fmt.Sprintf("%s:%f\n", k, v))
+			}
+		default:
+			s := fmt.Sprintf("%s:%#v\n", k, r[k])
+			out = append(out, strings.Replace(s, ", ", ",\n   ", -1))
+		}
+	}
+	return strings.Join(out, "\n")
+}
+
 // DASErrorRecord provides DAS error record
 func DASErrorRecord(msg string) DASRecord {
 	erec := make(DASRecord)

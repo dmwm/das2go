@@ -19,7 +19,16 @@ func fileNames(tdir string, filenames ...string) []string {
 func parseTmpl(tdir, tmpl string, data interface{}) string {
 	buf := new(bytes.Buffer)
 	filenames := fileNames(tdir, tmpl)
-	t := template.Must(template.ParseFiles(filenames...))
+	funcMap := template.FuncMap{
+		// The name "oddFunc" is what the function will be called in the template text.
+		"oddFunc": func(i int) bool {
+			if i%2 == 0 {
+				return true
+			}
+			return false
+		},
+	}
+	t := template.Must(template.New(tmpl).Funcs(funcMap).ParseFiles(filenames...))
 	err := t.Execute(buf, data)
 	if err != nil {
 		panic(err)
@@ -84,6 +93,15 @@ func (q DASTemplates) Guide(tdir string, tmplData map[string]interface{}) string
 		return q.top
 	}
 	q.top = parseTmpl(_tdir, "dbsql_vs_dasql.tmpl", tmplData)
+	return q.top
+}
+
+// ApiRecord method for DASTemplates structure
+func (q DASTemplates) ApiRecord(tdir string, tmplData map[string]interface{}) string {
+	if q.top != "" {
+		return q.top
+	}
+	q.top = parseTmpl(_tdir, "api_record.tmpl", tmplData)
 	return q.top
 }
 
