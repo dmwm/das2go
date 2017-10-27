@@ -328,6 +328,8 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			out = append(out, line)
 		}
 	}
+	procTime := time.Now().Sub(dasquery.Time).String()
+	out = append(out, fmt.Sprintf("<div align=\"right\">processing time: %s</div>", procTime))
 	return strings.Join(out, "\n")
 }
 

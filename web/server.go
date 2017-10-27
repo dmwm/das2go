@@ -154,6 +154,19 @@ func ApisHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(_top + page + _bottom))
 }
 
+// StatusHandler handlers Status requests
+func StatusHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "GET" {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	var templates DASTemplates
+	tmplData := make(map[string]interface{})
+	page := templates.Status(_tdir, tmplData)
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(_top + page + _bottom))
+}
+
 // helper function to build system-apis mapping
 func apisrows() [][]string {
 	var out [][]string
@@ -435,6 +448,7 @@ func Server(port, afile string) {
 	http.HandleFunc("/das/faq", FAQHandler)
 	http.HandleFunc("/das/keys", KeysHandler)
 	http.HandleFunc("/das/apis", ApisHandler)
+	http.HandleFunc("/das/status", StatusHandler)
 	http.HandleFunc("/das/services", ServicesHandler)
 	http.HandleFunc("/das/", RequestHandler)
 	http.HandleFunc("/das", RequestHandler)

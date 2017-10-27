@@ -32,6 +32,7 @@ type DASQuery struct {
 	Filters      map[string][]string `json:"filters"`
 	Aggregators  [][]string          `json:"aggregators"`
 	Error        string              `json:"error"`
+	Time         time.Time           `json:"tstamp"`
 }
 
 // String method implements own formatter using DASQuery rather then *DASQuery, since
@@ -206,6 +207,7 @@ func parseLastValue(val string) []string {
 
 // Parse method provides DAS query parser
 func Parse(query, inst string, daskeys []string) (DASQuery, string) {
+	time0 := time.Now()
 	var qlerr string
 	var rec DASQuery
 	relaxedQuery := relax(query)
@@ -346,6 +348,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	rec.Filters = filters
 	rec.Aggregators = aggregators
 	rec.System = system
+	rec.Time = time0
 	return rec, qlerror
 }
 

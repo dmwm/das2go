@@ -149,3 +149,12 @@ func (q DASTemplates) DASError(tdir string, tmplData map[string]interface{}) str
 	q.dasError = parseTmpl(_tdir, "error.tmpl", tmplData)
 	return q.dasError
 }
+
+// Status method for DASTemplates structure
+func (q DASTemplates) Status(tdir string, tmplData map[string]interface{}) string {
+	if q.dasError != "" {
+		return q.dasError
+	}
+	q.dasError = parseTmpl(_tdir, "status.tmpl", tmplData)
+	return q.dasError
+}
