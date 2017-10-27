@@ -8,20 +8,20 @@ all: build
 
 build:
 	sed -i -e "s,{{VERSION}},$(TAG),g" main.go
-	go clean; rm -rf pkg; go build
+	go clean; rm -rf pkg; go build ${flags}
 	sed -i -e "s,$(TAG),{{VERSION}},g" main.go
 
 build_all: build_osx build_linux build
 
 build_osx:
 	sed -i -e "s,{{VERSION}},$(TAG),g" main.go
-	go clean; rm -rf pkg das2go_osx; GOOS=darwin go build
+	go clean; rm -rf pkg das2go_osx; GOOS=darwin go build ${flags}
 	mv das2go das2go_osx
 	sed -i -e "s,$(TAG),{{VERSION}},g" main.go
 
 build_linux:
 	sed -i -e "s,{{VERSION}},$(TAG),g" main.go
-	go clean; rm -rf pkg das2go_linux; GOOS=linux go build
+	go clean; rm -rf pkg das2go_linux; GOOS=linux go build ${flags}
 	mv das2go das2go_linux
 	sed -i -e "s,$(TAG),{{VERSION}},g" main.go
 
