@@ -40,6 +40,16 @@ var _tdir, _top, _bottom, _search, _cards, _hiddenCards, _base string
 var _cmsAuth cmsauth.CMSAuth
 var _dbses []string
 
+// helper function to form DAS error used in web Handlers
+func dasError(query, msg string) string {
+	tmplData := make(map[string]interface{})
+	tmplData["Error"] = msg
+	tmplData["Query"] = query
+	var templates DASTemplates
+	page := templates.DASError(_tdir, tmplData)
+	return _top + _search + _hiddenCards + page + _bottom
+}
+
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
 	// defer function will propagate panic message to higher level
 	defer utils.ErrPropagate("processRequest")
@@ -287,8 +297,8 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				response["Reason"] = err
 				response["PID"] = pid
 				var templates DASTemplates
-				errTmp := templates.DASError(_tdir, response)
-				w.Write([]byte(_top + _search + _hiddenCards + errTmp + _bottom))
+				msg := templates.DASRequest(_tdir, response)
+				w.Write([]byte(_top + _search + _hiddenCards + msg + _bottom))
 				return
 			}
 			response["status"] = "fail"
@@ -305,7 +315,8 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}()
 	dasquery, err2 := dasql.Parse(query, inst, _dasmaps.DASKeys())
 	if err2 != "" {
-		panic(err2)
+		w.Write([]byte(dasError(query, err2)))
+		return
 	}
 	if pid == "" {
 		pid = dasquery.Qhash
@@ -313,6 +324,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	//         pid = dasquery.Qhash
 	if len(pid) != 32 {
 		http.Error(w, "DAS query pid is not valid", http.StatusInternalServerError)
+		return
 	}
 	// Remove expire records from cache
 	//         das.RemoveExpired(dasquery.Qhash)

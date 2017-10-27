@@ -132,6 +132,15 @@ func (q DASTemplates) Pagination(tdir string, tmplData map[string]interface{}) s
 	return q.searchForm
 }
 
+// DASRequest method for DASTemplates structure
+func (q DASTemplates) DASRequest(tdir string, tmplData map[string]interface{}) string {
+	if q.dasError != "" {
+		return q.dasError
+	}
+	q.dasError = parseTmpl(_tdir, "request.tmpl", tmplData)
+	return q.dasError
+}
+
 // DASError method for DASTemplates structure
 func (q DASTemplates) DASError(tdir string, tmplData map[string]interface{}) string {
 	if q.dasError != "" {
