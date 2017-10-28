@@ -10,12 +10,12 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
+	logs "github.com/sirupsen/logrus"
 )
 
 // helper function to load SiteDB data stream
@@ -68,7 +68,10 @@ func getSiteDBData(api string) []mongo.DASRecord {
 		records := loadSiteDBData(api, response.Data)
 		return records
 	}
-	log.Println(fmt.Sprintf("DAS ERROR, SiteDB API=%s, error=%s", api, response.Error))
+	logs.WithFields(logs.Fields{
+		"api":   api,
+		"Error": response.Error,
+	}).Error("siteDB")
 	var out []mongo.DASRecord
 	return out
 }

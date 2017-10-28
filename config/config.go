@@ -7,11 +7,11 @@ package config
 
 import (
 	"encoding/json"
-	"log"
 	"os"
 	"strings"
 
 	"github.com/dmwm/das2go/utils"
+	logs "github.com/sirupsen/logrus"
 )
 
 // Configuration structure
@@ -37,7 +37,7 @@ func ParseConfig() Configuration {
 		panic("DAS_CONFIG environment variable is not set")
 	}
 	if utils.WEBSERVER > 0 {
-		log.Println("DAS_CONFIG", fname)
+		logs.Info("DAS_CONFIG: ", fname)
 	}
 	file, _ := os.Open(fname)
 	decoder := json.NewDecoder(file)
@@ -47,7 +47,7 @@ func ParseConfig() Configuration {
 		panic(err)
 	}
 	if utils.WEBSERVER > 0 {
-		log.Println("DAS configuration", conf)
+		logs.Info("DAS configuration: ", conf)
 	}
 	return conf
 }

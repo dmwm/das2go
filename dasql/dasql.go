@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/dmwm/das2go/utils"
+	logs "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -100,7 +101,11 @@ func relax(query string) string {
 
 func qlError(query string, idx int, msg string) string {
 	fullmsg := fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, idx, msg)
-	fmt.Println(fullmsg)
+	logs.WithFields(logs.Fields{
+		"Query": query,
+		"idx":   idx,
+		"msg":   msg,
+	}).Error("DAS QL error")
 	return fullmsg
 }
 func parseArray(rquery string, odx int, oper string, val string) ([]string, int, string) {
@@ -244,7 +249,12 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 			nnval = nan
 		}
 		if utils.VERBOSE > 2 {
-			fmt.Printf("Process idx='%d', val='%s', nval='%s', nnval='%s'\n", idx, val, nval, nnval)
+			logs.WithFields(logs.Fields{
+				"idx":   idx,
+				"val":   val,
+				"nval":  nval,
+				"nnval": nnval,
+			}).Debug("process")
 		}
 		if nval != nan && (nval == "," || utils.InList(nval, daskeys) == true) {
 			if utils.InList(val, daskeys) {
@@ -362,7 +372,6 @@ func parsePipe(pipe string) (map[string][]string, [][]string, string) {
 	opers := []string{">", "<", ">=", "<=", "=", "!="}
 	idx := 0
 	arr := strings.Split(pipe, " ")
-	//     fmt.Println("### pipe", pipe)
 	qlen := len(arr)
 	if qlen == 0 {
 		return filters, aggregators, qlerr
@@ -384,7 +393,6 @@ func parsePipe(pipe string) (map[string][]string, [][]string, string) {
 		} else {
 			nnnext = nan
 		}
-		//         fmt.Println("### item", idx, item, next, nnext, nnnext, arr, cfilter)
 		if item == "grep" {
 			cfilter = item
 			filters["grep"] = append(filters[item], next)

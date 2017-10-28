@@ -7,7 +7,6 @@ package das
 
 import (
 	"fmt"
-	"log"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -20,6 +19,7 @@ import (
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/services"
 	"github.com/dmwm/das2go/utils"
+	logs "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -109,7 +109,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		base = strings.Replace(base, "xml", "json", -1)
 	}
 	if !ok {
-		log.Fatal("Unable to extract url from DAS map", dasmap)
+		logs.Fatal("Unable to extract url from DAS map ", dasmap)
 	}
 	dasmaps := dasmaps.GetDASMaps(dasmap["das_map"])
 	var useArgs []string
@@ -235,7 +235,7 @@ func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
 	if !ok {
-		log.Fatal("Unable to extract url from DAS map", dasmap)
+		logs.Fatal("Unable to extract url from DAS map ", dasmap)
 	}
 	if !strings.HasPrefix(base, "http") {
 		return "local_api"
@@ -299,7 +299,15 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		args := []reflect.Value{reflect.ValueOf(dasquery)} // list of function arguments
 		vals := m.Call(args)[0]                            // return value
 		records := vals.Interface().([]mongo.DASRecord)    // cast reflect value to its type
-		//         log.Println("### LOCAL APIS", urn, system, expire, dmap, api, m, len(records))
+		logs.WithFields(logs.Fields{
+			"urn":     urn,
+			"System":  system,
+			"Expire":  expire,
+			"dmap":    dmap,
+			"api":     api,
+			"method":  m,
+			"records": len(records),
+		}).Debug("local apis")
 
 		records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
 

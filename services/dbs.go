@@ -10,7 +10,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -18,6 +17,7 @@ import (
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
+	logs "github.com/sirupsen/logrus"
 )
 
 // helper function to load DBS data stream
@@ -178,7 +178,7 @@ func (LocalAPIs) L_dbs3_block_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.
 			} else if key == "block_name" {
 				rurl, err := url.QueryUnescape(rec["url"].(string))
 				if err != nil {
-					log.Println("DAS ERROR, unable to parse url", rec)
+					logs.Error("unable to parse url ", rec)
 					panic(err)
 				}
 				arr := strings.Split(rurl, "block_name=")

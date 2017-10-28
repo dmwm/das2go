@@ -25,6 +25,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	logs "github.com/sirupsen/logrus"
 	"github.com/vkuznet/x509proxy"
 )
 
@@ -50,9 +51,9 @@ func tlsCerts() ([]tls.Certificate, error) {
 		}
 	}
 	if VERBOSE > 0 {
-		fmt.Println("uproxy", uproxy)
-		fmt.Println("uckey", uckey)
-		fmt.Println("ucert", ucert)
+		logs.Debug("uproxy ", uproxy)
+		logs.Debug("uckey ", uckey)
+		logs.Debug("ucert ", ucert)
 	}
 
 	if uproxy == "" && uckey == "" { // user doesn't have neither proxy or user certs
@@ -195,7 +196,10 @@ func FetchResponse(rurl, args string) ResponseType {
 	atomic.AddInt32(&UrlQueueSize, 1)
 	defer atomic.AddInt32(&UrlQueueSize, -1) // decrement UrlQueueSize since we done with this request
 	if VERBOSE > 1 {
-		fmt.Println("### HTTP request, UrlQueueSize", UrlQueueSize, "UrlQueueLimit", UrlQueueLimit)
+		logs.WithFields(logs.Fields{
+			"UrlQueueSize":  UrlQueueSize,
+			"UrlQueueLimit": UrlQueueLimit,
+		}).Debug("http request")
 	}
 	var response ResponseType
 	response.Url = rurl
@@ -217,12 +221,19 @@ func FetchResponse(rurl, args string) ResponseType {
 	}
 	if VERBOSE > 1 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
-		fmt.Println("### HTTP request", req, string(dump1), err1)
+		logs.WithFields(logs.Fields{
+			"request": req,
+			"dump":    string(dump1),
+			"error":   err1,
+		}).Debug("http request")
 	}
 	resp, err := _client.Do(req)
 	if VERBOSE > 1 {
 		dump2, err2 := httputil.DumpResponse(resp, true)
-		fmt.Println("### HTTP response", string(dump2), err2)
+		logs.WithFields(logs.Fields{
+			"dump":  string(dump2),
+			"error": err2,
+		}).Debug("http response")
 	}
 	if err != nil {
 		response.Error = err
@@ -235,9 +246,23 @@ func FetchResponse(rurl, args string) ResponseType {
 	}
 	if VERBOSE > 0 {
 		if args == "" {
-			fmt.Println(Color(CYAN, "DAS GET"), ColorUrl(rurl), time.Now().Sub(startTime))
+			if WEBSERVER == 0 {
+				fmt.Println(Color(CYAN, "DAS GET"), ColorUrl(rurl), time.Now().Sub(startTime))
+			} else {
+				logs.WithFields(logs.Fields{
+					"url":  ColorUrl(rurl),
+					"time": time.Now().Sub(startTime),
+				}).Info("DAS GET")
+			}
 		} else {
-			fmt.Println(Color(PURPLE, "DAS POST"), ColorUrl(rurl), args, time.Now().Sub(startTime))
+			if WEBSERVER == 0 {
+				fmt.Println(Color(PURPLE, "DAS POST"), ColorUrl(rurl), args, time.Now().Sub(startTime))
+			} else {
+				logs.WithFields(logs.Fields{
+					"url":  ColorUrl(rurl),
+					"time": time.Now().Sub(startTime),
+				}).Info("DAS POST")
+			}
 		}
 	}
 	return response
@@ -261,7 +286,11 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 	var resp, r ResponseType
 	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
-		fmt.Println("DAS WARNING, fail to fetch data", ColorUrl(rurl), "error", resp.Error)
+		//         fmt.Println("DAS WARNING, fail to fetch data", ColorUrl(rurl), "error", resp.Error)
+		logs.WithFields(logs.Fields{
+			"url":   ColorUrl(rurl),
+			"error": resp.Error,
+		}).Error("fail to fetch data")
 		for i := 1; i <= UrlRetry; i++ {
 			sleep := time.Duration(i) * time.Second
 			time.Sleep(sleep)
@@ -269,12 +298,22 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 			if r.Error == nil {
 				break
 			}
-			fmt.Println("DAS WARNING", ColorUrl(rurl), "retry", i, "error", r.Error)
+			//             fmt.Println("DAS WARNING", ColorUrl(rurl), "retry", i, "error", r.Error)
+			logs.WithFields(logs.Fields{
+				"url":   ColorUrl(rurl),
+				"retry": i,
+				"error": resp.Error,
+			}).Error("fetch data retry")
 		}
 		resp = r
 	}
 	if resp.Error != nil {
-		fmt.Println("DAS ERROR, fail to fetch data", ColorUrl(rurl), "retries", UrlRetry, "error", resp.Error)
+		//         fmt.Println("DAS ERROR, fail to fetch data", ColorUrl(rurl), "retries", UrlRetry, "error", resp.Error)
+		logs.WithFields(logs.Fields{
+			"url":     ColorUrl(rurl),
+			"retries": UrlRetry,
+			"error":   resp.Error,
+		}).Error("fail to fetch data")
 	}
 	ch <- resp
 }
@@ -285,7 +324,10 @@ func validateUrl(rurl string) bool {
 		if PatternUrl.MatchString(rurl) {
 			return true
 		}
-		fmt.Println("ERROR invalid URL:", ColorUrl(rurl))
+		//         fmt.Println("ERROR invalid URL:", ColorUrl(rurl))
+		logs.WithFields(logs.Fields{
+			"url": ColorUrl(rurl),
+		}).Error("invalid URL")
 	}
 	return false
 }

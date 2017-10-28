@@ -10,13 +10,14 @@ import (
 	"encoding/gob"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	logs "github.com/sirupsen/logrus"
 )
 
 // global variable for this module which we're going to use across many modules
@@ -40,7 +41,10 @@ func Stack() string {
 // ErrPropagate error helper function which can be used in defer ErrPropagate()
 func ErrPropagate(api string) {
 	if err := recover(); err != nil {
-		log.Println("DAS ERROR", api, "error", err, Stack())
+		logs.WithFields(logs.Fields{
+			"api":   api,
+			"error": Stack(),
+		}).Error("DAS ERROR")
 		panic(fmt.Sprintf("%s:%s", api, err))
 	}
 }
@@ -53,7 +57,10 @@ func ErrPropagate(api string) {
 // }()
 func ErrPropagate2Channel(api string, ch chan interface{}) {
 	if err := recover(); err != nil {
-		log.Println("DAS ERROR", api, "error", err, Stack())
+		logs.WithFields(logs.Fields{
+			"api":   api,
+			"error": Stack(),
+		}).Error("DAS ERROR")
 		ch <- fmt.Sprintf("%s:%s", api, err)
 	}
 }
