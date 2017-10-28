@@ -339,7 +339,7 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) {
 			// adjust DBS instance
 			rec["url"] = strings.Replace(rec["url"].(string), "prod/global", inst, 1)
-			if utils.WEBSERVER > 0 {
+			if utils.VERBOSE > 0 && utils.WEBSERVER > 0 {
 				logs.WithFields(logs.Fields{
 					"System":        rec["system"],
 					"urn":           rec["urn"],
@@ -347,11 +347,11 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 					"spec keys":     keys,
 					"required keys": rkeys,
 					"all api keys":  akeys,
-				}).Info(utils.Color(utils.RED, "DAS match"))
+				}).Info(utils.Color(utils.GREEN, "DAS match"))
 			}
 			if utils.VERBOSE > 1 && utils.WEBSERVER == 0 {
 				// used by dasgoclient, keep fmt.Println
-				msg := utils.Color(utils.RED, fmt.Sprintf("DAS match: system=%s urn=%s url=%s spec keys=%s requested keys=%s all api keys %s", rec["system"], rec["urn"], rec["url"], keys, rkeys, akeys))
+				msg := utils.Color(utils.GREEN, fmt.Sprintf("DAS match: system=%s urn=%s url=%s spec keys=%s requested keys=%s all api keys %s", rec["system"], rec["urn"], rec["url"], keys, rkeys, akeys))
 				fmt.Println(msg)
 			}
 			out = append(out, rec)

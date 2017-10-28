@@ -8,9 +8,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dmwm/das2go/das"
 	"github.com/dmwm/das2go/dasmaps"
@@ -121,10 +121,6 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 	// defer function will propagate panic message to higher level
 	defer utils.ErrPropagate("processRequest")
 
-	logs.WithFields(logs.Fields{
-		"DASQuery": dasquery,
-		"PID":      pid,
-	}).Info("ready")
 	response := make(map[string]interface{})
 	if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
 		status, data := das.GetData(dasquery, "merge", idx, limit)
@@ -133,10 +129,20 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 		response["status"] = status
 		response["pid"] = pid
 		response["data"] = data
+		logs.WithFields(logs.Fields{
+			"DASQuery": dasquery,
+			"PID":      pid,
+			"Unix":     time.Now().Unix(),
+		}).Info("ready")
 	} else if das.CheckData(pid) { // data exists in cache but still processing
 		response["status"] = "processing"
 		response["pid"] = pid
 	} else { // no data in cache (even client supplied the pid), process it
+		logs.WithFields(logs.Fields{
+			"DASQuery": dasquery,
+			"PID":      pid,
+			"Unix":     time.Now().Unix(),
+		}).Info("requested")
 		go das.Process(dasquery, _dasmaps)
 		response["status"] = "requested"
 		response["pid"] = pid
@@ -244,17 +250,10 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	// get unfinished queries
 	var templates DASTemplates
 	tmplData := make(map[string]interface{})
-	var cmd *exec.Cmd
-	url := fmt.Sprintf("http://localhost:%s/debug/pprof/heap", _port)
-	cmd = exec.Command("go", "tool", "pprof", "--top", url)
-	out, err := cmd.Output()
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	tmplData["Top"] = string(out)
+	tmplData["Queries"] = das.ProcessingQueries()
 	tmplData["Base"] = _base
 	page := templates.Status(_tdir, tmplData)
 	w.WriteHeader(http.StatusOK)

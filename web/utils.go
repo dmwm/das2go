@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dmwm/das2go/das"
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
@@ -219,17 +220,17 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 	//     br := "<br/>"
 	fields := dasquery.Fields
 	var pkey, inst string
-	var das mongo.DASRecord
+	var dasrec mongo.DASRecord
 	var services []string
 	for jdx, item := range data {
-		das = item["das"].(mongo.DASRecord)
+		dasrec = item["das"].(mongo.DASRecord)
 		services = []string{}
-		for _, v := range das["services"].([]interface{}) {
+		for _, v := range dasrec["services"].([]interface{}) {
 			srv := strings.Split(v.(string), ":")[0]
 			services = append(services, srv)
 		}
-		pkey = das["primary_key"].(string)
-		inst = das["instance"].(string)
+		pkey = dasrec["primary_key"].(string)
+		inst = dasrec["instance"].(string)
 		// aggregator part
 		if len(dasquery.Aggregators) > 0 {
 			fname := item["function"].(string)
@@ -328,7 +329,8 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			out = append(out, line)
 		}
 	}
-	procTime := time.Now().Sub(dasquery.Time).String()
+	ts := das.TimeStamp(dasquery)
+	procTime := time.Now().Sub(time.Unix(ts, 0)).String()
 	out = append(out, fmt.Sprintf("<div align=\"right\">processing time: %s</div>", procTime))
 	return strings.Join(out, "\n")
 }

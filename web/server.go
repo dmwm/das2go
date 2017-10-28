@@ -40,7 +40,7 @@ var _dbses []string
 func Server(port, afile string) {
 	_port = port
 	logs.Info("server port ", port)
-	var tcss, tjs, timg, tyui, ttmp string
+	var tcss, tjs, timg, tyui string
 	for _, item := range os.Environ() {
 		val := strings.Split(item, "=")
 		if val[0] == "YUI_ROOT" {
@@ -53,8 +53,6 @@ func Server(port, afile string) {
 			tcss = val[1]
 		} else if val[0] == "DAS_IMAGESPATH" {
 			timg = val[1]
-		} else if val[0] == "DAS_TMPPATH" {
-			ttmp = val[1]
 		}
 	}
 	// init CMS Authentication module
@@ -102,7 +100,6 @@ func Server(port, afile string) {
 	http.Handle("/das/js/", http.StripPrefix("/das/js/", http.FileServer(http.Dir(tjs))))
 	http.Handle("/das/images/", http.StripPrefix("/das/images/", http.FileServer(http.Dir(timg))))
 	http.Handle("/das/yui/", http.StripPrefix("/das/yui/", http.FileServer(http.Dir(tyui))))
-	http.Handle("/das/tmp/", http.StripPrefix("/das/tmp/", http.FileServer(http.Dir(ttmp))))
 	http.HandleFunc(fmt.Sprintf("%s/", _base), AuthHandler)
 	err := http.ListenAndServe(":"+port, nil)
 	// NOTE: later this can be replaced with secure connection

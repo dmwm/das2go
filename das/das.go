@@ -503,7 +503,13 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	}
 
 	if len(srvs) == 0 {
-		fmt.Println("DAS WARNING", dasquery, "unable to find any CMS service to fullfil this request")
+		if utils.WEBSERVER > 0 {
+			logs.WithFields(logs.Fields{
+				"Query": dasquery.String(),
+			}).Warn("unable to find any CMS service to fullfil this request")
+		} else {
+			fmt.Println("DAS WARNING", dasquery, "unable to find any CMS service to fullfil this request")
+		}
 		dasrecord := services.CreateDASErrorRecord(dasquery, pkeys)
 		var records []mongo.DASRecord
 		records = append(records, dasrecord)
@@ -725,4 +731,30 @@ func RemoveExpired(pid string) {
 	spec := bson.M{"qhash": pid, "das.expire": espec}
 	mongo.Remove("das", "cache", spec) // remove from cache collection
 	mongo.Remove("das", "merge", spec) // remove from merge collection
+}
+
+// TimeStamp returns list of DAS queries which are currently processing by the server
+func TimeStamp(dasquery dasql.DASQuery) int64 {
+	spec := bson.M{"das.record": 0, "qhash": dasquery.Qhash}
+	recs := mongo.Get("das", "cache", spec, 0, 1)
+	ts, err := mongo.GetInt64Value(recs[0], "das.ts")
+	if err != nil {
+		logs.WithFields(logs.Fields{
+			"Query": dasquery.String(),
+			"Spec":  spec,
+		}).Error("unable to find das record")
+		return 0
+	}
+	return ts
+}
+
+// ProcessingQueries returns list of DAS queries which are currently processing by the server
+func ProcessingQueries() []string {
+	var out []string
+	spec := bson.M{"das.record": 0, "das.services": "das:NA", "das.status": bson.M{"$ne": "ok"}}
+	for _, r := range mongo.Get("das", "cache", spec, 0, 0) {
+		q := r["query"].(string)
+		out = append(out, q)
+	}
+	return utils.List2Set(out)
 }
