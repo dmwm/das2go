@@ -253,7 +253,9 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	// get unfinished queries
 	var templates DASTemplates
 	tmplData := make(map[string]interface{})
-	tmplData["Queries"] = das.ProcessingQueries()
+	queries := das.ProcessingQueries()
+	tmplData["Queries"] = strings.Join(queries, "\n")
+	tmplData["NQueries"] = len(queries)
 	tmplData["Base"] = _base
 	page := templates.Status(_tdir, tmplData)
 	w.WriteHeader(http.StatusOK)

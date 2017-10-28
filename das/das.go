@@ -751,7 +751,12 @@ func TimeStamp(dasquery dasql.DASQuery) int64 {
 // ProcessingQueries returns list of DAS queries which are currently processing by the server
 func ProcessingQueries() []string {
 	var out []string
-	spec := bson.M{"das.record": 0, "das.services": "das:NA", "das.status": bson.M{"$ne": "ok"}}
+	spec := bson.M{"das.record": 0, "das.status": "processing"}
+	for _, r := range mongo.Get("das", "cache", spec, 0, 0) {
+		q := r["query"].(string)
+		out = append(out, q)
+	}
+	spec = bson.M{"das.record": 0, "das.status": "requested"}
 	for _, r := range mongo.Get("das", "cache", spec, 0, 0) {
 		q := r["query"].(string)
 		out = append(out, q)
