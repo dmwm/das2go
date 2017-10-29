@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -257,6 +258,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Queries"] = strings.Join(queries, "\n")
 	tmplData["NQueries"] = len(queries)
 	tmplData["Base"] = _base
+	tmplData["NGo"] = runtime.NumGoroutine()
 	page := templates.Status(_tdir, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
