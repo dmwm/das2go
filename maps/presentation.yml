@@ -145,6 +145,7 @@ file : [
          "diff":["file.size", "file.nevents"],
          "link":[
                 {"name": "Dataset", "query": "dataset file=%s"},
+                {"name": "Block", "query": "block file=%s"},
                 {"name": "Sites", "query":"site file=%s"},
                 {"name": "Runs", "query": "run file=%s"},
                 {"name": "Parents", "query": "parent file=%s"},
