@@ -328,6 +328,18 @@ func (s IntList) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
 // Less implements less function for []int type
 func (s IntList) Less(i, j int) bool { return s[i] < s[j] }
 
+// Int64List implement sort for []int type
+type Int64List []int64
+
+// Len provides length of the []int64 type
+func (s Int64List) Len() int { return len(s) }
+
+// Swap implements swap function for []int64 type
+func (s Int64List) Swap(i, j int) { s[i], s[j] = s[j], s[i] }
+
+// Less implements less function for []int64 type
+func (s Int64List) Less(i, j int) bool { return s[i] < s[j] }
+
 // StringList implement sort for []string type
 type StringList []string
 
