@@ -206,6 +206,75 @@ func pagination(base, query string, nres, startIdx, limit int) string {
 	return fmt.Sprintf("%s%s<br/>", page, line)
 }
 
+// helper function to
+// Helper function to show lumi-events pairs suitable for web UI
+func lumiEvents(rec mongo.DASRecord) string {
+	var run int64
+	for _, v := range rec["run"].([]interface{}) {
+		r := v.(mongo.DASRecord)
+		run = r["run_number"].(int64)
+		break
+	}
+	var lfn string
+	for _, v := range rec["file"].([]interface{}) {
+		r := v.(mongo.DASRecord)
+		lfn = r["name"].(string)
+		break
+	}
+	var lumis []int64
+	for _, v := range rec["lumi"].([]interface{}) {
+		r := v.(mongo.DASRecord)
+		for _, lumi := range r["number"].([]interface{}) {
+			lumis = append(lumis, lumi.(int64))
+		}
+	}
+	var events []int64
+	if _, ok := rec["events"]; ok {
+		for _, v := range rec["events"].([]interface{}) {
+			r := v.(mongo.DASRecord)
+			for _, lumi := range r["number"].([]interface{}) {
+				events = append(events, lumi.(int64))
+			}
+		}
+	}
+	lfnArr := strings.Split(lfn, "/")
+	lfnTag := strings.Replace(lfnArr[len(lfnArr)-1], ".root", "", 1)
+	lumiTag := fmt.Sprintf("%v", lumis)
+	tag := fmt.Sprintf("id_%s_%d_%s", lfnTag, run, lumiTag)
+	link := fmt.Sprintf("link_%s_%d_%s", lfnTag, run, lumiTag)
+	var rows []string
+	var totEvents int64
+	ev := make(map[int64]int64)
+	for idx, lumi := range lumis {
+		if len(lumis) == len(events) {
+			ev[lumi] = events[idx]
+		} else {
+			ev[lumi] = -1
+		}
+	}
+	sort.Sort(utils.Int64List(lumis))
+	for idx, lumi := range lumis {
+		var row string
+		evt := ev[lumi]
+		if evt > -1 {
+			row = fmt.Sprintf("Lumi: %d, Events %d", lumi, evt)
+			totEvents += events[idx]
+		} else {
+			row = fmt.Sprintf("Lumi: %d, Events None", lumi)
+		}
+		rows = append(rows, row)
+	}
+	out := fmt.Sprintf("&nbsp;<em>lumis/events pairs</em> ")
+	out += fmt.Sprintf("<a href=\"javascript:ToggleTag('%s', '%s')\" id=\"%s\">show</a>", tag, link, link)
+	out += fmt.Sprintf("<div class=\"hide\" id=\"%s\" name=\"%s\">", tag, tag)
+	out += strings.Join(rows, "<br/>\n")
+	if totEvents > 0 {
+		out += fmt.Sprintf("&nbsp; Total events=%d", totEvents)
+	}
+	out += fmt.Sprintf("</div>")
+	return out
+}
+
 // PresentData represents DAS records for web UI
 func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int) string {
 	var out []string
@@ -322,6 +391,10 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			values[0] = strings.Replace(values[0], "<br/>", "", 1)
 		}
 		out = append(out, strings.Join(utils.List2Set(values), " "))
+		// add lumis/events pairs for queries which contains events
+		if utils.InList("events", fields) {
+			out = append(out, lumiEvents(item))
+		}
 		out = append(out, dasLinks(path, inst, pval, links))
 		out = append(out, colServices(services))
 		out = append(out, showRecord(item))
