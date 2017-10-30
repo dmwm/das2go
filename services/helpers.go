@@ -38,6 +38,8 @@ func DASLocalAPIs() []string {
 		// dbs3 APIs which should be treated as local_api, but they have
 		// url: http://.... in their map instead of local_api
 		"file_run_lumi4dataset", "file_run_lumi4block",
+		"file_run_lumi_evts4dataset", "file_run_lumi_evts4block",
+		"run_lumi_evts4dataset", "file_lumi_evts4dataset",
 		"file_lumi4dataset", "file_lumi4block", "run_lumi4dataset", "run_lumi4block",
 		"block_run_lumi4dataset", "file4dataset_run_lumi", "blocks4tier_dates",
 		"lumi4block_run", "datasetlist", "configs"}
