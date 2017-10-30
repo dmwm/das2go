@@ -185,6 +185,8 @@ func fileRunLumi(dasquery dasql.DASQuery, keys []string) []mongo.DASRecord {
 				row["run"] = []mongo.DASRecord{{"run_number": rec[key]}}
 			} else if key == "lumi_section_num" {
 				row["lumi"] = []mongo.DASRecord{{"number": rec[key]}}
+			} else if key == "event_count" {
+				row["events"] = []mongo.DASRecord{{"number": rec[key]}}
 			} else if key == "logical_file_name" {
 				row["file"] = []mongo.DASRecord{{"name": rec[key]}}
 			}

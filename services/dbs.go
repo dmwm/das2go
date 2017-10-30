@@ -130,7 +130,7 @@ func (LocalAPIs) L_dbs3_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 
 // L_dbs3_run_lumi_evts4dataset finds run, lumi for given dataset
 func (LocalAPIs) L_dbs3_run_lumi_evts4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
-	keys := []string{"run_num", "lumi_section_num"}
+	keys := []string{"run_num", "lumi_section_num", "event_count"}
 	return fileRunLumi(dasquery, keys)
 }
 
@@ -142,7 +142,7 @@ func (LocalAPIs) L_dbs3_run_lumi4block(dasquery dasql.DASQuery) []mongo.DASRecor
 
 // L_dbs3_run_lumi_evts4block finds run,lumi for given block
 func (LocalAPIs) L_dbs3_run_lumi_evts4block(dasquery dasql.DASQuery) []mongo.DASRecord {
-	keys := []string{"run_num", "lumi_section_num"}
+	keys := []string{"run_num", "lumi_section_num", "event_count"}
 	return fileRunLumi(dasquery, keys)
 }
 
@@ -154,7 +154,7 @@ func (LocalAPIs) L_dbs3_file_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRe
 
 // L_dbs3_file_lumi_evts4dataset finds file,lumi for given dataset
 func (LocalAPIs) L_dbs3_file_lumi_evts4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
-	keys := []string{"logical_file_name", "lumi_section_num"}
+	keys := []string{"logical_file_name", "lumi_section_num", "event_count"}
 	return fileRunLumi(dasquery, keys)
 }
 
@@ -166,7 +166,7 @@ func (LocalAPIs) L_dbs3_file_lumi4block(dasquery dasql.DASQuery) []mongo.DASReco
 
 // L_dbs3_file_lumi_evts4block finds file,lumi for given block
 func (LocalAPIs) L_dbs3_file_lumi_evts4block(dasquery dasql.DASQuery) []mongo.DASRecord {
-	keys := []string{"logical_file_name", "lumi_section_num"}
+	keys := []string{"logical_file_name", "lumi_section_num", "event_count"}
 	return fileRunLumi(dasquery, keys)
 }
 
@@ -178,7 +178,7 @@ func (LocalAPIs) L_dbs3_file_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.D
 
 // L_dbs3_file_run_lumi_evts4dataset finds file,run,lumi for given dataset
 func (LocalAPIs) L_dbs3_file_run_lumi_evts4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
-	keys := []string{"logical_file_name", "run_num", "lumi_section_num"}
+	keys := []string{"logical_file_name", "run_num", "lumi_section_num", "event_count"}
 	return fileRunLumi(dasquery, keys)
 }
 
@@ -190,7 +190,7 @@ func (LocalAPIs) L_dbs3_file_run_lumi4block(dasquery dasql.DASQuery) []mongo.DAS
 
 // L_dbs3_file_run_lumi_evts4block finds file,run,lumi for given block
 func (LocalAPIs) L_dbs3_file_run_lumi_evts4block(dasquery dasql.DASQuery) []mongo.DASRecord {
-	keys := []string{"logical_file_name", "run_num", "lumi_section_num"}
+	keys := []string{"logical_file_name", "run_num", "lumi_section_num", "event_count"}
 	return fileRunLumi(dasquery, keys)
 }
 

@@ -232,8 +232,11 @@ func lumiEvents(rec mongo.DASRecord) string {
 	if _, ok := rec["events"]; ok {
 		for _, v := range rec["events"].([]interface{}) {
 			r := v.(mongo.DASRecord)
-			for _, lumi := range r["number"].([]interface{}) {
-				events = append(events, lumi.(int64))
+			evts := r["number"]
+			if evts != nil {
+				for _, lumi := range evts.([]interface{}) {
+					events = append(events, lumi.(int64))
+				}
 			}
 		}
 	}
@@ -266,11 +269,11 @@ func lumiEvents(rec mongo.DASRecord) string {
 	}
 	out := fmt.Sprintf("&nbsp;<em>lumis/events pairs</em> ")
 	out += fmt.Sprintf("<a href=\"javascript:ToggleTag('%s', '%s')\" id=\"%s\">show</a>", tag, link, link)
-	out += fmt.Sprintf("<div class=\"hide\" id=\"%s\" name=\"%s\">", tag, tag)
-	out += strings.Join(rows, "<br/>\n")
 	if totEvents > 0 {
 		out += fmt.Sprintf("&nbsp; Total events=%d", totEvents)
 	}
+	out += fmt.Sprintf("<div class=\"hide\" id=\"%s\" name=\"%s\">", tag, tag)
+	out += strings.Join(rows, "<br/>\n")
 	out += fmt.Sprintf("</div>")
 	return out
 }
