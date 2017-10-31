@@ -47,8 +47,14 @@ func remap(api string, records []mongo.DASRecord, notations []mongo.DASRecord) [
 }
 
 // Unmarshal generic function to unmarshal DAS record for given system/api/data/notations
-func Unmarshal(system, api string, data []byte, notations []mongo.DASRecord) []mongo.DASRecord {
+func Unmarshal(dasquery dasql.DASQuery, system, api string, r utils.ResponseType, notations []mongo.DASRecord, pkeys []string) []mongo.DASRecord {
 	var out []mongo.DASRecord
+	if r.Error != nil {
+		rec := CreateDASErrorRecord(dasquery, pkeys)
+		out = append(out, rec)
+		return out
+	}
+	data := r.Data
 	switch {
 	case system == "phedex":
 		out = PhedexUnmarshal(api, data)

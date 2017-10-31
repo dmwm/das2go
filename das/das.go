@@ -392,7 +392,7 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 			}
 			// process data records
 			notations := dmaps.FindNotations(system)
-			records := services.Unmarshal(system, urn, r.Data, notations)
+			records := services.Unmarshal(dasquery, system, urn, r, notations, pkeys)
 			records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
 
 			// get DAS record and adjust its settings

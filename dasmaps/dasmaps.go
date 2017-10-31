@@ -289,20 +289,38 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 	system := dasquery.System
 	keys := utils.MapKeys(spec)
 	var condRecords, out []mongo.DASRecord
+	specKeysMatches := make(map[string][]bool)
 	for _, rec := range m.records {
 		dasmaps := GetDASMaps(rec["das_map"])
+		var urn string
+		r := rec["urn"]
+		if r != nil {
+			urn = r.(string)
+		}
 		for _, dmap := range dasmaps {
 			dasKey := dmap["das_key"].(string)
 			dasPattern := dmap["pattern"]
 			if utils.InList(dasKey, keys) {
 				if dasPattern == nil {
 					condRecords = append(condRecords, rec)
+					if v, ok := specKeysMatches[urn]; ok {
+						v = append(v, true)
+						specKeysMatches[urn] = v
+					} else {
+						specKeysMatches[urn] = []bool{true}
+					}
 				} else {
 					dasValue := fmt.Sprintf("%v", spec[dasKey])
 					pat := fmt.Sprintf("^%s", dasPattern.(string))
 					matched, _ := regexp.MatchString(pat, dasValue)
 					if matched {
 						condRecords = append(condRecords, rec)
+						if v, ok := specKeysMatches[urn]; ok {
+							v = append(v, true)
+							specKeysMatches[urn] = v
+						} else {
+							specKeysMatches[urn] = []bool{true}
+						}
 					}
 				}
 			}
@@ -336,7 +354,10 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 				continue
 			}
 		}
-		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) {
+		// this dict keep track of matched keys for given urn
+		// we need that our selection keys not exceed number of possible matched keys
+		allMatches := specKeysMatches[rec["urn"].(string)]
+		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) && len(allMatches) >= len(keys) {
 			// adjust DBS instance
 			rec["url"] = strings.Replace(rec["url"].(string), "prod/global", inst, 1)
 			if utils.VERBOSE > 0 && utils.WEBSERVER > 0 {
