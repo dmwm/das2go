@@ -286,11 +286,11 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 	var resp, r ResponseType
 	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
-		//         fmt.Println("DAS WARNING, fail to fetch data", ColorUrl(rurl), "error", resp.Error)
+		//                 fmt.Println("DAS WARNING, fail to fetch data", ColorUrl(rurl), "error", resp.Error)
 		logs.WithFields(logs.Fields{
 			"url":   ColorUrl(rurl),
 			"error": resp.Error,
-		}).Error("fail to fetch data")
+		}).Warn("fail to fetch data")
 		for i := 1; i <= UrlRetry; i++ {
 			sleep := time.Duration(i) * time.Second
 			time.Sleep(sleep)
@@ -303,7 +303,7 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 				"url":   ColorUrl(rurl),
 				"retry": i,
 				"error": resp.Error,
-			}).Error("fetch data retry")
+			}).Warn("fetch data retry")
 		}
 		resp = r
 	}
