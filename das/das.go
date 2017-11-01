@@ -80,7 +80,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		}
 		// return only valid files by default
 		if strings.Contains(base, "file") && !utils.InList("status", skeys) {
-			if !strings.Contains(base, "filechildren") && !strings.Contains(base, "fileparents") {
+			if !strings.Contains(base, "filechildren") && !strings.Contains(base, "fileparents") && !strings.Contains(base, "files") {
 				if _, ok := vals["validFileOnly"]; !ok {
 					vals.Add("validFileOnly", "1")
 				}
