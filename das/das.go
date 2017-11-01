@@ -87,6 +87,14 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 			}
 		}
 	}
+	if system == "phedex" {
+		if v, ok := spec["site"]; ok {
+			val := v.(string)
+			if !strings.Contains(val, "*") {
+				spec["site"] = fmt.Sprintf("%s*", val)
+			}
+		}
+	}
 	if system == "sitedb2" {
 		// all sitedb apis is better to treat as local APIs, since
 		// they don't really accept parameters. Instead, we'll use local
