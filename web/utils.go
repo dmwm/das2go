@@ -278,6 +278,18 @@ func lumiEvents(rec mongo.DASRecord) string {
 	return out
 }
 
+// helper function to check dataset patterns and return user-based message
+func datasetPattern(q string) string {
+	if strings.Contains(q, "dataset=") && strings.Contains(q, "*") {
+		msg := fmt.Sprintf("By default DAS show dataset with <b>VALID</b> status. ")
+		msg += fmt.Sprintf("To query all datasets regardless of their status please use")
+		msg += fmt.Sprintf("<span class=\"example\">dataset %s status=*</span> query", q)
+		msg += fmt.Sprintf(" or use proper status value, e.g. PRODUCTION")
+		return fmt.Sprintf("<div>%s</div><br/>", msg)
+	}
+	return ""
+}
+
 // PresentData represents DAS records for web UI
 func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int) string {
 	var out []string
@@ -289,6 +301,10 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 		total = len(dasquery.Aggregators)
 	}
 	out = append(out, pagination(path, dasquery.Query, total, startIdx, limit))
+	patMsg := datasetPattern(dasquery.Query)
+	if patMsg != "" {
+		out = append(out, patMsg)
+	}
 	//     br := "<br/>"
 	fields := dasquery.Fields
 	var pkey, inst string
