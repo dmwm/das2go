@@ -238,11 +238,19 @@ func (LocalAPIs) L_dbs3_file4dataset_run_lumi(dasquery dasql.DASQuery) []mongo.D
 		for _, row := range rec["lumi"].([]mongo.DASRecord) {
 			lumis := row["number"].([]interface{})
 			for _, val := range lumis {
-				if lumi == val.(float64) {
-					row := make(mongo.DASRecord)
-					row["file"] = rec["file"]
-					out = append(out, row)
+				switch v := val.(type) {
+				case float64, json.Number:
+					if lumi == v {
+						row := make(mongo.DASRecord)
+						row["file"] = rec["file"]
+						out = append(out, row)
+					}
 				}
+				//                 if lumi == val.(float64) {
+				//                     row := make(mongo.DASRecord)
+				//                     row["file"] = rec["file"]
+				//                     out = append(out, row)
+				//                 }
 			}
 		}
 	}

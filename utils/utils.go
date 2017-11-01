@@ -252,7 +252,13 @@ func Sum(data []interface{}) float64 {
 	out := 0.0
 	for _, val := range data {
 		if val != nil {
-			out += val.(float64)
+			//             out += val.(float64)
+			switch v := val.(type) {
+			case float64:
+				out += v
+			case int64:
+				out += float64(v)
+			}
 		}
 	}
 	return out
@@ -263,10 +269,20 @@ func Max(data []interface{}) float64 {
 	out := 0.0
 	for _, val := range data {
 		if val != nil {
-			v := val.(float64)
-			if v > out {
-				out = v
+			switch v := val.(type) {
+			case float64:
+				if v > out {
+					out = v
+				}
+			case int64:
+				if float64(v) > out {
+					out = float64(v)
+				}
 			}
+			//             v := val.(float64)
+			//             if v > out {
+			//                 out = v
+			//             }
 		}
 	}
 	return out
@@ -279,10 +295,20 @@ func Min(data []interface{}) float64 {
 		if val == nil {
 			continue
 		}
-		v := val.(float64)
-		if v < out {
-			out = v
+		switch v := val.(type) {
+		case float64:
+			if v < out {
+				out = v
+			}
+		case int64:
+			if float64(v) < out {
+				out = float64(v)
+			}
 		}
+		//         v := val.(float64)
+		//         if v < out {
+		//             out = v
+		//         }
 	}
 	return out
 }
@@ -302,7 +328,13 @@ func Median(data []interface{}) float64 {
 	var input sort.Float64Slice
 	var median float64
 	for _, v := range data {
-		input = append(input, v.(float64))
+		switch val := v.(type) {
+		case float64:
+			input = append(input, val)
+		case int64:
+			input = append(input, float64(val))
+		}
+		//         input = append(input, v.(float64))
 	}
 	input.Sort()
 	l := len(input)
