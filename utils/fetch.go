@@ -32,6 +32,7 @@ import (
 // global variable keeps user x509 certificates
 var _certs []tls.Certificate
 var _client = HttpClient()
+var CLIENT_VERSION string
 
 // client X509 certificates
 func tlsCerts() ([]tls.Certificate, error) {
@@ -219,21 +220,23 @@ func FetchResponse(rurl, args string) ResponseType {
 			req.Header.Add("Accept", "application/json")
 		}
 	}
-	if VERBOSE > 1 {
+	req.Header.Set("User-Agent", fmt.Sprintf("dasgoclient/%s", CLIENT_VERSION))
+	if VERBOSE > 2 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
 		logs.WithFields(logs.Fields{
+			"header":  req.Header,
 			"request": req,
 			"dump":    string(dump1),
 			"error":   err1,
-		}).Debug("http request")
+		}).Info("http request")
 	}
 	resp, err := _client.Do(req)
-	if VERBOSE > 1 {
+	if VERBOSE > 2 {
 		dump2, err2 := httputil.DumpResponse(resp, true)
 		logs.WithFields(logs.Fields{
 			"dump":  string(dump2),
 			"error": err2,
-		}).Debug("http response")
+		}).Info("http response")
 	}
 	if err != nil {
 		response.Error = err

@@ -3,13 +3,13 @@ function ajaxCheckPid(base, method, input, inst, pid, interval) {
     // method is request method, e.g. /request
     // pid is DASQuery qhash
     // status request interval in seconds
-    var limit = 15000; // in miliseconds
-    var increment = 5000 // in milliseconds
+    var limit = 10000; // in miliseconds
+    var increment = 4000 // in milliseconds
     var wait  = parseInt(interval);
     if (wait+increment < limit) {
         wait  = wait+increment;
     } else if (wait==limit) {
-        wait  = 5000; // initial time in msec (5 sec)
+        wait  = 2000; // initial time in msec (5 sec)
     } else { wait = limit; }
     new Ajax.Updater('response', base+'/'+method,
     { method: 'get' ,
