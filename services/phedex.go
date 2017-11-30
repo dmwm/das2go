@@ -101,6 +101,32 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 					}
 				}
 			}
+		} else if api == "site4file" {
+			if rec["phedex"] != nil {
+				val := rec["phedex"].(map[string]interface{})
+				blocks := val["block"].([]interface{})
+				for _, item := range blocks {
+					brec := item.(map[string]interface{})
+					files := brec["file"].([]interface{})
+					for _, vvv := range files {
+						rep := vvv.(map[string]interface{})
+						replicas := rep["replica"].([]interface{})
+						for _, val := range replicas {
+							row := val.(map[string]interface{})
+							node := ""
+							if row["node"] != nil {
+								node = row["node"].(string)
+							}
+							se := ""
+							if row["se"] != nil {
+								se = row["se"].(string)
+							}
+							rec := mongo.DASRecord{"name": node, "se": se}
+							out = append(out, rec)
+						}
+					}
+				}
+			}
 		} else if api == "dataset4site" || api == "dataset4site_group" || api == "dataset4se" || api == "dataset4se_group" {
 			if rec["phedex"] != nil {
 				val := rec["phedex"].(map[string]interface{})

@@ -220,7 +220,11 @@ func FetchResponse(rurl, args string) ResponseType {
 			req.Header.Add("Accept", "application/json")
 		}
 	}
-	req.Header.Set("User-Agent", fmt.Sprintf("dasgoclient/%s", CLIENT_VERSION))
+	if CLIENT_VERSION != "" {
+		req.Header.Set("User-Agent", fmt.Sprintf("dasgoclient/%s", CLIENT_VERSION))
+	} else {
+		req.Header.Set("User-Agent", "dasgoserver")
+	}
 	if VERBOSE > 2 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
 		logs.WithFields(logs.Fields{
