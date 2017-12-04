@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 
 	"github.com/dmwm/das2go/dasql"
@@ -88,12 +89,15 @@ func (LocalAPIs) L_sitedb2_site_names(dasquery dasql.DASQuery) []mongo.DASRecord
 	}
 	records := getSiteDBData(api)
 	for _, r := range records {
-		siteName := r["site_name"].(string)
-		r["name"] = r["site_name"]
+		siteName := r["alias"].(string)
+		r["name"] = r["alias"]
 		if siteName == site {
 			out = append(out, r)
-		} else if len(sitePattern) > 0 && strings.Contains(siteName, sitePattern) {
-			out = append(out, r)
+		} else if len(sitePattern) > 0 {
+			matched, _ := regexp.MatchString(fmt.Sprintf("^%s", sitePattern), siteName)
+			if matched {
+				out = append(out, r)
+			}
 		}
 	}
 	return out
