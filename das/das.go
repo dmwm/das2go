@@ -264,7 +264,15 @@ func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 				val, _ := spec[dkey].(string)
 				matched, _ := regexp.MatchString(pat, val)
 				if matched || pat == "" {
-					if !(strings.HasSuffix(base, "/") && strings.HasPrefix(val, "/")) {
+					if strings.HasPrefix(val, "/") {
+						if strings.HasSuffix(base, "/") {
+							return base[0:len(base)-1] + val
+						}
+						return base + val
+					} else {
+						if strings.HasSuffix(base, "/") {
+							return base + val
+						}
 						return base + "/" + val
 					}
 					return base + val
