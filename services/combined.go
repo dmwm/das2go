@@ -122,6 +122,9 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var totblocks, totfiles int64
+	if len(records) == 0 {
+		return []mongo.DASRecord{}
+	}
 	totblocks = rec2num(records[0]["num_block"])
 	totfiles = rec2num(records[0]["num_file"])
 	// Phedex part find block replicas for given dataset
