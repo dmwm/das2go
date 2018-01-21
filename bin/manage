@@ -1,10 +1,6 @@
 #!/bin/sh
-# Here we can set all settings, e.g. X509 proxy and start das2go executable
-export DAS_TMPLPATH=$PWD/src/templates
-export DAS_JSPATH=$PWD/src/js
-export DAS_CSSPATH=$PWD/src/css
-export DAS_IMAGESPATH=$PWD/src/images
-export YUI_ROOT=/Users/vk/CMS/yui/
+# Here we can set all settings
+export DAS_CONFIG=$PWD/dasconfig.json
 export DAS_LOG=$PWD/das2go.log
 
 usage(){
@@ -23,7 +19,7 @@ fi
 # helper function to wait for MongoDB appearance
 # it will incrementally increase waiting time with 20 iterations (~3minute)
 start_das(){
-    nohup das_server 2>&1 1>& $DAS_LOG < /dev/null &
+    nohup das_server $DAS_CONFIG 2>&1 1>& $DAS_LOG < /dev/null &
 }
 stop_das(){
     echo "Stop DAS service..."
