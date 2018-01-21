@@ -313,7 +313,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	limit, err := strconv.Atoi(r.FormValue("limit"))
 	if err != nil {
-		limit = 10
+		limit = 50
 	}
 	idx, err := strconv.Atoi(r.FormValue("idx"))
 	if err != nil {
