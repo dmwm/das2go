@@ -139,7 +139,7 @@ type MongoConnection struct {
 func (m *MongoConnection) Connect() *mgo.Session {
 	var err error
 	if m.Session == nil {
-		m.Session, err = mgo.Dial(config.Uri())
+		m.Session, err = mgo.Dial(config.Config.Uri)
 		if err != nil {
 			panic(err)
 		}

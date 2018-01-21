@@ -7,63 +7,49 @@ package config
 
 import (
 	"encoding/json"
-	"os"
-	"strings"
+	"fmt"
+	"io/ioutil"
 
-	"github.com/dmwm/das2go/utils"
 	logs "github.com/sirupsen/logrus"
 )
 
-// Configuration structure
+// Configuration stores DAS configuration parameters
 type Configuration struct {
-	Uri      string
-	Services []string
+	Port          int      `json:"port"`          // DAS port number
+	Uri           string   `json:"uri"`           // DAS mongodb URI
+	Services      []string `json:"services"`      // DAS services
+	UrlQueueLimit int32    `json:"urlQueueLimit"` // DAS url queue limit
+	UrlRetry      int      `json:"urlRetry"`      // DAS url retry number
+	Templates     string   `json:"templates"`     // location of DAS templates
+	Jscripts      string   `json:"jscripts"`      // location of DAS JavaScript files
+	Images        string   `json:"images"`        // location of DAS images
+	Styles        string   `json:"styles"`        // location of DAS CSS styles
+	YuiRoot       string   `json:"yuiRoot"`       // location of YUI ROOT
+	Hkey          string   `json:"hkey"`          // DAS HKEY file
+	Base          string   `json:"base"`          // DAS base path
+	DbsInstances  []string `json:"dbsInstances"`  // list of DBS instances
+	Views         []string `json:"views"`         // list of supported views
+	Verbose       int      `json:"verbose"`       // verbosity level
 }
 
-// global config object
-var _config Configuration
+// global variables
+var Config Configuration
 
-// ParseConfig function to parse configuration file
-func ParseConfig() Configuration {
-	var fname string
-	for _, item := range os.Environ() {
-		value := strings.Split(item, "=")
-		if value[0] == "DAS_CONFIG" {
-			fname = value[1]
-			break
-		}
-	}
-	if fname == "" {
-		panic("DAS_CONFIG environment variable is not set")
-	}
-	if utils.WEBSERVER > 0 {
-		logs.Info("DAS_CONFIG: ", fname)
-	}
-	file, _ := os.Open(fname)
-	decoder := json.NewDecoder(file)
-	conf := Configuration{}
-	err := decoder.Decode(&conf)
+// String returns string representation of DAS Config
+func (c *Configuration) String() string {
+	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s yui=%s hkey=%s base=%s dbs=%v views=%v>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.YuiRoot, c.Hkey, c.Base, c.DbsInstances, c.Views)
+}
+
+func ParseConfig(configFile string) error {
+	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{"configFile": configFile}).Fatal("Unable to read", err)
+		return err
 	}
-	if utils.WEBSERVER > 0 {
-		logs.Info("DAS configuration: ", conf)
+	err = json.Unmarshal(data, &Config)
+	if err != nil {
+		logs.WithFields(logs.Fields{"configFile": configFile}).Fatal("Unable to parse", err)
+		return err
 	}
-	return conf
-}
-
-// Uri function extracts URI from configuration
-func Uri() string {
-	if _config.Uri == "" {
-		_config = ParseConfig()
-	}
-	return _config.Uri
-}
-
-// Services function extracts URI from configuration
-func Services() []string {
-	if len(_config.Services) == 0 {
-		_config = ParseConfig()
-	}
-	return _config.Services
+	return nil
 }

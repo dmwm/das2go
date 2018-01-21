@@ -1,4 +1,19 @@
 {
-"Uri":"mongodb://localhost:8230",
-"Services": ["combined","conddb","dashboard","dbs3","mcm","phedex","reqmgr2","runregistry","sitedb2"]
+    "uri":"mongodb://localhost:8230",
+    "base": "/das",
+    "port": 8212,
+    "services": ["combined","conddb","dashboard","dbs3","mcm","phedex","reqmgr2","runregistry","sitedb2"],
+    "urlQueueLimit": 1000,
+    "urlRetry": 3,
+    "templates": "/Users/vk/Work/Languages/Go/gopath/src/github.com/dmwm/das2go/templates",
+    "jscripts": "/Users/vk/Work/Languages/Go/gopath/src/github.com/dmwm/das2go/js",
+    "styles": "/Users/vk/Work/Languages/Go/gopath/src/github.com/dmwm/das2go/css",
+    "images": "/Users/vk/Work/Languages/Go/gopath/src/github.com/dmwm/das2go/images",
+    "yuiRoot": "/Users/vk/CMS/yui",
+    "dbsInstances": ["prod/global", "prod/phys01", "prod/phys02", "prod/phys03"],
+    "views": ["list", "plain", "table", "json", "xml"],
+    "X509_USER_KEY": "/Users/vk/.globus/userkey.pem",
+    "X509_USER_CERT": "/Users/vk/.globus/usercert.pem",
+    "hkey": "",
+    "verbose": 0
 }

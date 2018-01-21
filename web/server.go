@@ -15,8 +15,6 @@ package web
 import (
 	"fmt"
 	"net/http"
-	"os"
-	"strings"
 	"time"
 
 	"github.com/dmwm/cmsauth"
@@ -25,66 +23,57 @@ import (
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
 	logs "github.com/sirupsen/logrus"
+
+	// import _ "net/http/pprof" is profiler, see https://golang.org/pkg/net/http/pprof/
+
+	_ "net/http/pprof"
 )
 
-// import _ "net/http/pprof" is profiler, see https://golang.org/pkg/net/http/pprof/
-import _ "net/http/pprof"
-
+// Config describes DAS server configuration
 // global variables used in this module
 var _dasmaps dasmaps.DASMaps
-var _tdir, _top, _bottom, _search, _cards, _hiddenCards, _base, _port string
+var _top, _bottom, _search, _cards, _hiddenCards string
 var _cmsAuth cmsauth.CMSAuth
-var _dbses []string
 
 // Server is proxy server. It defines /fetch public interface
-func Server(port, afile string) {
-	_port = port
-	logs.Info("server port ", port)
-	var tcss, tjs, timg, tyui string
-	for _, item := range os.Environ() {
-		val := strings.Split(item, "=")
-		if val[0] == "YUI_ROOT" {
-			tyui = val[1]
-		} else if val[0] == "DAS_TMPLPATH" {
-			_tdir = val[1]
-		} else if val[0] == "DAS_JSPATH" {
-			tjs = val[1]
-		} else if val[0] == "DAS_CSSPATH" {
-			tcss = val[1]
-		} else if val[0] == "DAS_IMAGESPATH" {
-			timg = val[1]
-		}
+func Server(configFile string) {
+	err := config.ParseConfig(configFile)
+	if err != nil {
+		panic(err)
 	}
+	utils.VERBOSE = config.Config.Verbose
+	utils.UrlQueueLimit = config.Config.UrlQueueLimit
+	utils.UrlRetry = config.Config.UrlRetry
+	logs.Info(config.Config.String())
 	// init CMS Authentication module
-	_cmsAuth.Init(afile)
+	if config.Config.Hkey != "" {
+		_cmsAuth.Init(config.Config.Hkey)
+	}
 
 	// DAS templates
-	_base = "/das"
-	_dbses = []string{"prod/global", "prod/phys01", "prod/phys02", "prod/phys03", "prod/caf"}
 	tmplData := make(map[string]interface{})
-	tmplData["Base"] = _base
+	tmplData["Base"] = config.Config.Base
 	tmplData["Time"] = time.Now()
 	tmplData["Input"] = ""
-	tmplData["DBSinstance"] = _dbses[0]
+	tmplData["DBSinstance"] = config.Config.DbsInstances[0]
 	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
-	tmplData["DBSes"] = _dbses
+	tmplData["DBSes"] = config.Config.DbsInstances
 	tmplData["CardClass"] = "show"
 	tmplData["Version"] = utils.VERSION
 	var templates DASTemplates
-	_top = templates.Top(_tdir, tmplData)
-	_bottom = templates.Bottom(_tdir, tmplData)
-	_search = templates.SearchForm(_tdir, tmplData)
-	_cards = templates.Cards(_tdir, tmplData)
+	_top = templates.Top(config.Config.Templates, tmplData)
+	_bottom = templates.Bottom(config.Config.Templates, tmplData)
+	_search = templates.SearchForm(config.Config.Templates, tmplData)
+	_cards = templates.Cards(config.Config.Templates, tmplData)
 	tmplData["CardClass"] = "hide"
-	_hiddenCards = templates.Cards(_tdir, tmplData)
+	_hiddenCards = templates.Cards(config.Config.Templates, tmplData)
 
 	// load DAS Maps if necessary
 	if len(_dasmaps.Services()) == 0 {
 		logs.Info("Load DAS maps")
 		_dasmaps.LoadMaps("mapping", "db")
-		services := config.Services()
-		if len(services) > 0 {
-			_dasmaps.AssignServices(services)
+		if len(config.Config.Services) > 0 {
+			_dasmaps.AssignServices(config.Config.Services)
 		}
 		logs.Info("DAS services ", _dasmaps.Services())
 		logs.Info("DAS keys ", _dasmaps.DASKeys())
@@ -96,12 +85,12 @@ func Server(port, afile string) {
 	mongo.CreateIndexes("das", "merge", indexes)
 
 	// assign handlers
-	http.Handle("/das/css/", http.StripPrefix("/das/css/", http.FileServer(http.Dir(tcss))))
-	http.Handle("/das/js/", http.StripPrefix("/das/js/", http.FileServer(http.Dir(tjs))))
-	http.Handle("/das/images/", http.StripPrefix("/das/images/", http.FileServer(http.Dir(timg))))
-	http.Handle("/das/yui/", http.StripPrefix("/das/yui/", http.FileServer(http.Dir(tyui))))
-	http.HandleFunc(fmt.Sprintf("%s/", _base), AuthHandler)
-	err := http.ListenAndServe(":"+port, nil)
+	http.Handle("/das/css/", http.StripPrefix("/das/css/", http.FileServer(http.Dir(config.Config.Styles))))
+	http.Handle("/das/js/", http.StripPrefix("/das/js/", http.FileServer(http.Dir(config.Config.Jscripts))))
+	http.Handle("/das/images/", http.StripPrefix("/das/images/", http.FileServer(http.Dir(config.Config.Images))))
+	http.Handle("/das/yui/", http.StripPrefix("/das/yui/", http.FileServer(http.Dir(config.Config.YuiRoot))))
+	http.HandleFunc(fmt.Sprintf("%s/", config.Config.Base), AuthHandler)
+	err = http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), nil)
 	// NOTE: later this can be replaced with secure connection
 	// replace ListenAndServe(addr string, handler Handler)
 	// with TLS function

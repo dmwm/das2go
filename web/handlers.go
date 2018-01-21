@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/das"
 	"github.com/dmwm/das2go/dasmaps"
 	"github.com/dmwm/das2go/dasql"
@@ -114,7 +115,7 @@ func dasError(query, msg string) string {
 	tmplData["Error"] = msg
 	tmplData["Query"] = query
 	var templates DASTemplates
-	page := templates.DASError(_tdir, tmplData)
+	page := templates.DASError(config.Config.Templates, tmplData)
 	return _top + _search + _hiddenCards + page + _bottom
 }
 
@@ -156,11 +157,13 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 // AuthHandler authenticate incoming requests and route them to appropriate handler
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
 	// check if server started with hkey file (auth is required)
-	status := _cmsAuth.CheckAuthnAuthz(r.Header)
-	if !status {
-		msg := "You are not allowed to access this resource"
-		http.Error(w, msg, http.StatusForbidden)
-		return
+	if config.Config.Hkey != "" {
+		status := _cmsAuth.CheckAuthnAuthz(r.Header)
+		if !status {
+			msg := "You are not allowed to access this resource"
+			http.Error(w, msg, http.StatusForbidden)
+			return
+		}
 	}
 	arr := strings.Split(r.URL.Path, "/")
 	path := arr[len(arr)-1]
@@ -208,8 +211,8 @@ func FAQHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Operators"] = []string{"=", "between", "last", "in"}
 	tmplData["Daskeys"] = []string{}
 	tmplData["Aggregators"] = []string{}
-	tmplData["Guide"] = templates.Guide(_tdir, tmplData)
-	page := templates.FAQ(_tdir, tmplData)
+	tmplData["Guide"] = templates.Guide(config.Config.Templates, tmplData)
+	page := templates.FAQ(config.Config.Templates, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
 }
@@ -224,7 +227,7 @@ func KeysHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData := make(map[string]interface{})
 	tmplData["Keys"] = _dasmaps.DASKeys()
 	tmplData["Examples"] = examples()
-	page := templates.Keys(_tdir, tmplData)
+	page := templates.Keys(config.Config.Templates, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
 }
@@ -240,7 +243,7 @@ func ApisHandler(w http.ResponseWriter, r *http.Request) {
 	var templates DASTemplates
 	tmplData := make(map[string]interface{})
 	tmplData["Record"] = _dasmaps.FindApiRecord(system, api).ToHtml()
-	page := templates.ApiRecord(_tdir, tmplData)
+	page := templates.ApiRecord(config.Config.Templates, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
 }
@@ -257,9 +260,9 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	queries := das.ProcessingQueries()
 	tmplData["Queries"] = strings.Join(queries, "\n")
 	tmplData["NQueries"] = len(queries)
-	tmplData["Base"] = _base
+	tmplData["Base"] = config.Config.Base
 	tmplData["NGo"] = runtime.NumGoroutine()
-	page := templates.Status(_tdir, tmplData)
+	page := templates.Status(config.Config.Templates, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
 }
@@ -272,12 +275,12 @@ func ServicesHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	var templates DASTemplates
 	tmplData := make(map[string]interface{})
-	tmplData["DBSList"] = _dbses
+	tmplData["DBSList"] = config.Config.DbsInstances
 	tmplData["Systems"] = _dasmaps.Services()
-	tmplData["Base"] = _base
+	tmplData["Base"] = config.Config.Base
 	tmplData["Rows"] = keysrows()
 	tmplData["Apis"] = apisrows()
-	page := templates.Services(_tdir, tmplData)
+	page := templates.Services(config.Config.Templates, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
 }
@@ -338,7 +341,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				response["Reason"] = err
 				response["PID"] = pid
 				var templates DASTemplates
-				msg := templates.DASRequest(_tdir, response)
+				msg := templates.DASRequest(config.Config.Templates, response)
 				w.Write([]byte(_top + _search + _hiddenCards + msg + _bottom))
 				return
 			}
@@ -394,10 +397,10 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			presentationMap := _dasmaps.PresentationMap()
 			page = PresentData(path, dasquery, data, presentationMap, nres, idx, limit)
 		} else {
-			tmplData["Base"] = _base
+			tmplData["Base"] = config.Config.Base
 			tmplData["PID"] = pid
-			page = parseTmpl(_tdir, "check_pid.tmpl", tmplData)
-			page += fmt.Sprintf("<script>setTimeout('ajaxCheckPid(\"%s\", \"request\", \"%s\", \"%s\", \"%s\", \"%d\")', %d)</script>", _base, query, inst, pid, 2500, 2500)
+			page = parseTmpl(config.Config.Templates, "check_pid.tmpl", tmplData)
+			page += fmt.Sprintf("<script>setTimeout('ajaxCheckPid(\"%s\", \"request\", \"%s\", \"%s\", \"%s\", \"%d\")', %d)</script>", config.Config.Base, query, inst, pid, 2500, 2500)
 		}
 		if ajax == "" {
 			w.Write([]byte(_top + _search + _hiddenCards + page + _bottom))

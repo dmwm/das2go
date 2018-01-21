@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"html/template"
 	"path/filepath"
+
+	"github.com/dmwm/das2go/config"
 )
 
 // consume list of templates and release their full path counterparts
@@ -46,7 +48,7 @@ func (q DASTemplates) Top(tdir string, tmplData map[string]interface{}) string {
 	if q.top != "" {
 		return q.top
 	}
-	q.top = parseTmpl(_tdir, "top.tmpl", tmplData)
+	q.top = parseTmpl(config.Config.Templates, "top.tmpl", tmplData)
 	return q.top
 }
 
@@ -55,7 +57,7 @@ func (q DASTemplates) Bottom(tdir string, tmplData map[string]interface{}) strin
 	if q.bottom != "" {
 		return q.bottom
 	}
-	q.bottom = parseTmpl(_tdir, "bottom.tmpl", tmplData)
+	q.bottom = parseTmpl(config.Config.Templates, "bottom.tmpl", tmplData)
 	return q.bottom
 }
 
@@ -64,7 +66,7 @@ func (q DASTemplates) SearchForm(tdir string, tmplData map[string]interface{}) s
 	if q.searchForm != "" {
 		return q.searchForm
 	}
-	q.searchForm = parseTmpl(_tdir, "searchform.tmpl", tmplData)
+	q.searchForm = parseTmpl(config.Config.Templates, "searchform.tmpl", tmplData)
 	return q.searchForm
 }
 
@@ -74,7 +76,7 @@ func (q DASTemplates) Cards(tdir string, tmplData map[string]interface{}) string
 	if q.cards != "" {
 		return q.cards
 	}
-	q.cards = parseTmpl(_tdir, "cards.tmpl", tmplData)
+	q.cards = parseTmpl(config.Config.Templates, "cards.tmpl", tmplData)
 	return q.cards
 }
 
@@ -83,7 +85,7 @@ func (q DASTemplates) FAQ(tdir string, tmplData map[string]interface{}) string {
 	if q.top != "" {
 		return q.top
 	}
-	q.top = parseTmpl(_tdir, "faq.tmpl", tmplData)
+	q.top = parseTmpl(config.Config.Templates, "faq.tmpl", tmplData)
 	return q.top
 }
 
@@ -92,7 +94,7 @@ func (q DASTemplates) Guide(tdir string, tmplData map[string]interface{}) string
 	if q.top != "" {
 		return q.top
 	}
-	q.top = parseTmpl(_tdir, "dbsql_vs_dasql.tmpl", tmplData)
+	q.top = parseTmpl(config.Config.Templates, "dbsql_vs_dasql.tmpl", tmplData)
 	return q.top
 }
 
@@ -101,7 +103,7 @@ func (q DASTemplates) ApiRecord(tdir string, tmplData map[string]interface{}) st
 	if q.top != "" {
 		return q.top
 	}
-	q.top = parseTmpl(_tdir, "api_record.tmpl", tmplData)
+	q.top = parseTmpl(config.Config.Templates, "api_record.tmpl", tmplData)
 	return q.top
 }
 
@@ -110,7 +112,7 @@ func (q DASTemplates) Keys(tdir string, tmplData map[string]interface{}) string 
 	if q.top != "" {
 		return q.top
 	}
-	q.top = parseTmpl(_tdir, "keys.tmpl", tmplData)
+	q.top = parseTmpl(config.Config.Templates, "keys.tmpl", tmplData)
 	return q.top
 }
 
@@ -119,7 +121,7 @@ func (q DASTemplates) Services(tdir string, tmplData map[string]interface{}) str
 	if q.top != "" {
 		return q.top
 	}
-	q.top = parseTmpl(_tdir, "services.tmpl", tmplData)
+	q.top = parseTmpl(config.Config.Templates, "services.tmpl", tmplData)
 	return q.top
 }
 
@@ -128,7 +130,7 @@ func (q DASTemplates) Pagination(tdir string, tmplData map[string]interface{}) s
 	if q.searchForm != "" {
 		return q.searchForm
 	}
-	q.searchForm = parseTmpl(_tdir, "pagination.tmpl", tmplData)
+	q.searchForm = parseTmpl(config.Config.Templates, "pagination.tmpl", tmplData)
 	return q.searchForm
 }
 
@@ -137,7 +139,7 @@ func (q DASTemplates) DASRequest(tdir string, tmplData map[string]interface{}) s
 	if q.dasError != "" {
 		return q.dasError
 	}
-	q.dasError = parseTmpl(_tdir, "request.tmpl", tmplData)
+	q.dasError = parseTmpl(config.Config.Templates, "request.tmpl", tmplData)
 	return q.dasError
 }
 
@@ -146,7 +148,7 @@ func (q DASTemplates) DASError(tdir string, tmplData map[string]interface{}) str
 	if q.dasError != "" {
 		return q.dasError
 	}
-	q.dasError = parseTmpl(_tdir, "error.tmpl", tmplData)
+	q.dasError = parseTmpl(config.Config.Templates, "error.tmpl", tmplData)
 	return q.dasError
 }
 
@@ -155,6 +157,6 @@ func (q DASTemplates) Status(tdir string, tmplData map[string]interface{}) strin
 	if q.dasError != "" {
 		return q.dasError
 	}
-	q.dasError = parseTmpl(_tdir, "status.tmpl", tmplData)
+	q.dasError = parseTmpl(config.Config.Templates, "status.tmpl", tmplData)
 	return q.dasError
 }

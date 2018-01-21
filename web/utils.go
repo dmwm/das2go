@@ -10,6 +10,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/das"
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
@@ -201,7 +202,7 @@ func pagination(base, query string, nres, startIdx, limit int) string {
 	tmplData["PrevUrl"] = makeUrl(url, "prev", startIdx, limit, nres)
 	tmplData["NextUrl"] = makeUrl(url, "next", startIdx, limit, nres)
 	tmplData["LastUrl"] = makeUrl(url, "last", startIdx, limit, nres)
-	page := templates.Pagination(_tdir, tmplData) // _tdir defined in web/server.go
+	page := templates.Pagination(config.Config.Templates, tmplData)
 	line := "<hr class=\"line\" />"
 	return fmt.Sprintf("%s%s<br/>", page, line)
 }
