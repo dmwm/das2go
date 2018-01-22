@@ -263,7 +263,7 @@ func (LocalAPIs) L_dbs3_blocks4tier_dates(dasquery dasql.DASQuery) []mongo.DASRe
 	tier := spec["tier"].(string)
 	dates := spec["date"].([]string)
 	mind := utils.UnixTime(dates[0])
-	maxd := utils.UnixTime(dates[1])
+	maxd := utils.UnixTime(dates[1]) + 24*60*60 // inclusive date
 	api := "blocks"
 	furl := fmt.Sprintf("%s/%s?data_tier_name=%s&min_cdate=%d&max_cdate=%d", dbsUrl(inst), api, tier, mind, maxd)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
