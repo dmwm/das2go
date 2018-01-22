@@ -371,6 +371,9 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					webkey := uirow["ui"].(string)
 					attrs := strings.Split(daskey, ".")
 					attr := strings.Join(attrs[1:], ".")
+					if attr == "replica.site" {
+						attr = "replica.node" // Phedex record contains replica.node instead of replica.site
+					}
 					value := ExtractValue(rec, attr)
 					if daskey == "lumi.number" {
 						value = joinLumis(strings.Split(value, ","))
@@ -429,18 +432,15 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 }
 
 // ExtractValue helper function to extract value from das record
-// relies on type switching, see
-// https://golang.org/doc/effective_go.html#type_switch
 func ExtractValue(data mongo.DASRecord, daskey string) string {
 	var out []string
 	keys := strings.Split(daskey, ".")
 	count := 1
 	for _, key := range keys {
-		value := data[key]
-		if value == nil {
+		val := data[key]
+		switch value := val.(type) {
+		case nil:
 			return ""
-		}
-		switch value := value.(type) {
 		case string:
 			out = append(out, value)
 		case int:
@@ -466,7 +466,7 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 				}
 				out = append(out, value)
 			}
-			break
+			return strings.Join(out, ", ")
 		default:
 			if count != len(keys) {
 				return ExtractValue(value.(mongo.DASRecord), strings.Join(keys[count:], "."))
