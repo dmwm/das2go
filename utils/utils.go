@@ -224,22 +224,60 @@ func List2Set(arr []string) []string {
 }
 
 // TimeFormat helper function to convert Unix time into human readable form
-func TimeFormat(ts float64) string {
+func TimeFormat(ts interface{}) string {
+	var err error
+	var t int64
+	switch v := ts.(type) {
+	case int:
+		t = int64(v)
+	case int32:
+		t = int64(v)
+	case int64:
+		t = v
+	case float64:
+		t = int64(v)
+	case string:
+		t, err = strconv.ParseInt(v, 0, 64)
+		if err != nil {
+			return fmt.Sprintf("%v", ts)
+		}
+	default:
+		return fmt.Sprintf("%v", ts)
+	}
 	layout := "2006-01-02 15:04:05"
-	return time.Unix(int64(ts), 0).UTC().Format(layout)
+	return time.Unix(t, 0).UTC().Format(layout)
 }
 
 // SizeFormat helper function to convert size into human readable form
-func SizeFormat(val float64) string {
+func SizeFormat(val interface{}) string {
+	var size float64
+	var err error
+	switch v := val.(type) {
+	case int:
+		size = float64(v)
+	case int32:
+		size = float64(v)
+	case int64:
+		size = float64(v)
+	case float64:
+		size = v
+	case string:
+		size, err = strconv.ParseFloat(v, 64)
+		if err != nil {
+			return fmt.Sprintf("%v", val)
+		}
+	default:
+		return fmt.Sprintf("%v", val)
+	}
 	base := 1000. // CMS convert is to use power of 10
 	xlist := []string{"", "KB", "MB", "GB", "TB", "PB"}
 	for _, vvv := range xlist {
-		if val < base {
-			return fmt.Sprintf("%3.1f%s", val, vvv)
+		if size < base {
+			return fmt.Sprintf("%v (%3.1f%s)", val, size, vvv)
 		}
-		val = val / base
+		size = size / base
 	}
-	return fmt.Sprintf("%3.1f%s", val, xlist[len(xlist)])
+	return fmt.Sprintf("%v (%3.1f%s)", val, size, xlist[len(xlist)])
 }
 
 // IsInt helper function to test if given value is integer
