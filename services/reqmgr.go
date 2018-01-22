@@ -210,10 +210,10 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	var rurl string
 	for _, v := range ids {
 		if len(v) == 32 {
-			rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/%s/configFile", base, v)
+			rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
 			urls = append(urls, rurl)
 		} else {
-			rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/%s", base, v)
+			rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s", base, v)
 			rurls = append(rurls, rurl)
 		}
 	}
