@@ -83,10 +83,18 @@ func GetValue(rec DASRecord, key string) interface{} {
 		case DASRecord:
 			val = v
 		case []DASRecord:
-			val = v[0]
+			if len(v) > 0 {
+				val = v[0]
+			} else {
+				return ""
+			}
 		case []interface{}:
 			vvv := v[0]
-			val = vvv.(DASRecord)
+			if vvv != nil {
+				val = vvv.(DASRecord)
+			} else {
+				return ""
+			}
 		default:
 			msg := fmt.Errorf("DAS ERROR GetValue unknown type=%T, data=%v", v, v)
 			panic(msg)
@@ -103,11 +111,8 @@ func GetValue(rec DASRecord, key string) interface{} {
 // GetStringValue function to get string value from DAS record for given key
 func GetStringValue(rec DASRecord, key string) (string, error) {
 	value := GetValue(rec, key)
-	val, ok := value.(string)
-	if ok {
-		return val, nil
-	}
-	return "", fmt.Errorf("Unable to cast value for key '%s'", key)
+	val := fmt.Sprintf("%v", value)
+	return val, nil
 }
 
 // GetIntValue function to get int value from DAS record for given key
