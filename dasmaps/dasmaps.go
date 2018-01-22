@@ -321,6 +321,13 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 						} else {
 							specKeysMatches[urn] = []bool{true}
 						}
+					} else if urn == "datasetlist" && spec != nil {
+						// TMP: exception in Go we can't use certain patterns
+						// e.g. in datasetlist we have [/a/b/c,/a/b/c] one while
+						// in Go it should be [/a/b/c /a/b/c]
+						// Once we switch to Go compeletely we need this exception
+						condRecords = append(condRecords, rec)
+						specKeysMatches[urn] = []bool{true}
 					}
 				}
 			}
