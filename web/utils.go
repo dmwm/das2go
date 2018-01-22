@@ -332,8 +332,8 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			fkey := item["key"].(string)
 			res := item["result"].(mongo.DASRecord)
 			var val string
-			if strings.HasSuffix(fkey, "size") {
-				val = fmt.Sprintf("%s(%s)=%v<br/>\n", fname, fkey, utils.SizeFormat(res["value"].(float64)))
+			if strings.Contains(fkey, "_size") {
+				val = fmt.Sprintf("%s(%s)=%v<br/>\n", fname, fkey, utils.SizeFormat(res["value"]))
 			} else {
 				val = fmt.Sprintf("%s(%s)=%v<br/>\n", fname, fkey, res["value"])
 			}
@@ -448,7 +448,7 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 		case nil:
 			return ""
 		case float64, int, int64, string:
-			if key == "size" || key == "bytes" {
+			if key == "size" || key == "bytes" || key == "file_size" {
 				out = append(out, utils.SizeFormat(value))
 			} else if strings.HasSuffix(key, "time") {
 				out = append(out, utils.TimeFormat(value))
