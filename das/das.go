@@ -80,10 +80,16 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		}
 		// return only valid files by default
 		if strings.Contains(base, "file") && !utils.InList("status", skeys) {
+			// do not use valid files for filechildren/fileparents
 			if !strings.Contains(base, "filechildren") && !strings.Contains(base, "fileparents") {
 				if _, ok := vals["validFileOnly"]; !ok {
 					vals.Add("validFileOnly", "1")
 				}
+			}
+			// for files API when file is used as parameter we look-up file regardless of its validity
+			fields := dasquery.Fields
+			if len(skeys) == 1 && skeys[0] == "file" && len(fields) == 1 && fields[0] == "file" {
+				vals.Del("validFileOnly")
 			}
 		}
 	}
