@@ -279,7 +279,9 @@ func getRecords(rec mongo.DASRecord, pkey string) []mongo.DASRecord {
 		}
 	case []interface{}:
 		for _, r := range records {
-			out = append(out, r.(mongo.DASRecord))
+			if r != nil {
+				out = append(out, r.(mongo.DASRecord))
+			}
 		}
 	}
 	return out
