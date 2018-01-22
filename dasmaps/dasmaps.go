@@ -359,7 +359,7 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 		allMatches := specKeysMatches[rec["urn"].(string)]
 		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) && len(allMatches) >= len(keys) {
 			// adjust DBS instance
-			rec["url"] = strings.Replace(rec["url"].(string), "prod/global", inst, 1)
+			//             rec["url"] = strings.Replace(rec["url"].(string), "prod/global", inst, 1)
 			if utils.VERBOSE > 0 && utils.WEBSERVER > 0 {
 				logs.WithFields(logs.Fields{
 					"System":        rec["system"],
@@ -368,6 +368,7 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 					"spec keys":     keys,
 					"required keys": rkeys,
 					"all api keys":  akeys,
+					"instance":      inst,
 				}).Info(utils.Color(utils.GREEN, "DAS match"))
 			}
 			if utils.VERBOSE > 1 && utils.WEBSERVER == 0 {
