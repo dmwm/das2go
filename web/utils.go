@@ -146,7 +146,11 @@ func showRecord(data mongo.DASRecord) string {
 			switch r := data[pkey].(type) {
 			case []interface{}:
 				vvv := data[pkey].([]interface{})
-				rec = vvv[i].(mongo.DASRecord)
+				if len(vvv) > 0 && len(vvv) >= i {
+					rec = vvv[i].(mongo.DASRecord)
+				} else {
+					rec = nil
+				}
 			case mongo.DASRecord:
 				rec = r
 			}
@@ -155,7 +159,9 @@ func showRecord(data mongo.DASRecord) string {
 		} else {
 			rec = data
 		}
-		out = append(out, fmt.Sprintf("<pre style=\"background-color:%s;color:white;\"><div class=\"code\"><pre>%s</pre></div></pre><br/>", bkg, rec.ToString()))
+		if rec != nil {
+			out = append(out, fmt.Sprintf("<pre style=\"background-color:%s;color:white;\"><div class=\"code\"><pre>%s</pre></div></pre><br/>", bkg, rec.ToString()))
+		}
 	}
 	val := fmt.Sprintf("<div class=\"hide\" id=\"id_%s\"><div class=\"code\">%s</div></div>", rid, strings.Join(out, "\n"))
 	wrap := fmt.Sprintf("<a href=\"javascript:ToggleTag('id_%s', 'link_%s')\" id=\"link_%s\">show</a>", rid, rid, rid)
@@ -284,7 +290,7 @@ func datasetPattern(q string) string {
 	if strings.Contains(q, "dataset=") && strings.Contains(q, "*") {
 		msg := fmt.Sprintf("By default DAS show dataset with <b>VALID</b> status. ")
 		msg += fmt.Sprintf("To query all datasets regardless of their status please use")
-		msg += fmt.Sprintf("<span class=\"example\">dataset %s status=*</span> query", q)
+		msg += fmt.Sprintf("<div class=\"example\">dataset %s status=*</div> query", q)
 		msg += fmt.Sprintf(" or use proper status value, e.g. PRODUCTION")
 		return fmt.Sprintf("<div>%s</div><br/>", msg)
 	}
@@ -441,14 +447,8 @@ func ExtractValue(data mongo.DASRecord, daskey string) string {
 		switch value := val.(type) {
 		case nil:
 			return ""
-		case string:
-			out = append(out, value)
-		case int:
-			out = append(out, fmt.Sprintf("%d", value))
-		case int64:
-			out = append(out, fmt.Sprintf("%d", value))
-		case float64:
-			if key == "size" {
+		case float64, int, int64, string:
+			if key == "size" || key == "bytes" {
 				out = append(out, utils.SizeFormat(value))
 			} else if strings.HasSuffix(key, "time") {
 				out = append(out, utils.TimeFormat(value))
