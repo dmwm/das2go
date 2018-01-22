@@ -231,6 +231,12 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		}
 	}
 
+	// TMP: exception, DAS maps use jobsummary-plot-or-table dashboard api, while we need
+	// jobsummary-plot-or-table2 which returns JSON
+	if strings.HasSuffix(base, "jobsummary-plot-or-table") {
+		base += "2" // add 2 at the end
+	}
+
 	// Encode all arguments for url
 	args := vals.Encode()
 	if len(vals) < len(skeys) {
