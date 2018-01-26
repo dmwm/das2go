@@ -425,6 +425,12 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			out = append(out, lumiEvents(item))
 		}
 		out = append(out, dasLinks(path, inst, pval, links))
+		if pkey == "dataset.name" {
+			arr := strings.Split(pval, "/")
+			primds := arr[1]
+			link := fmt.Sprintf("<a href=\"https://cms-gen-dev.cern.ch/xsdb/?searchQuery=DAS=%s\">XSDB</a>", primds)
+			out = append(out, link)
+		}
 		out = append(out, colServices(services))
 		out = append(out, showRecord(item))
 		if jdx != len(data) {
