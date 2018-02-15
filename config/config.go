@@ -30,6 +30,7 @@ type Configuration struct {
 	DbsInstances  []string `json:"dbsInstances"`  // list of DBS instances
 	Views         []string `json:"views"`         // list of supported views
 	Verbose       int      `json:"verbose"`       // verbosity level
+	DasMaps       string   `json:"dasmaps"`       // location of dasmaps
 }
 
 // global variables

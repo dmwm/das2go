@@ -397,19 +397,20 @@ func (m *DASMaps) LoadMaps(dbname, dbcoll string) {
 // LoadMapsFromFile loads DAS maps from github or local file
 func (m *DASMaps) LoadMapsFromFile() {
 	githubUrl := "https://raw.githubusercontent.com/dmwm/DASMaps/master/js/das_maps_dbs_prod.js"
-	var home string
-	for _, item := range os.Environ() {
-		value := strings.Split(item, "=")
-		if value[0] == "HOME" {
-			home = value[1]
-			break
+	if utils.DASMAPS == "" {
+		for _, item := range os.Environ() {
+			value := strings.Split(item, "=")
+			if value[0] == "HOME" {
+				utils.DASMAPS = value[1]
+				break
+			}
 		}
 	}
-	dname := fmt.Sprintf("%s/.dasmaps", home)
+	dname := fmt.Sprintf("%s/.dasmaps", utils.DASMAPS)
 	if _, err := os.Stat(dname); err != nil {
 		os.Mkdir(dname, 0777)
 	}
-	fname := fmt.Sprintf("%s/.dasmaps/das_maps_dbs_prod.js", home)
+	fname := fmt.Sprintf("%s/.dasmaps/das_maps_dbs_prod.js", utils.DASMAPS)
 	stats, err := os.Stat(fname)
 	if err != nil || time.Now().Unix()-stats.ModTime().Unix() > 24*60*60 {
 		if utils.VERBOSE > 0 {
@@ -428,6 +429,9 @@ func (m *DASMaps) LoadMapsFromFile() {
 			msg := fmt.Sprintf("Unable to get DAS maps from github, error %s", resp.Error)
 			panic(msg)
 		}
+	}
+	if utils.VERBOSE > 0 {
+		fmt.Println("Load dasmaps", fname)
 	}
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {

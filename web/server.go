@@ -44,6 +44,7 @@ func Server(configFile string) {
 	utils.VERBOSE = config.Config.Verbose
 	utils.UrlQueueLimit = config.Config.UrlQueueLimit
 	utils.UrlRetry = config.Config.UrlRetry
+	utils.DASMAPS = config.Config.DasMaps
 	logs.Info(config.Config.String())
 	// init CMS Authentication module
 	if config.Config.Hkey != "" {

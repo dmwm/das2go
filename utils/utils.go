@@ -31,6 +31,9 @@ var VERBOSE int
 // WEBSERVER declares that web server will run, it is set in main
 var WEBSERVER int
 
+// DASMAPS specifies location of dasmaps
+var DASMAPS string
+
 // Stack helper function to return Stack
 func Stack() string {
 	trace := make([]byte, 2048)
