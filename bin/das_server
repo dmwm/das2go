@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 if [ $# -eq 0 ] || [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
     echo "Usage: das_server <configuration>"
@@ -9,7 +9,7 @@ config=$1
 das2go_server(){
     # check if das2go is running
     for (( ; ; )); do
-        local pid=`ps auxwww | egrep das2go | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
+        local pid=`ps auxwww | egrep "das2go -config" | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
         if [ -z "$pid" ]; then
             local tstamp=`date "+%Y/%m/%d %H:%M:%S"`
             echo "$tstamp das2go is not running, restart"
