@@ -10,7 +10,6 @@ das2go_server(){
     # check if das2go is running
     for (( ; ; )); do
         local pid=`ps auxwww | egrep das2go | grep -v grep | awk 'BEGIN{ORS=" "} {print $2}'`
-        echo "PID=$pid"
         if [ -z "$pid" ]; then
             local tstamp=`date "+%Y/%m/%d %H:%M:%S"`
             echo "$tstamp das2go is not running, restart"
