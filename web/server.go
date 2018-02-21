@@ -13,6 +13,7 @@ package web
 //              http://golang.org/pkg/html/template/
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/http"
 	"time"
@@ -91,13 +92,26 @@ func Server(configFile string) {
 	http.Handle("/das/images/", http.StripPrefix("/das/images/", http.FileServer(http.Dir(config.Config.Images))))
 	http.Handle("/das/yui/", http.StripPrefix("/das/yui/", http.FileServer(http.Dir(config.Config.YuiRoot))))
 	http.HandleFunc(fmt.Sprintf("%s/", config.Config.Base), AuthHandler)
-	err = http.ListenAndServe(fmt.Sprintf(":%d", config.Config.Port), nil)
-	// NOTE: later this can be replaced with secure connection
-	// replace ListenAndServe(addr string, handler Handler)
-	// with TLS function
-	// ListenAndServeTLS(addr string, certFile string, keyFile string, handler
-	// Handler)
+	addr := fmt.Sprintf(":%d", config.Config.Port)
+	if config.Config.ServerCrt != "" && config.Config.ServerKey != "" {
+		//start HTTPS server which require user certificates
+		server := &http.Server{
+			Addr: addr,
+			TLSConfig: &tls.Config{
+				ClientAuth: tls.RequestClientCert,
+			},
+		}
+		logs.WithFields(logs.Fields{"Addr": addr}).Info("Starting HTTPs server")
+		err = server.ListenAndServeTLS(config.Config.ServerCrt, config.Config.ServerKey)
+	} else {
+		// Start server without user certificates
+		logs.WithFields(logs.Fields{"Addr": addr}).Info("Starting HTTP server")
+		err = http.ListenAndServe(addr, nil)
+	}
+
 	if err != nil {
-		logs.Fatal("ListenAndServe: ", err)
+		logs.WithFields(logs.Fields{
+			"Error": err,
+		}).Fatal("ListenAndServe: ")
 	}
 }
