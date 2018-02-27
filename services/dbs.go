@@ -300,6 +300,14 @@ func (LocalAPIs) L_dbs3_datasetlist(dasquery dasql.DASQuery) []mongo.DASRecord {
 	api := "datasetlist"
 	furl := fmt.Sprintf("%s/%s", dbsUrl(inst), api)
 	spec["detail"] = 1 // get detailed results from DBS
+	spec["dataset_access_type"] = "VALID"
+	s := spec["status"]
+	if s != nil {
+		status := s.(string)
+		if status != "" {
+			spec["dataset_access_type"] = status
+		}
+	}
 	args, err := json.Marshal(spec)
 	if err != nil {
 		msg := fmt.Sprintf("DBS datasetlist unable to marshal the spec %v, error %v", spec, err)
