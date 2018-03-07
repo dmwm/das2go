@@ -154,16 +154,56 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 	return response
 }
 
+// UserDN function parses user Distinguished Name (DN) from client's HTTP request
+func UserDN(r *http.Request) string {
+	var names []interface{}
+	for _, cert := range r.TLS.PeerCertificates {
+		for _, name := range cert.Subject.Names {
+			switch v := name.Value.(type) {
+			case string:
+				names = append(names, v)
+			}
+		}
+	}
+	if len(names) == 0 {
+		return "not-found"
+	}
+	parts := names[:7]
+	return fmt.Sprintf("/DC=%s/DC=%s/OU=%s/OU=%s/CN=%s/CN=%s/CN=%s", parts...)
+}
+
+// custom logic for CMS authentication, users may implement their own logic here
+func auth(r *http.Request) bool {
+
+	userDN := UserDN(r)
+	match := utils.InList(userDN, _userDNs)
+	if !match {
+		logs.WithFields(logs.Fields{
+			"User DN": userDN,
+		}).Error("Auth userDN not found in SiteDB")
+	}
+	return match
+}
+
 // AuthHandler authenticate incoming requests and route them to appropriate handler
 func AuthHandler(w http.ResponseWriter, r *http.Request) {
-	// check if server started with hkey file (auth is required)
-	if config.Config.Hkey != "" {
-		status := _cmsAuth.CheckAuthnAuthz(r.Header)
-		if !status {
-			msg := "You are not allowed to access this resource"
-			http.Error(w, msg, http.StatusForbidden)
-			return
+	/*
+		// check if server started with hkey file (auth is required)
+		if config.Config.Hkey != "" {
+			status := _cmsAuth.CheckAuthnAuthz(r.Header)
+			if !status {
+				msg := "You are not allowed to access this resource"
+				http.Error(w, msg, http.StatusForbidden)
+				return
+			}
 		}
+	*/
+	// check if server started with hkey file (auth is required)
+	status := auth(r)
+	if !status {
+		msg := "You are not allowed to access this resource"
+		http.Error(w, msg, http.StatusForbidden)
+		return
 	}
 	arr := strings.Split(r.URL.Path, "/")
 	path := arr[len(arr)-1]

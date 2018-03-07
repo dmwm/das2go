@@ -14,6 +14,7 @@ package web
 
 import (
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -35,6 +36,48 @@ import (
 var _dasmaps dasmaps.DASMaps
 var _top, _bottom, _search, _cards, _hiddenCards string
 var _cmsAuth cmsauth.CMSAuth
+
+// global variable which we initialize once
+var _userDNs []string
+
+// helper function to get userDNs from sitedb
+func userDNs() []string {
+	var out []string
+	rurl := "https://cmsweb.cern.ch/sitedb/data/prod/people"
+	resp := utils.FetchResponse(rurl, "")
+	if resp.Error != nil {
+		logs.WithFields(logs.Fields{
+			"Error": resp.Error,
+		}).Error("Unable to fetch SiteDB records", resp.Error)
+		return out
+	}
+	var rec map[string]interface{}
+	err := json.Unmarshal(resp.Data, &rec)
+	if err != nil {
+		logs.WithFields(logs.Fields{
+			"Error": err,
+		}).Error("Unable to unmarshal response", err)
+		return out
+	}
+	desc := rec["desc"].(map[string]interface{})
+	headers := desc["columns"].([]interface{})
+	var idx int
+	for i, h := range headers {
+		if h.(string) == "dn" {
+			idx = i
+			break
+		}
+	}
+	values := rec["result"].([]interface{})
+	for _, item := range values {
+		val := item.([]interface{})
+		v := val[idx]
+		if v != nil {
+			out = append(out, v.(string))
+		}
+	}
+	return out
+}
 
 // Server is proxy server. It defines /fetch public interface
 func Server(configFile string) {
@@ -94,6 +137,8 @@ func Server(configFile string) {
 	http.HandleFunc(fmt.Sprintf("%s/", config.Config.Base), AuthHandler)
 	addr := fmt.Sprintf(":%d", config.Config.Port)
 	if config.Config.ServerCrt != "" && config.Config.ServerKey != "" {
+		// init userDNs
+		_userDNs = userDNs()
 		//start HTTPS server which require user certificates
 		server := &http.Server{
 			Addr: addr,
