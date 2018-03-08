@@ -176,7 +176,7 @@ func UserDN(r *http.Request) string {
 func auth(r *http.Request) bool {
 
 	userDN := UserDN(r)
-	match := utils.InList(userDN, _userDNs)
+	match := utils.InList(userDN, _userDNs.DNs)
 	if !match {
 		logs.WithFields(logs.Fields{
 			"User DN": userDN,

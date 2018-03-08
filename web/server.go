@@ -37,8 +37,14 @@ var _dasmaps dasmaps.DASMaps
 var _top, _bottom, _search, _cards, _hiddenCards string
 var _cmsAuth cmsauth.CMSAuth
 
+// UserDNs structure holds information about user DNs
+type UserDNs struct {
+	DNs  []string
+	Time time.Time
+}
+
 // global variable which we initialize once
-var _userDNs []string
+var _userDNs UserDNs
 
 // helper function to get userDNs from sitedb
 func userDNs() []string {
@@ -137,8 +143,16 @@ func Server(configFile string) {
 	http.HandleFunc(fmt.Sprintf("%s/", config.Config.Base), AuthHandler)
 	addr := fmt.Sprintf(":%d", config.Config.Port)
 	if config.Config.ServerCrt != "" && config.Config.ServerKey != "" {
-		// init userDNs
-		_userDNs = userDNs()
+		// init userDNs and update it periodically
+		_userDNs = UserDNs{DNs: userDNs(), Time: time.Now()}
+		go func() {
+			for {
+				d := time.Duration(config.Config.UpdateDNs) * time.Minute
+				logs.WithFields(logs.Fields{"Time": time.Now(), "Duration": d}).Info("userDNs are updated")
+				time.Sleep(d) // sleep for next iteration
+				_userDNs = UserDNs{DNs: userDNs(), Time: time.Now()}
+			}
+		}()
 		//start HTTPS server which require user certificates
 		server := &http.Server{
 			Addr: addr,
