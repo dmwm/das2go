@@ -147,7 +147,11 @@ func Server(configFile string) {
 		_userDNs = UserDNs{DNs: userDNs(), Time: time.Now()}
 		go func() {
 			for {
-				d := time.Duration(config.Config.UpdateDNs) * time.Minute
+				interval := config.Config.UpdateDNs
+				if interval == 0 {
+					interval = 60
+				}
+				d := time.Duration(interval) * time.Minute
 				logs.WithFields(logs.Fields{"Time": time.Now(), "Duration": d}).Info("userDNs are updated")
 				time.Sleep(d) // sleep for next iteration
 				_userDNs = UserDNs{DNs: userDNs(), Time: time.Now()}
