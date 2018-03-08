@@ -37,6 +37,7 @@ import (
 var _dasmaps dasmaps.DASMaps
 var _top, _bottom, _search, _cards, _hiddenCards string
 var _cmsAuth cmsauth.CMSAuth
+var _auth bool
 
 // UserDNs structure holds information about user DNs
 type UserDNs struct {
@@ -146,6 +147,7 @@ func Server(configFile string) {
 	_, e1 := os.Stat(config.Config.ServerCrt)
 	_, e2 := os.Stat(config.Config.ServerKey)
 	if e1 == nil && e2 == nil {
+		_auth = true
 		// init userDNs and update it periodically
 		_userDNs = UserDNs{DNs: userDNs(), Time: time.Now()}
 		go func() {
@@ -167,11 +169,12 @@ func Server(configFile string) {
 				ClientAuth: tls.RequestClientCert,
 			},
 		}
-		logs.WithFields(logs.Fields{"Addr": addr}).Info("Starting HTTPs server")
+		logs.WithFields(logs.Fields{"Addr": addr, "Auth": _auth}).Info("Starting HTTPs server")
 		err = server.ListenAndServeTLS(config.Config.ServerCrt, config.Config.ServerKey)
 	} else {
 		// Start server without user certificates
-		logs.WithFields(logs.Fields{"Addr": addr}).Info("Starting HTTP server")
+		_auth = false
+		logs.WithFields(logs.Fields{"Addr": addr, "Auth": _auth}).Info("Starting HTTP server")
 		err = http.ListenAndServe(addr, nil)
 	}
 

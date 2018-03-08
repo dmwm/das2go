@@ -14,7 +14,7 @@
     "views": ["list", "plain", "table", "json", "xml"],
     "X509_USER_KEY": "/Users/vk/.globus/userkey.pem",
     "X509_USER_CERT": "/Users/vk/.globus/usercert.pem",
-    "servercrt": "/opt/certs/server.crt",
+    "servercrt": "/opt/certs/server.crt2",
     "serverkey": "/opt/certs/server.key",
     "hkey": "",
     "updateDNs": 60,
