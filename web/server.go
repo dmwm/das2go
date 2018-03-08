@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/dmwm/cmsauth"
@@ -142,7 +143,9 @@ func Server(configFile string) {
 	http.Handle("/das/yui/", http.StripPrefix("/das/yui/", http.FileServer(http.Dir(config.Config.YuiRoot))))
 	http.HandleFunc(fmt.Sprintf("%s/", config.Config.Base), AuthHandler)
 	addr := fmt.Sprintf(":%d", config.Config.Port)
-	if config.Config.ServerCrt != "" && config.Config.ServerKey != "" {
+	_, e1 := os.Stat(config.Config.ServerCrt)
+	_, e2 := os.Stat(config.Config.ServerKey)
+	if e1 == nil && e2 == nil {
 		// init userDNs and update it periodically
 		_userDNs = UserDNs{DNs: userDNs(), Time: time.Now()}
 		go func() {
