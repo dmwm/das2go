@@ -178,6 +178,9 @@ func UserDN(r *http.Request) string {
 
 // custom logic for CMS authentication, users may implement their own logic here
 func auth(r *http.Request) bool {
+	if !_auth {
+		return true
+	}
 	userDN := UserDN(r)
 	match := utils.InList(userDN, _userDNs.DNs)
 	if !match {
