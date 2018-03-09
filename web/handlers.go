@@ -157,6 +157,10 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 // UserDN function parses user Distinguished Name (DN) from client's HTTP request
 func UserDN(r *http.Request) string {
 	var names []interface{}
+	ndn := "No DN is provided"
+	if r.TLS == nil {
+		return ndn
+	}
 	for _, cert := range r.TLS.PeerCertificates {
 		for _, name := range cert.Subject.Names {
 			switch v := name.Value.(type) {
@@ -166,7 +170,7 @@ func UserDN(r *http.Request) string {
 		}
 	}
 	if len(names) == 0 {
-		return "not-found"
+		return ndn
 	}
 	parts := names[:7]
 	return fmt.Sprintf("/DC=%s/DC=%s/OU=%s/OU=%s/CN=%s/CN=%s/CN=%s", parts...)
@@ -174,11 +178,6 @@ func UserDN(r *http.Request) string {
 
 // custom logic for CMS authentication, users may implement their own logic here
 func auth(r *http.Request) bool {
-	// do not perform authentication when it's set to be false
-	if _auth == false {
-		return true
-	}
-
 	userDN := UserDN(r)
 	match := utils.InList(userDN, _userDNs.DNs)
 	if !match {
