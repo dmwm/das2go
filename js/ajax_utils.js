@@ -22,7 +22,7 @@ function ajaxCheckPid(base, method, input, inst, pid, interval) {
       },
       onSuccess : function(transport) {
         var sec = wait/1000;
-        var msg = ', next check in '+sec.toString()+' sec, please wait..., <a href="/das/">stop</a> request';
+        var msg = ', next check in '+sec.toString()+' sec, please wait..., <a href="/das2go/">stop</a> request';
         // look at transport body and match its content,
         // if check_pid still working on request, call again, otherwise
         // reload the request page

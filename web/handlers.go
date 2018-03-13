@@ -369,7 +369,8 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData := make(map[string]interface{})
 
 	// process requests based on the path
-	if path == "/das" || path == "/das/" {
+	base := config.Config.Base
+	if path == base || path == base+"/" {
 		w.Write([]byte(_top + _search + _cards + _bottom))
 		return
 	}
@@ -421,7 +422,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	das.RemoveExpired(pid)
 	// process given query
 	response := processRequest(dasquery, pid, idx, limit)
-	if path == "/das/cache" || path == "/das/cache/" {
+	if path == base+"/cache" || path == base+"/cache/" {
 		status := response["status"]
 		if status != "ok" {
 			w.Write([]byte(response["pid"].(string)))
@@ -434,7 +435,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(js)
-	} else if path == "/das/request" || path == "/das/request/" {
+	} else if path == base+"/request" || path == base+"/request/" {
 		status := response["status"]
 		var page string
 		if status == "ok" {
