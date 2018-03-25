@@ -437,14 +437,15 @@ func GetBytes(data interface{}) ([]byte, error) {
 }
 
 // LoadExamples loads DAS examples from github or local file
-func LoadExamples(ename string) string {
+func LoadExamples(ename, home string) string {
 	githubUrl := fmt.Sprintf("https://raw.githubusercontent.com/dmwm/das2go/master/examples/%s", ename)
-	var home string
-	for _, item := range os.Environ() {
-		value := strings.Split(item, "=")
-		if value[0] == "HOME" {
-			home = value[1]
-			break
+	if home == "" {
+		for _, item := range os.Environ() {
+			value := strings.Split(item, "=")
+			if value[0] == "HOME" {
+				home = value[1]
+				break
+			}
 		}
 	}
 	dname := fmt.Sprintf("%s/.dasexamples", home)

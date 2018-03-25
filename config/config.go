@@ -31,6 +31,7 @@ type Configuration struct {
 	Views         []string `json:"views"`         // list of supported views
 	Verbose       int      `json:"verbose"`       // verbosity level
 	DasMaps       string   `json:"dasmaps"`       // location of dasmaps
+	DasExamples   string   `json:"dasexamples"`   // location of dasexamples
 	ServerKey     string   `json:"serverkey"`     // server key for https
 	ServerCrt     string   `json:"servercrt"`     // server certificate for https
 	UpdateDNs     int      `json:"updateDNs"`     // interval in minutes to update user DNs
@@ -41,7 +42,7 @@ var Config Configuration
 
 // String returns string representation of DAS Config
 func (c *Configuration) String() string {
-	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s yui=%s hkey=%s base=%s dbs=%v views=%v maps=%v updateDNs=%d crt=%s key=%s>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.YuiRoot, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.UpdateDNs, c.ServerCrt, c.ServerKey)
+	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s yui=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.YuiRoot, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey)
 }
 
 func ParseConfig(configFile string) error {

@@ -51,11 +51,11 @@ func tlsCerts() ([]tls.Certificate, error) {
 			uproxy = fname
 		}
 	}
-	if VERBOSE > 0 {
-		logs.Debug("uproxy ", uproxy)
-		logs.Debug("uckey ", uckey)
-		logs.Debug("ucert ", ucert)
-	}
+	logs.WithFields(logs.Fields{
+		"X509_USER_PROXY": uproxy,
+		"X509_USER_KEY":   uckey,
+		"X509_USER_CERT":  ucert,
+	}).Info("tlsCerts")
 
 	if uproxy == "" && uckey == "" { // user doesn't have neither proxy or user certs
 		return nil, nil

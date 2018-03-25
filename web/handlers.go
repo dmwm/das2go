@@ -101,7 +101,7 @@ func examples() []string {
 		arr := strings.Split(fname, "_")
 		msg := fmt.Sprintf("%s queries:", arr[0])
 		out = append(out, strings.ToTitle(msg))
-		for _, v := range strings.Split(utils.LoadExamples(fname), "\n") {
+		for _, v := range strings.Split(utils.LoadExamples(fname, config.Config.DasExamples), "\n") {
 			e := fmt.Sprintf("%s", v)
 			out = append(out, e)
 		}
