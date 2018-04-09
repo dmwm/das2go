@@ -81,11 +81,18 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		}
 		// adjust summary API with multiple runs
 		if len(fields) > 0 && fields[0] == "summary" && utils.InList("run", skeys) {
-			runs := spec["run"].([]string)
-			minr := runs[0]
-			maxr := runs[len(runs)-1]
-			run := fmt.Sprintf("'%s-%s'", minr, maxr)
-			spec["run"] = run
+			var minr, maxr, run string
+			val := spec["run"]
+			switch r := val.(type) {
+			case []string:
+				minr = r[0]
+				maxr = r[len(r)-1]
+				run = fmt.Sprintf("'%s-%s'", minr, maxr)
+				spec["run"] = run
+			case string:
+				run = r
+				spec["run"] = r
+			}
 			vals.Add("run_num", run)
 		}
 		// return only valid files by default
