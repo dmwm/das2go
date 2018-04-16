@@ -2,7 +2,7 @@ GOPATH:=$(PWD):${GOPATH}
 export GOPATH
 # flags=-ldflags="-s -w"
 flags=-ldflags="-s -w -extldflags -static"
-TAG := $(shell git tag | sort -r | head -n 1)
+TAG := $(shell git tag | sed -e "s,v,,g" | sort -r | head -n 1)
 
 all: build
 
