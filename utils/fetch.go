@@ -265,10 +265,12 @@ func FetchResponse(rurl, args string) ResponseType {
 			}
 		} else {
 			if WEBSERVER == 0 {
-				fmt.Println(Color(PURPLE, "DAS POST"), ColorUrl(rurl), args, time.Now().Sub(startTime))
+				a := fmt.Sprintf("args=%s", args)
+				fmt.Println(Color(PURPLE, "DAS POST"), ColorUrl(rurl), a, time.Now().Sub(startTime))
 			} else {
 				logs.WithFields(logs.Fields{
 					"url":  ColorUrl(rurl),
+					"args": args,
 					"time": time.Now().Sub(startTime),
 				}).Info("DAS POST")
 			}
