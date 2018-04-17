@@ -75,6 +75,10 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	system, _ := dasmap["system"].(string)
 	// Adjust DBS URL wrt dbs instance name from query
 	if system == "dbs" || system == "dbs3" {
+		if utils.WEBSERVER == 1 && !strings.Contains(base, "summaries") {
+			// always get details in web interface except summaries APIs
+			vals.Add("detail", "1")
+		}
 		dbsInst := dasquery.Instance
 		if len(dbsInst) > 0 && dbsInst != "prod/global" {
 			base = strings.Replace(base, "prod/global", dbsInst, -1)
