@@ -75,10 +75,6 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	system, _ := dasmap["system"].(string)
 	// Adjust DBS URL wrt dbs instance name from query
 	if system == "dbs" || system == "dbs3" {
-		if utils.WEBSERVER == 1 && !strings.Contains(base, "summaries") {
-			// always get details in web interface except summaries APIs
-			vals.Add("detail", "1")
-		}
 		dbsInst := dasquery.Instance
 		if len(dbsInst) > 0 && dbsInst != "prod/global" {
 			base = strings.Replace(base, "prod/global", dbsInst, -1)
@@ -102,11 +98,11 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		// return only valid files by default
 		if strings.Contains(base, "file") && !utils.InList("status", skeys) {
 			// do not use valid files for filechildren/fileparents
-			if !strings.Contains(base, "filechildren") && !strings.Contains(base, "fileparents") {
-				if _, ok := vals["validFileOnly"]; !ok {
-					vals.Add("validFileOnly", "1")
-				}
-			}
+			//             if !strings.Contains(base, "filechildren") && !strings.Contains(base, "fileparents") {
+			//                 if _, ok := vals["validFileOnly"]; !ok {
+			//                     vals.Add("validFileOnly", "1")
+			//                 }
+			//             }
 			// for files API when file is used as parameter we look-up file regardless of its validity
 			fields := dasquery.Fields
 			if len(skeys) == 1 && skeys[0] == "file" && len(fields) == 1 && fields[0] == "file" {
@@ -230,8 +226,10 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		case string:
 			// speed-up query by NOT fetching details
 			if system == "dbs3" && key == "detail" {
-				if urn == "file4DatasetRunLumi" || urn == "files_via_block" {
-					v = "False"
+				if utils.WEBSERVER == 0 {
+					if urn == "file4DatasetRunLumi" || urn == "files_via_block" {
+						v = "False"
+					}
 				}
 			}
 			vvv := v
@@ -585,7 +583,10 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	records, _ = services.MergeDASRecords(dasquery)
 	mongo.Insert("das", "merge", records)
 
-	//     return dasquery.Qhash
+	// insert das.record=0 into DAS Merge collection to indicate that we done with request
+	spec := bson.M{"das.record": 0, "qhash": dasquery.Qhash}
+	recs := mongo.Get("das", "cache", spec, 0, 1)
+	mongo.Insert("das", "merge", recs)
 }
 
 // helper function to modify spec with given filter
@@ -639,7 +640,7 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 		idx = 0
 		limit = -1
 	}
-	spec := bson.M{"qhash": pid}
+	spec := bson.M{"qhash": pid, "das.record": 1}
 	skeys := filters["sort"]
 	if len(filters) > 0 {
 		var afilters []string
@@ -665,9 +666,9 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 	if len(aggrs) > 0 {
 		data = aggregateAll(data, aggrs)
 	}
-	// Get DAS status from cache collection
+	// Get DAS status from merge collection
 	spec = bson.M{"qhash": pid, "das.record": 0}
-	dasData := mongo.Get("das", "cache", spec, 0, 1)
+	dasData := mongo.Get("das", "merge", spec, 0, 1)
 	status, err := mongo.GetStringValue(dasData[0], "das.status")
 	if err != nil {
 		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), emptyData
@@ -736,7 +737,7 @@ func aggregate(data []mongo.DASRecord, agg, key string, ch chan mongo.DASRecord)
 
 // Count gets number of records for given DAS query qhash
 func Count(pid string) int {
-	spec := bson.M{"qhash": pid}
+	spec := bson.M{"qhash": pid, "das.record": 1}
 	return mongo.Count("das", "merge", spec)
 }
 
@@ -756,7 +757,7 @@ func GetTimestamp(pid string) int64 {
 func CheckDataReadiness(pid string) bool {
 	espec := bson.M{"$gt": time.Now().Unix()}
 	spec := bson.M{"qhash": pid, "das.expire": espec, "das.record": 0, "das.status": "ok"}
-	nrec := mongo.Count("das", "cache", spec)
+	nrec := mongo.Count("das", "merge", spec)
 	if nrec == 1 {
 		return true
 	}
