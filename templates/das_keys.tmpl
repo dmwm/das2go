@@ -1,0 +1,28 @@
+<!-- das_keys.tmpl -->
+<div>
+{{range .daskeys}}
+<ul>
+<li>
+    <b>{{.Key}}</b> {{.Description}}
+<br/>
+Relationships:
+<ul style="list-style: none;margin-left: 0;padding-left: 1em;">
+    {{range $rel := .Relationships}}
+    <li>&raquo;&nbsp;{{$rel}}</li>
+    {{end}}
+</ul>
+
+<br/>
+Examples:
+<ul style="list-style: none;margin-left: 0;padding-left: 1em;">
+    {{range $example := .Examples}}
+    <li>&raquo;&nbsp;<em>{{$example}}</em></li>
+    {{end}}
+</ul>
+</li>
+
+</ul>
+{{end}}
+</div>
+<br />
+<!-- end of das_keys.tmpl -->
