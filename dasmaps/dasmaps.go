@@ -22,6 +22,13 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+type DASKeysMap struct {
+	Key           string
+	Description   string
+	Examples      []string
+	Relationships []string
+}
+
 // DASMaps structure holds all information about DAS records
 type DASMaps struct {
 	records       []mongo.DASRecord
@@ -30,6 +37,7 @@ type DASMaps struct {
 	presentations mongo.DASRecord
 	daskeys       []string
 	systemApis    map[string][]string
+	daskeysMaps   []DASKeysMap
 }
 
 // FindApiRecord finds DAS API record
@@ -183,6 +191,60 @@ func (m *DASMaps) PresentationMap() mongo.DASRecord {
 		}
 	}
 	return m.presentations
+}
+
+// DASKeysMap provides presentation map of DAS maps
+func (m *DASMaps) DASKeysMaps() []DASKeysMap {
+	if len(m.daskeysMaps) != 0 {
+		return m.daskeysMaps
+	}
+	var value string
+	for _, rec := range m.records {
+		rtype := rec["type"]
+		if val, ok := rtype.(string); ok {
+			value = val
+		} else {
+			continue
+		}
+		if value == "presentation" {
+			prec := rec["presentation"].(mongo.DASRecord)
+			for key, rows := range prec {
+				var desc string
+				var examples, rels []string
+				for _, row := range rows.([]interface{}) {
+					v := row.(mongo.DASRecord)
+					exit := false
+					if r, ok := v["description"]; ok {
+						desc = r.(string)
+						exit = true
+					}
+					if r, ok := v["examples"]; ok {
+						for _, i := range r.([]interface{}) {
+							examples = append(examples, i.(string))
+						}
+					}
+					if r, ok := v["link"]; ok {
+						for _, i := range r.([]interface{}) {
+							l := i.(mongo.DASRecord)
+							name := l["name"].(string)
+							n := strings.ToLower(name)
+							query := l["query"].(string)
+							q := strings.Replace(query, "%s", key, -1)
+							rel := fmt.Sprintf("%s via query %s", n, q)
+							rels = append(rels, rel)
+						}
+					}
+					if exit {
+						break
+					}
+				}
+				dmap := DASKeysMap{Key: key, Description: desc, Examples: examples, Relationships: rels}
+				m.daskeysMaps = append(m.daskeysMaps, dmap)
+			}
+			break
+		}
+	}
+	return m.daskeysMaps
 }
 
 // FindNotations provides notation maps for given system
