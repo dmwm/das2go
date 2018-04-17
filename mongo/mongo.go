@@ -16,6 +16,7 @@ import (
 
 	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/utils"
+	logs "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -183,7 +184,10 @@ func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 		err = c.Find(spec).Skip(idx).All(&out)
 	}
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{
+			"Error": err,
+		}).Error("Unable to get records")
+		//         panic(err)
 	}
 	return out
 }
@@ -196,7 +200,17 @@ func GetSorted(dbname, collname string, spec bson.M, skeys []string) []DASRecord
 	c := s.DB(dbname).C(collname)
 	err := c.Find(spec).Sort(skeys...).All(&out)
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{
+			"Error": err,
+		}).Warn("Unable to sort records")
+		// try to fetch all unsorted data
+		err = c.Find(spec).All(&out)
+		if err != nil {
+			logs.WithFields(logs.Fields{
+				"Error": err,
+			}).Error("Unable to find records")
+			out = append(out, DASErrorRecord(fmt.Sprintf("%v", err)))
+		}
 	}
 	return out
 }
