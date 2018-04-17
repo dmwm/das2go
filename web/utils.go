@@ -202,7 +202,11 @@ func pagination(base, query string, nres, startIdx, limit int) string {
 	url := fmt.Sprintf("%s?input=%s", base, query)
 	tmplData := make(map[string]interface{})
 	tmplData["StartIndex"] = fmt.Sprintf("%d", startIdx)
-	tmplData["EndIndex"] = fmt.Sprintf("%d", startIdx+limit)
+	if nres > startIdx+limit {
+		tmplData["EndIndex"] = fmt.Sprintf("%d", startIdx+limit)
+	} else {
+		tmplData["EndIndex"] = fmt.Sprintf("%d", nres)
+	}
 	tmplData["Total"] = fmt.Sprintf("%d", nres)
 	tmplData["FirstUrl"] = makeUrl(url, "first", startIdx, limit, nres)
 	tmplData["PrevUrl"] = makeUrl(url, "prev", startIdx, limit, nres)
