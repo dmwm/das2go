@@ -40,7 +40,7 @@ func parseTmpl(tdir, tmpl string, data interface{}) string {
 
 // DASTemplates structure
 type DASTemplates struct {
-	top, bottom, searchForm, cards, dasError string
+	top, bottom, searchForm, cards, dasError, dasKeys string
 }
 
 // Top method for DASTemplates structure
@@ -159,4 +159,13 @@ func (q DASTemplates) Status(tdir string, tmplData map[string]interface{}) strin
 	}
 	q.dasError = parseTmpl(config.Config.Templates, "status.tmpl", tmplData)
 	return q.dasError
+}
+
+// DasKeys method for DASTemplates structure
+func (q DASTemplates) DasKeys(tdir string, tmplData map[string]interface{}) string {
+	if q.dasKeys != "" {
+		return q.dasKeys
+	}
+	q.dasKeys = parseTmpl(config.Config.Templates, "das_keys.tmpl", tmplData)
+	return q.dasKeys
 }
