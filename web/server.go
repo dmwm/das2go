@@ -16,6 +16,7 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"net/http"
 	"os"
 	"time"
@@ -87,6 +88,15 @@ func userDNs() []string {
 	return out
 }
 
+// helper function to get DAS keys description
+func daskeysDescription() string {
+	tmplData := make(map[string]interface{})
+	tmplData["daskeys"] = _dasmaps.DASKeysMaps()
+	var templates DASTemplates
+	desc := templates.DasKeys(config.Config.Templates, tmplData)
+	return desc
+}
+
 // Server is proxy server. It defines /fetch public interface
 func Server(configFile string) {
 	err := config.ParseConfig(configFile)
@@ -103,24 +113,6 @@ func Server(configFile string) {
 		_cmsAuth.Init(config.Config.Hkey)
 	}
 
-	// DAS templates
-	tmplData := make(map[string]interface{})
-	tmplData["Base"] = config.Config.Base
-	tmplData["Time"] = time.Now()
-	tmplData["Input"] = ""
-	tmplData["DBSinstance"] = config.Config.DbsInstances[0]
-	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
-	tmplData["DBSes"] = config.Config.DbsInstances
-	tmplData["CardClass"] = "show"
-	tmplData["Version"] = utils.VERSION
-	var templates DASTemplates
-	_top = templates.Top(config.Config.Templates, tmplData)
-	_bottom = templates.Bottom(config.Config.Templates, tmplData)
-	_search = templates.SearchForm(config.Config.Templates, tmplData)
-	_cards = templates.Cards(config.Config.Templates, tmplData)
-	tmplData["CardClass"] = "hide"
-	_hiddenCards = templates.Cards(config.Config.Templates, tmplData)
-
 	// load DAS Maps if necessary
 	if len(_dasmaps.Services()) == 0 {
 		logs.Info("Load DAS maps")
@@ -131,6 +123,25 @@ func Server(configFile string) {
 		logs.Info("DAS services ", _dasmaps.Services())
 		logs.Info("DAS keys ", _dasmaps.DASKeys())
 	}
+
+	// DAS templates
+	tmplData := make(map[string]interface{})
+	tmplData["Base"] = config.Config.Base
+	tmplData["Time"] = time.Now()
+	tmplData["Input"] = ""
+	tmplData["DBSinstance"] = config.Config.DbsInstances[0]
+	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
+	tmplData["DBSes"] = config.Config.DbsInstances
+	tmplData["CardClass"] = "show"
+	tmplData["Version"] = utils.VERSION
+	tmplData["Daskeys"] = template.HTML(daskeysDescription())
+	var templates DASTemplates
+	_top = templates.Top(config.Config.Templates, tmplData)
+	_bottom = templates.Bottom(config.Config.Templates, tmplData)
+	_search = templates.SearchForm(config.Config.Templates, tmplData)
+	_cards = templates.Cards(config.Config.Templates, tmplData)
+	tmplData["CardClass"] = "hide"
+	_hiddenCards = templates.Cards(config.Config.Templates, tmplData)
 
 	// create all required indexes in das.cache, das.merge collections
 	indexes := []string{"qhash", "das.expire", "das.record", "dataset.name", "file.name"}
