@@ -201,7 +201,11 @@ func pagination(base, query string, nres, startIdx, limit int) string {
 	var templates DASTemplates
 	url := fmt.Sprintf("%s?input=%s", base, query)
 	tmplData := make(map[string]interface{})
-	tmplData["StartIndex"] = fmt.Sprintf("%d", startIdx)
+	if nres > 0 {
+		tmplData["StartIndex"] = fmt.Sprintf("%d", startIdx+1)
+	} else {
+		tmplData["StartIndex"] = fmt.Sprintf("%d", startIdx)
+	}
 	if nres > startIdx+limit {
 		tmplData["EndIndex"] = fmt.Sprintf("%d", startIdx+limit)
 	} else {
@@ -291,12 +295,11 @@ func lumiEvents(rec mongo.DASRecord) string {
 
 // helper function to check dataset patterns and return user-based message
 func datasetPattern(q string) string {
-	if strings.Contains(q, "dataset=") && strings.Contains(q, "*") {
-		msg := fmt.Sprintf("By default DAS show dataset with <b>VALID</b> status. ")
-		msg += fmt.Sprintf("To query all datasets regardless of their status please use")
-		msg += fmt.Sprintf("<div class=\"example\">dataset %s status=*</div> query", q)
-		msg += fmt.Sprintf(" or use proper status value, e.g. PRODUCTION")
-		return fmt.Sprintf("<div>%s</div><br/>", msg)
+	if strings.Contains(q, "dataset=") && strings.Contains(q, "*") && !strings.Contains(q, "status") {
+		msg := fmt.Sprintf("By default DAS shows dataset with <b>VALID</b> status. ")
+		msg += fmt.Sprintf("To query datasets regardless of their status please use")
+		msg += fmt.Sprintf("<div class=\"example\">dataset status=* %s</div>", q)
+		return fmt.Sprintf("<div>%s</div>", msg)
 	}
 	return ""
 }
@@ -431,9 +434,11 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 		out = append(out, dasLinks(path, inst, pval, links))
 		if pkey == "dataset.name" {
 			arr := strings.Split(pval, "/")
-			primds := arr[1]
-			link := fmt.Sprintf("<a href=\"https://cms-gen-dev.cern.ch/xsdb/?searchQuery=DAS=%s\">XSDB</a>", primds)
-			out = append(out, link)
+			if len(arr) > 1 {
+				primds := arr[1]
+				link := fmt.Sprintf("<a href=\"https://cms-gen-dev.cern.ch/xsdb/?searchQuery=DAS=%s\">XSDB</a>", primds)
+				out = append(out, link)
+			}
 		}
 		out = append(out, colServices(services))
 		out = append(out, showRecord(item))
