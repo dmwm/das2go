@@ -389,7 +389,8 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				response["PID"] = pid
 				var templates DASTemplates
 				msg := templates.DASRequest(config.Config.Templates, response)
-				w.Write([]byte(_top + _search + _hiddenCards + msg + _bottom))
+				//                 w.Write([]byte(_top + _search + _hiddenCards + msg + _bottom))
+				w.Write([]byte(msg))
 				return
 			}
 			response["status"] = "fail"
