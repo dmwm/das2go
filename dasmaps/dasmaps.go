@@ -418,11 +418,16 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 				fmt.Printf("DAS map lookup, system %s, urn %s, lookup %v, required keys %v, all keys %v\n", rec["system"].(string), rec["urn"].(string), lkeys, rkeys, akeys)
 			}
 		}
-		if system != "" && rec["system"] != system { // requested system does not match the record one
+		if system != "" && rec["system"].(string) != system { // requested system does not match the record one
 			if system != rec["system"] {
 				continue
 			}
 		}
+		// check that system is supported
+		if !utils.InList(rec["system"].(string), m.Services()) {
+			continue
+		}
+
 		// this dict keep track of matched keys for given urn
 		// we need that our selection keys not exceed number of possible matched keys
 		allMatches := specKeysMatches[rec["urn"].(string)]
