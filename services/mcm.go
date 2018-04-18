@@ -41,11 +41,23 @@ func McMUnmarshal(api string, data []byte) []mongo.DASRecord {
 	records := loadMcMData(api, data)
 	var out []mongo.DASRecord
 	var r []interface{}
-	for _, rec := range records {
-		nrec := make(mongo.DASRecord)
-		r = append(r, rec["results"])
-		nrec["mcm"] = r
-		out = append(out, nrec)
+	if api == "dataset4mcm" {
+		for _, rec := range records {
+			for _, v := range rec {
+				for _, r := range v.([]interface{}) {
+					nrec := make(mongo.DASRecord)
+					nrec["name"] = r
+					out = append(out, nrec)
+				}
+			}
+		}
+	} else {
+		for _, rec := range records {
+			nrec := make(mongo.DASRecord)
+			r = append(r, rec["results"])
+			nrec["mcm"] = r
+			out = append(out, nrec)
+		}
 	}
 	return out
 }
