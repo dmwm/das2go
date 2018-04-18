@@ -119,6 +119,14 @@ func dasError(query, msg string) string {
 	return _top + _search + _hiddenCards + page + _bottom
 }
 
+// helper function to form no results response
+func dasZero() string {
+	tmplData := make(map[string]interface{})
+	var templates DASTemplates
+	page := templates.DASZeroResults(config.Config.Templates, tmplData)
+	return page
+}
+
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
 	// defer function will propagate panic message to higher level
 	defer utils.ErrPropagate("processRequest")
@@ -442,8 +450,12 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		if status == "ok" {
 			data := response["data"].([]mongo.DASRecord)
 			nres := response["nresults"].(int)
-			presentationMap := _dasmaps.PresentationMap()
-			page = PresentData(path, dasquery, data, presentationMap, nres, idx, limit)
+			if nres == 0 {
+				page = dasZero()
+			} else {
+				presentationMap := _dasmaps.PresentationMap()
+				page = PresentData(path, dasquery, data, presentationMap, nres, idx, limit)
+			}
 		} else {
 			tmplData["Base"] = config.Config.Base
 			tmplData["PID"] = pid
