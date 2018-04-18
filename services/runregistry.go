@@ -15,6 +15,7 @@ import (
 	"fmt"
 
 	"github.com/dmwm/das2go/mongo"
+	logs "github.com/sirupsen/logrus"
 )
 
 // helper function to load RunRegistry data stream
@@ -34,6 +35,11 @@ func loadRunRegistryData(api string, data []byte) []mongo.DASRecord {
 	// err := json.Unmarshal(data, &out)
 	if err != nil {
 		msg := fmt.Sprintf("RunRegistry unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
+		logs.WithFields(logs.Fields{
+			"Error": err,
+			"Api":   api,
+			"data":  string(data),
+		}).Error("RunRegistry unable to unmarshal the data")
 		out = append(out, mongo.DASErrorRecord(msg))
 	}
 	return out

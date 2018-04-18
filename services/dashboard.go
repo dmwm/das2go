@@ -11,6 +11,7 @@ import (
 	"fmt"
 
 	"github.com/dmwm/das2go/mongo"
+	logs "github.com/sirupsen/logrus"
 )
 
 // helper function to load Dashboard data stream
@@ -20,6 +21,11 @@ func loadDashboardData(api string, data []byte) []mongo.DASRecord {
 	err := json.Unmarshal(data, &rec)
 	if err != nil {
 		msg := fmt.Sprintf("Dashboard unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
+		logs.WithFields(logs.Fields{
+			"Error": err,
+			"Api":   api,
+			"data":  string(data),
+		}).Error("Dashboard unable to unmarshal the data")
 		out = append(out, mongo.DASErrorRecord(msg))
 	}
 	val := rec["summaries"]
