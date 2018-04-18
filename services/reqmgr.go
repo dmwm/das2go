@@ -95,10 +95,21 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
 		return out
 	} else if api == "datasetByPrepID" {
 		for _, rec := range records {
-			for _, v := range rec {
-				crec := make(mongo.DASRecord)
-				crec["name"] = v
-				out = append(out, crec)
+			for _, rows := range rec {
+				for _, rrr := range rows.([]interface{}) {
+					for _, o := range rrr.(map[string]interface{}) {
+						a := o.(map[string]interface{})
+						v := a["OutputDatasets"]
+						switch datasets := v.(type) {
+						case []interface{}:
+							for _, d := range datasets {
+								crec := make(mongo.DASRecord)
+								crec["name"] = d
+								out = append(out, crec)
+							}
+						}
+					}
+				}
 			}
 		}
 		return out
@@ -196,9 +207,9 @@ func (LocalAPIs) L_reqmgr2_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
 }
 
 // L_reqmgr_configs reqmgr APIs
-func (LocalAPIs) L_reqmgr_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
-	return reqmgrConfigs(dasquery)
-}
+// func (LocalAPIs) L_reqmgr_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
+//     return reqmgrConfigs(dasquery)
+// }
 
 func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
