@@ -403,6 +403,10 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 						*/
 						if webkey == "Site type" {
 							value = fmt.Sprintf("<b><span %s>TAPE</span> no user access</b>", red)
+						} else if webkey == "Status" && value != "VALID" {
+							value = fmt.Sprintf("<span %s>%s</span>", red, value)
+						} else if webkey == "Tag" && value == "UNKNOWN" {
+							value = fmt.Sprintf("<span %s>%s</span>", red, value)
 						} else if webkey == "Dataset presence" || webkey == "Block presence" || webkey == "Block completion" || webkey == "File-replica presence" {
 							color := red
 							if strings.HasPrefix(value, "100") {
