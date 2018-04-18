@@ -147,7 +147,9 @@ func showRecord(data mongo.DASRecord) string {
 			case []interface{}:
 				vvv := data[pkey].([]interface{})
 				if len(vvv) > 0 && len(vvv) >= i {
-					rec = vvv[i].(mongo.DASRecord)
+					if vvv[i] != nil {
+						rec = vvv[i].(mongo.DASRecord)
+					}
 				} else {
 					rec = nil
 				}
@@ -367,6 +369,9 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			//             records := item[key].([]interface{})
 			uiRows := pmap[key].([]interface{})
 			for idx, elem := range records {
+				if elem == nil {
+					continue
+				}
 				rec := elem.(mongo.DASRecord)
 				if v, ok := rec["error"]; ok {
 					erec := fmt.Sprintf("<b>Error:</b> <span %s>%s</span>", red, v)
