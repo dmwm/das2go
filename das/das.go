@@ -511,7 +511,13 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 			case string:
 				args = fmt.Sprintf("{\"filter\": {\"number\": \">= %s and <= %s\"}}", v, v)
 			case []string:
-				args = fmt.Sprintf("{\"filter\": {\"number\": \">= %s and <= %s\"}}", v[0], v[len(v)-1])
+				cond := fmt.Sprintf("= %s", v[0])
+				for i, vvv := range v {
+					if i > 0 {
+						cond = fmt.Sprintf("%s or = %s", cond, vvv)
+					}
+				}
+				args = fmt.Sprintf("{\"filter\": {\"number\": \"%s\"}}", cond)
 			}
 			furl, _ = dmap["url"].(string)
 			// Adjust url to use custom columns
@@ -529,10 +535,15 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 		if furl == "local_api" && !dasmaps.MapInList(dmap, localApis) {
 			localApis = append(localApis, dmap)
 		} else if furl != "" {
+			// adjust conddb URL, remove Runs= empty parater since it leads to an error
+			if strings.Contains(furl, "Runs=&") {
+				furl = strings.Replace(furl, "Runs=&", "", -1)
+			}
 			if _, ok := urls[furl]; !ok {
 				urls[furl] = args
 			}
 		}
+
 		srv := fmt.Sprintf("%s:%s", dmap["system"], dmap["urn"])
 		srvs = append(srvs, srv)
 		lkeys := strings.Split(dmap["lookup"].(string), ",")
