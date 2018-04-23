@@ -489,12 +489,18 @@ func (m *DASMaps) LoadMapsFromFile() {
 			// write data to local area
 			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)
 			if err != nil {
-				msg := fmt.Sprintf("Unable to write DAS maps, error %s", err)
-				panic(msg)
+				logs.WithFields(logs.Fields{
+					"Time":  time.Now(),
+					"Error": err,
+				}).Error("Unable to write DAS maps")
+				return
 			}
 		} else {
-			msg := fmt.Sprintf("Unable to get DAS maps from github, error %s", resp.Error)
-			panic(msg)
+			logs.WithFields(logs.Fields{
+				"Time":  time.Now(),
+				"Error": resp.Error,
+			}).Error("Unable to get DAS maps from github")
+			return
 		}
 	}
 	if utils.VERBOSE > 0 {
@@ -502,8 +508,12 @@ func (m *DASMaps) LoadMapsFromFile() {
 	}
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {
-		msg := fmt.Sprintf("Unable to read DAS maps from %s, error %s", fname, err)
-		panic(msg)
+		logs.WithFields(logs.Fields{
+			"Time":  time.Now(),
+			"File":  fname,
+			"Error": err,
+		}).Error("Unable to read DAS maps")
+		return
 	}
 	records := string(data)
 	for _, rec := range strings.Split(records, "\n") {

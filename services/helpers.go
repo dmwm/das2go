@@ -16,6 +16,7 @@ import (
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
+	logs "github.com/sirupsen/logrus"
 )
 
 // LocalAPIs structure to hold information about local APIs
@@ -125,7 +126,11 @@ func runArgs(dasquery dasql.DASQuery) string {
 		case string:
 			runsArgs = fmt.Sprintf("%s&run_num=%s", runsArgs, value)
 		default:
-			panic(fmt.Sprintf("Unknown type for runs=%s, type=%T", runs, runs))
+			logs.WithFields(logs.Fields{
+				"Runs": runs,
+				"Type": fmt.Sprintf("%T", runs),
+			}).Error("Unknown type")
+			return runsArgs
 		}
 	}
 	return runsArgs
@@ -275,7 +280,10 @@ func phedexNode(site string) string {
 	} else if seMatch {
 		node = fmt.Sprintf("se=%s", site)
 	} else {
-		panic(fmt.Sprintf("ERROR: unable to match site name %s", site))
+		logs.WithFields(logs.Fields{
+			"Site": site,
+		}).Error("unable to match site name")
+		return ""
 	}
 	return node
 }

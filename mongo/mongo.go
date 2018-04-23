@@ -13,6 +13,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"time"
 
 	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/utils"
@@ -97,8 +98,12 @@ func GetValue(rec DASRecord, key string) interface{} {
 				return ""
 			}
 		default:
-			msg := fmt.Errorf("DAS ERROR GetValue unknown type=%T, data=%v", v, v)
-			panic(msg)
+			logs.WithFields(logs.Fields{
+				"Time": time.Now(),
+				"Type": fmt.Sprintf("%T", v),
+				"data": v,
+			}).Error("Unknown type")
+			return ""
 		}
 		if len(keys) == 2 {
 			return GetValue(val, keys[1])
@@ -150,7 +155,6 @@ func (m *MongoConnection) Connect() *mgo.Session {
 			panic(err)
 		}
 		//         m.Session.SetMode(mgo.Monotonic, true)
-		//         m.Session.SetMode(mgo.Monotonic, true)
 		m.Session.SetMode(mgo.Strong, true)
 	}
 	return m.Session.Clone()
@@ -187,7 +191,6 @@ func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 		logs.WithFields(logs.Fields{
 			"Error": err,
 		}).Error("Unable to get records")
-		//         panic(err)
 	}
 	return out
 }
@@ -246,7 +249,7 @@ func GetFilteredSorted(dbname, collname string, spec bson.M, fields, skeys []str
 		}
 	}
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{"Time": time.Now(), "Error": err}).Error("Unable to fetch from MongoDB")
 	}
 	return out
 }
@@ -258,7 +261,12 @@ func Update(dbname, collname string, spec, newdata bson.M) {
 	c := s.DB(dbname).C(collname)
 	err := c.Update(spec, newdata)
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{
+			"Time":  time.Now(),
+			"Error": err,
+			"Spec":  spec,
+			"data":  newdata,
+		}).Error("Unable to update record")
 	}
 }
 
@@ -269,7 +277,11 @@ func Count(dbname, collname string, spec bson.M) int {
 	c := s.DB(dbname).C(collname)
 	nrec, err := c.Find(spec).Count()
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{
+			"Time":  time.Now(),
+			"Error": err,
+			"Spec":  spec,
+		}).Error("Unable to count records")
 	}
 	return nrec
 }
@@ -281,7 +293,11 @@ func Remove(dbname, collname string, spec bson.M) {
 	c := s.DB(dbname).C(collname)
 	_, err := c.RemoveAll(spec)
 	if err != nil && err != mgo.ErrNotFound {
-		panic(err)
+		logs.WithFields(logs.Fields{
+			"Time":  time.Now(),
+			"Error": err,
+			"Spec":  spec,
+		}).Error("Unable to remove records")
 	}
 }
 
@@ -290,7 +306,11 @@ func LoadJsonData(data []byte) DASRecord {
 	r := make(DASRecord)
 	err := json.Unmarshal(data, &r)
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{
+			"Time":  time.Now(),
+			"Error": err,
+			"Data":  string(data),
+		}).Error("Unable to unmarshal records")
 	}
 	return r
 }
@@ -309,7 +329,11 @@ func CreateIndexes(dbname, collname string, keys []string) {
 		}
 		err := c.EnsureIndex(index)
 		if err != nil {
-			panic(err)
+			logs.WithFields(logs.Fields{
+				"Time":  time.Now(),
+				"Error": err,
+				"Index": index,
+			}).Error("Unable to ensure index")
 		}
 	}
 }

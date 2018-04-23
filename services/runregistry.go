@@ -55,7 +55,7 @@ func RunRegistryUnmarshal(api string, data []byte) []mongo.DASRecord {
 				run := rec["number"].(json.Number)
 				v, e := run.Int64()
 				if e == nil {
-					rec["run_number"] = fmt.Sprintf("%d", v)
+					rec["run_number"] = v
 				} else {
 					rec["run_number"] = run
 				}

@@ -187,7 +187,11 @@ func parseLastValue(val string) []string {
 	var t0 int64
 	v, e := strconv.ParseInt(val[:len(val)-1], 10, 64) // parse string into int64
 	if e != nil {
-		panic(e)
+		logs.WithFields(logs.Fields{
+			"Value": val[:len(val)-1],
+			"Error": e,
+		}).Error("Unable to parse int")
+		return out
 	}
 	if strings.HasSuffix(val, "h") {
 		t0 = time.Now().Unix() - v*60*60
@@ -202,8 +206,10 @@ func parseLastValue(val string) []string {
 	} else if strings.HasSuffix(val, "y") {
 		t0 = time.Now().Unix() - v*365*24*60*60
 	} else {
-		msg := fmt.Sprintf("Unsupported value=%s for last operator", val)
-		panic(msg)
+		logs.WithFields(logs.Fields{
+			"Value": val,
+		}).Error("Unsupported value for last operator")
+		return out
 	}
 	out = append(out, fmt.Sprintf("%d", t0))
 	out = append(out, fmt.Sprintf("%d", time.Now().Unix()))

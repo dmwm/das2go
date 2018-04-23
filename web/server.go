@@ -101,7 +101,7 @@ func daskeysDescription() string {
 func Server(configFile string) {
 	err := config.ParseConfig(configFile)
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{"Time": time.Now(), "Config": configFile}).Error("Unable to parse")
 	}
 	utils.VERBOSE = config.Config.Verbose
 	utils.UrlQueueLimit = config.Config.UrlQueueLimit

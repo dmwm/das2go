@@ -166,7 +166,11 @@ func UnixTime(ts string) int64 {
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{
+			"Error":     err,
+			"Timestamp": ts,
+		}).Error("Unable to parse")
+		return 0
 	}
 	return int64(t.Unix())
 }
@@ -192,7 +196,11 @@ func DashboardTime(ts string) string {
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{
+			"Error":     err,
+			"Timestamp": ts,
+		}).Error("Unable to parse")
+		return "N/A"
 	}
 	return t.Format(dashboardTime)
 }
@@ -210,7 +218,11 @@ func ConddbTime(ts string) string {
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
 	if err != nil {
-		panic(err)
+		logs.WithFields(logs.Fields{
+			"Error":     err,
+			"Timestamp": ts,
+		}).Error("Unable to parse")
+		return "N/A"
 	}
 	return t.Format(conddbTime)
 }
@@ -460,18 +472,25 @@ func LoadExamples(ename, home string) string {
 			// write data to local area
 			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)
 			if err != nil {
-				msg := fmt.Sprintf("Unable to write DAS example file, error %s", err)
-				panic(msg)
+				logs.WithFields(logs.Fields{
+					"Error": err,
+				}).Error("Unable to write DAS example file")
+				return ""
 			}
 		} else {
-			msg := fmt.Sprintf("Unable to get DAS example from github, error %s", resp.Error)
-			panic(msg)
+			logs.WithFields(logs.Fields{
+				"Error": resp.Error,
+			}).Error("Unable to get DAS example file from github")
+			return ""
 		}
 	}
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {
-		msg := fmt.Sprintf("Unable to read DAS example from %s, error %s", fname, err)
-		panic(msg)
+		logs.WithFields(logs.Fields{
+			"Error": err,
+			"File":  fname,
+		}).Error("Unable to read DAS example file")
+		return ""
 	}
 	return string(data)
 }

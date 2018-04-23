@@ -289,7 +289,6 @@ func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	for _, dmap := range dasmaps {
 		dkey, _, _, pat := getApiParams(dmap)
 		if utils.InList(dkey, skeys) {
-			msg := fmt.Sprintf("Invalid '%T' type for '%s' DAS key in %v", spec[dkey], dkey, dmap)
 			switch spec[dkey].(type) {
 			case string:
 				val, _ := spec[dkey].(string)
@@ -315,7 +314,12 @@ func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 					return base
 				}
 			default:
-				panic(msg)
+				logs.WithFields(logs.Fields{
+					"Type": fmt.Sprintf("%T", spec[dkey]),
+					"Key":  dkey,
+					"Map":  dmap,
+				}).Error("Invalid type for DAS key")
+				return ""
 			}
 		}
 	}

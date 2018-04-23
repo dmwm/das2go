@@ -219,8 +219,12 @@ func (LocalAPIs) L_dbs3_block_run_lumi4dataset(dasquery dasql.DASQuery) []mongo.
 			} else if key == "block_name" {
 				rurl, err := url.QueryUnescape(rec["url"].(string))
 				if err != nil {
-					logs.Error("unable to parse url ", rec)
-					panic(err)
+					logs.WithFields(logs.Fields{
+						"Error":  err,
+						"Url":    rurl,
+						"Record": rec,
+					}).Error("unable to parse url ")
+					return out
 				}
 				arr := strings.Split(rurl, "block_name=")
 				blk := arr[1]
@@ -315,8 +319,11 @@ func (LocalAPIs) L_dbs3_datasetlist(dasquery dasql.DASQuery) []mongo.DASRecord {
 	}
 	args, err := json.Marshal(spec)
 	if err != nil {
-		msg := fmt.Sprintf("DBS datasetlist unable to marshal the spec %v, error %v", spec, err)
-		panic(msg)
+		logs.WithFields(logs.Fields{
+			"Spec":  spec,
+			"Error": err,
+		}).Error("DBS datasetlist unable to unmarshal spec")
+		return []mongo.DASRecord{}
 	}
 	resp := utils.FetchResponse(furl, string(args)) // POST request
 	records := DBSUnmarshal(api, resp.Data)
