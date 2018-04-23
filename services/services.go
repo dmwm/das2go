@@ -226,8 +226,8 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	spec = bson.M{"qhash": dasquery.Qhash, "das.record": 1}
 	var skeys []string
 	skeys = append(skeys, pkey)
-	records = mongo.GetSorted("das", "cache", spec, skeys)
 	if len(lkeys) > 1 {
+		records = mongo.Get("das", "cache", spec, 0, -1) // get all unsorted records
 		status := das["status"].(string)
 		expire := das["expire"].(int64)
 		for _, rec := range records {
@@ -243,6 +243,7 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 	expire = time.Now().Unix() * 2
 	var out []mongo.DASRecord
 	var oldrec, rec mongo.DASRecord
+	records = mongo.GetSorted("das", "cache", spec, skeys)
 	for idx, rec := range records {
 		if idx == 0 { // we need to advance to new record because of init conditions above
 			oldrec = rec
