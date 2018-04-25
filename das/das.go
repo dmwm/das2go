@@ -523,6 +523,21 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 				}
 				args = fmt.Sprintf("{\"filter\": {\"number\": \"%s\"}}", cond)
 			}
+			switch v := dasquery.Spec["date"].(type) {
+			case string:
+				t := utils.RunRegistryTime(v)
+				n := utils.RunRegistryTime(utils.Unix2DASTime(utils.UnixTime(v) + 25*60*60))
+				fmt.Println("---", v, utils.UnixTime(v), utils.UnixTime(v)+25*60*60)
+				args = fmt.Sprintf("{\"filter\": {\"startTime\": \">= %s and < %s\"}}", t, n)
+			case []string:
+				cond := fmt.Sprintf("= %s", utils.RunRegistryTime(v[0]))
+				for i, vvv := range v {
+					if i > 0 {
+						cond = fmt.Sprintf("%s or = %s", cond, utils.RunRegistryTime(vvv))
+					}
+				}
+				args = fmt.Sprintf("{\"filter\": {\"number\": \"%s\"}}", cond)
+			}
 			furl, _ = dmap["url"].(string)
 			// Adjust url to use custom columns
 			columns := "number%2CstartTime%2CstopTime%2Ctriggers%2CrunClassName%2CrunStopReason%2Cbfield%2CgtKey%2Cl1Menu%2ChltKeyDescription%2ClhcFill%2ClhcEnergy%2CrunCreated%2Cmodified%2ClsCount%2ClsRanges"
