@@ -183,6 +183,28 @@ func Unix2DASTime(ts int64) string {
 	return t.Format(layout)
 }
 
+// RunRegistryTime helper function to convert given time into RunRegistry timestamp
+func RunRegistryTime(ts string) string {
+	const runRegistryTime = "2006-01-02"
+	// time is unix since epoch
+	if len(ts) == 10 { // unix time
+		tstamp, _ := strconv.ParseInt(ts, 10, 64)
+		t := time.Unix(tstamp, 0)
+		return t.Format(runRegistryTime)
+	}
+	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
+	const layout = "20060102"
+	t, err := time.Parse(layout, ts)
+	if err != nil {
+		logs.WithFields(logs.Fields{
+			"Error":     err,
+			"Timestamp": ts,
+		}).Error("Unable to parse")
+		return "N/A"
+	}
+	return t.Format(runRegistryTime)
+}
+
 // DashboardTime helper function to convert given time into Dashboard timestamp
 func DashboardTime(ts string) string {
 	const dashboardTime = "2006-01-02 15:04:05"
