@@ -180,7 +180,7 @@ func Unix2DASTime(ts int64) string {
 	// YYYYMMDD, always use 2006 as year 01 for month and 02 for date since it is predefined int Go parser
 	const layout = "20060102"
 	t := time.Unix(ts, 0)
-	return t.Format(layout)
+	return t.In(time.UTC).Format(layout)
 }
 
 // RunRegistryTime helper function to convert given time into RunRegistry timestamp
