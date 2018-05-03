@@ -221,6 +221,15 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	time0 := time.Now()
 	var qlerr string
 	var rec DASQuery
+	if strings.HasPrefix(query, "/") {
+		if strings.HasSuffix(query, ".root") {
+			query = fmt.Sprintf("file=%s", query)
+		} else if strings.Contains(query, "#") {
+			query = fmt.Sprintf("block=%s", query)
+		} else {
+			query = fmt.Sprintf("dataset=%s", query)
+		}
+	}
 	relaxedQuery := relax(query)
 	parts := strings.SplitN(relaxedQuery, "|", 2)
 	pipe := ""
