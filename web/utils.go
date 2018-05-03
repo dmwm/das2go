@@ -314,7 +314,11 @@ func PresentDataPlain(path string, dasquery dasql.DASQuery, data []mongo.DASReco
 		dasrec = item["das"].(mongo.DASRecord)
 		pkey = dasrec["primary_key"].(string)
 		val := ExtractValue(item, pkey)
-		out = fmt.Sprintf("%s\n%v", out, val)
+		if out == "" {
+			out = fmt.Sprintf("%v", val)
+		} else {
+			out = fmt.Sprintf("%s\n%v", out, val)
+		}
 	}
 	return out
 }
