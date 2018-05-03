@@ -306,6 +306,19 @@ func datasetPattern(q string) string {
 	return ""
 }
 
+// PresentDataPlain represents DAS records for web UI
+func PresentDataPlain(path string, dasquery dasql.DASQuery, data []mongo.DASRecord) string {
+	var pkey, out string
+	var dasrec mongo.DASRecord
+	for _, item := range data {
+		dasrec = item["das"].(mongo.DASRecord)
+		pkey = dasrec["primary_key"].(string)
+		val := ExtractValue(item, pkey)
+		out = fmt.Sprintf("%s\n%v", out, val)
+	}
+	return out
+}
+
 // PresentData represents DAS records for web UI
 func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int) string {
 	var out []string

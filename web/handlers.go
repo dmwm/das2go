@@ -359,6 +359,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	ajax := r.FormValue("ajax")
 	hash := r.FormValue("hash")
 	inst := r.FormValue("instance")
+	view := r.FormValue("view")
 	if hash != "" {
 		dasquery, err := dasql.Parse(query, inst, _dasmaps.DASKeys())
 		msg := fmt.Sprintf("%s, spec=%v, filters=%v, aggregators=%v, err=%s", dasquery, dasquery.Spec, dasquery.Filters, dasquery.Aggregators, err)
@@ -449,6 +450,11 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		var page string
 		if status == "ok" {
 			data := response["data"].([]mongo.DASRecord)
+			if view == "plain" {
+				page = PresentDataPlain(path, dasquery, data)
+				w.Write([]byte(page))
+				return
+			}
 			nres := response["nresults"].(int)
 			if nres == 0 {
 				page = dasZero()
@@ -460,7 +466,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			tmplData["Base"] = config.Config.Base
 			tmplData["PID"] = pid
 			page = parseTmpl(config.Config.Templates, "check_pid.tmpl", tmplData)
-			page += fmt.Sprintf("<script>setTimeout('ajaxCheckPid(\"%s\", \"request\", \"%s\", \"%s\", \"%s\", \"%d\")', %d)</script>", config.Config.Base, query, inst, pid, 2500, 2500)
+			page += fmt.Sprintf("<script>setTimeout('ajaxCheckPid(\"%s\", \"request\", \"%s\", \"%s\", \"%s\", \"%s\", \"%d\")', %d)</script>", config.Config.Base, query, inst, pid, view, 2500, 2500)
 		}
 		if ajax == "" {
 			w.Write([]byte(_top + _search + _hiddenCards + page + _bottom))
