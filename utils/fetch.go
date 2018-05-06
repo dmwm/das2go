@@ -29,6 +29,12 @@ import (
 	"github.com/vkuznet/x509proxy"
 )
 
+// TotalGetCalls counts total number of GET requests received by the server
+var TotalGetCalls uint64
+
+// TotalPostCalls counts total number of POST requests received by the server
+var TotalPostCalls uint64
+
 // global variable keeps user x509 certificates
 var _certs []tls.Certificate
 var _client = HttpClient()
@@ -215,12 +221,14 @@ func FetchResponse(rurl, args string) ResponseType {
 		jsonStr := []byte(args)
 		req, _ = http.NewRequest("POST", rurl, bytes.NewBuffer(jsonStr))
 		req.Header.Set("Content-Type", "application/json")
+		atomic.AddUint64(&TotalPostCalls, 1)
 	} else {
 		req, _ = http.NewRequest("GET", rurl, nil)
 		req.Header.Add("Accept-Encoding", "identity")
 		if strings.Contains(rurl, "sitedb") || strings.Contains(rurl, "reqmgr") {
 			req.Header.Add("Accept", "application/json")
 		}
+		atomic.AddUint64(&TotalGetCalls, 1)
 	}
 	if CLIENT_VERSION != "" {
 		req.Header.Set("User-Agent", fmt.Sprintf("dasgoclient/%s", CLIENT_VERSION))
