@@ -1,9 +1,10 @@
 language: go
 sudo: false
 go:
-  - 1.9
+  - 1.10
 install:
   - go get github.com/dmwm/cmsauth
   - go get github.com/vkuznet/x509proxy
   - go get gopkg.in/mgo.v2
   - go get github.com/sirupsen/logrus
+  - go get github.com/shirou/gopsutil

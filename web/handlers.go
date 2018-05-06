@@ -19,6 +19,9 @@ import (
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
+	"github.com/shirou/gopsutil/cpu"
+	"github.com/shirou/gopsutil/load"
+	"github.com/shirou/gopsutil/mem"
 	logs "github.com/sirupsen/logrus"
 )
 
@@ -302,12 +305,38 @@ func ApisHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(_top + page + _bottom))
 }
 
+type Memory struct {
+	Total       uint64  `json:"total"`
+	Free        uint64  `json:"free"`
+	Used        uint64  `json:"used"`
+	UsedPercent float64 `json:"usedPercent"`
+}
+type Mem struct {
+	Virtual Memory
+	Swap    Memory
+}
+
 // StatusHandler handlers Status requests
 func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	// check HTTP header
+	var accept, content string
+	if _, ok := r.Header["Accept"]; ok {
+		accept = r.Header["Accept"][0]
+	}
+	if _, ok := r.Header["Content-Type"]; ok {
+		content = r.Header["Content-Type"][0]
+	}
+
+	// get cpu and mem profiles
+	m, _ := mem.VirtualMemory()
+	s, _ := mem.SwapMemory()
+	l, _ := load.Avg()
+	c, _ := cpu.Percent(time.Millisecond, true)
+
 	// get unfinished queries
 	var templates DASTemplates
 	tmplData := make(map[string]interface{})
@@ -316,7 +345,22 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["NQueries"] = len(queries)
 	tmplData["Base"] = config.Config.Base
 	tmplData["NGo"] = runtime.NumGoroutine()
+	virt := Memory{Total: m.Total, Free: m.Free, Used: m.Used, UsedPercent: m.UsedPercent}
+	swap := Memory{Total: s.Total, Free: s.Free, Used: s.Used, UsedPercent: s.UsedPercent}
+	tmplData["Memory"] = Mem{Virtual: virt, Swap: swap}
+	tmplData["Load"] = l
+	tmplData["CPU"] = c
 	page := templates.Status(config.Config.Templates, tmplData)
+	if strings.Contains(accept, "json") || strings.Contains(content, "json") {
+		data, err := json.Marshal(tmplData)
+		if err != nil {
+			w.Write([]byte(fmt.Sprintf("unable to marshal data, error=%v", err)))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(data)
+		return
+	}
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
 }
