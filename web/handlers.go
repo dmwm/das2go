@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+	"sync/atomic"
 	"time"
 
 	"github.com/dmwm/das2go/config"
@@ -24,6 +25,12 @@ import (
 	"github.com/shirou/gopsutil/mem"
 	logs "github.com/sirupsen/logrus"
 )
+
+// TotalGetCalls counts total number of GET requests
+var TotalGetCalls uint64
+
+// TotalPostCalls counts total number of POST request
+var TotalPostCalls uint64
 
 // ServerSettings controls server parameters
 type ServerSettings struct {
@@ -215,6 +222,14 @@ func AuthHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	*/
+	// increment GET/POST counters
+	if r.Method == "GET" {
+		atomic.AddUint64(&TotalGetCalls, 1)
+	}
+	if r.Method == "POST" {
+		atomic.AddUint64(&TotalPostCalls, 1)
+	}
+
 	// check if server started with hkey file (auth is required)
 	status := auth(r)
 	if !status {
@@ -350,6 +365,9 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Memory"] = Mem{Virtual: virt, Swap: swap}
 	tmplData["Load"] = l
 	tmplData["CPU"] = c
+	tmplData["Uptime"] = time.Since(Time0).Seconds()
+	tmplData["getCalls"] = TotalGetCalls
+	tmplData["postCalls"] = TotalPostCalls
 	page := templates.Status(config.Config.Templates, tmplData)
 	if strings.Contains(accept, "json") || strings.Contains(content, "json") {
 		data, err := json.Marshal(tmplData)

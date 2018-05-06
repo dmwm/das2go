@@ -40,6 +40,9 @@ var _top, _bottom, _search, _cards, _hiddenCards string
 var _cmsAuth cmsauth.CMSAuth
 var _auth bool
 
+// Time0 represents inital time when we started the server
+var Time0 time.Time
+
 // UserDNs structure holds information about user DNs
 type UserDNs struct {
 	DNs  []string
@@ -157,6 +160,7 @@ func Server(configFile string) {
 	http.HandleFunc(fmt.Sprintf("%s/", config.Config.Base), AuthHandler)
 
 	// start http(s) server
+	Time0 = time.Now()
 	addr := fmt.Sprintf(":%d", config.Config.Port)
 	_, e1 := os.Stat(config.Config.ServerCrt)
 	_, e2 := os.Stat(config.Config.ServerKey)
