@@ -329,6 +329,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 	line := "<hr class=\"line\" />"
 	red := "style=\"color:red\""
 	green := "style=\"color:green\""
+	blue := "style=\"color:blue\""
 	total := nres
 	if len(dasquery.Aggregators) > 0 {
 		total = len(dasquery.Aggregators)
@@ -424,7 +425,14 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 							} else if webkey == "Site type" {
 						*/
 						if webkey == "Site type" {
-							value = fmt.Sprintf("<b><span %s>TAPE</span> no user access</b>", red)
+							v := strings.ToLower(value)
+							if v == "disk" {
+								value = fmt.Sprintf("<b><span %s>DISK</span></b>", green)
+							} else if strings.Contains(v, "orig") {
+								value = fmt.Sprintf("<b><span %s>Original placement</span></b>", blue)
+							} else {
+								value = fmt.Sprintf("<b><span %s>TAPE</span> no user access</b>", red)
+							}
 						} else if webkey == "Status" && value != "VALID" {
 							value = fmt.Sprintf("<span %s>%s</span>", red, value)
 						} else if webkey == "Tag" && value == "UNKNOWN" {
@@ -434,7 +442,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 							if strings.HasPrefix(value, "100") {
 								color = green
 							}
-							value = fmt.Sprintf("<b><span %s>100%%</span></b>", color)
+							value = fmt.Sprintf("<b><span %s>%s</span></b>", color, value)
 							webkey = tooltip(webkey)
 						}
 						if daskey == pkey {
