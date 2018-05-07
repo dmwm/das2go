@@ -65,7 +65,7 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 		return out
 	} else if api == "site4dataset" || api == "site4block" {
 		for _, rec := range records {
-			r := mongo.DASRecord{"name": rec["origin_site_name"], "dataset": rec["dataset"]}
+			r := mongo.DASRecord{"name": rec["origin_site_name"], "dataset": rec["dataset"], "kind": "original placement"}
 			out = append(out, r)
 		}
 		return out
