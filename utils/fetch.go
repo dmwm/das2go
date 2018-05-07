@@ -29,10 +29,10 @@ import (
 	"github.com/vkuznet/x509proxy"
 )
 
-// TotalGetCalls counts total number of GET requests received by the server
+// TotalGetCalls counts total number of GET requests made by the server
 var TotalGetCalls uint64
 
-// TotalPostCalls counts total number of POST requests received by the server
+// TotalPostCalls counts total number of POST requests made by the server
 var TotalPostCalls uint64
 
 // global variable keeps user x509 certificates

@@ -26,10 +26,10 @@ import (
 	logs "github.com/sirupsen/logrus"
 )
 
-// TotalGetRequests counts total number of GET requests made by the server
+// TotalGetRequests counts total number of GET requests received by the server
 var TotalGetRequests uint64
 
-// TotalPostRequests counts total number of POST requests made by the server
+// TotalPostRequests counts total number of POST requests received by the server
 var TotalPostRequests uint64
 
 // ServerSettings controls server parameters
