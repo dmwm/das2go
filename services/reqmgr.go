@@ -35,11 +35,13 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 		// err := json.Unmarshal(data, &rec)
 		if err != nil {
 			msg := fmt.Sprintf("ReqMgr unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
-			logs.WithFields(logs.Fields{
-				"Error": err,
-				"Api":   api,
-				"data":  string(data),
-			}).Error("ReqMgr unable to unmarshal the data")
+			if utils.VERBOSE > 0 {
+				logs.WithFields(logs.Fields{
+					"Error": err,
+					"Api":   api,
+					"data":  string(data),
+				}).Error("ReqMgr unable to unmarshal the data")
+			}
 			out = append(out, mongo.DASErrorRecord(msg))
 		}
 		out = append(out, rec)
@@ -48,11 +50,13 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 		err := json.Unmarshal(data, &datasets)
 		if err != nil {
 			msg := fmt.Sprintf("ReqMgr unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
-			logs.WithFields(logs.Fields{
-				"Error": err,
-				"Api":   api,
-				"data":  string(data),
-			}).Error("ReqMgr unable to unmarshal the data")
+			if utils.VERBOSE > 0 {
+				logs.WithFields(logs.Fields{
+					"Error": err,
+					"Api":   api,
+					"data":  string(data),
+				}).Error("ReqMgr unable to unmarshal the data")
+			}
 			out = append(out, mongo.DASErrorRecord(msg))
 		}
 		for _, d := range datasets {
@@ -64,11 +68,13 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 		err := json.Unmarshal(data, &out)
 		if err != nil {
 			msg := fmt.Sprintf("ReqMgr unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
-			logs.WithFields(logs.Fields{
-				"Error": err,
-				"Api":   api,
-				"data":  string(data),
-			}).Error("ReqMgr unable to unmarshal the data")
+			if utils.VERBOSE > 0 {
+				logs.WithFields(logs.Fields{
+					"Error": err,
+					"Api":   api,
+					"data":  string(data),
+				}).Error("ReqMgr unable to unmarshal the data")
+			}
 			out = append(out, mongo.DASErrorRecord(msg))
 		}
 	}

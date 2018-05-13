@@ -35,11 +35,13 @@ func loadDBSData(api string, data []byte) []mongo.DASRecord {
 	// err := json.Unmarshal(data, &out)
 	if err != nil {
 		msg := fmt.Sprintf("DBS unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
-		logs.WithFields(logs.Fields{
-			"Error": err,
-			"Api":   api,
-			"data":  string(data),
-		}).Error("DBS unable to unmarshal the data")
+		if utils.VERBOSE > 0 {
+			logs.WithFields(logs.Fields{
+				"Error": err,
+				"Api":   api,
+				"data":  string(data),
+			}).Error("DBS unable to unmarshal the data")
+		}
 		out = append(out, mongo.DASErrorRecord(msg))
 	}
 	return out
