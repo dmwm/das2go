@@ -35,16 +35,11 @@ var TotalGetCalls uint64
 // TotalPostCalls counts total number of POST requests made by the server
 var TotalPostCalls uint64
 
-// global variable keeps user x509 certificates
-var _certs []tls.Certificate
-var _client = HttpClient()
+// CLIENT_VERSION represents client version
 var CLIENT_VERSION string
 
 // client X509 certificates
 func tlsCerts() ([]tls.Certificate, error) {
-	if len(_certs) > 0 {
-		return _certs, nil
-	}
 	uproxy := os.Getenv("X509_USER_PROXY")
 	uckey := os.Getenv("X509_USER_KEY")
 	ucert := os.Getenv("X509_USER_CERT")
@@ -74,15 +69,15 @@ func tlsCerts() ([]tls.Certificate, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse X509 proxy: %v", err)
 		}
-		_certs = []tls.Certificate{x509cert}
-		return _certs, nil
+		certs := []tls.Certificate{x509cert}
+		return certs, nil
 	}
 	x509cert, err := tls.LoadX509KeyPair(ucert, uckey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse user X509 certificate: %v", err)
 	}
-	_certs = []tls.Certificate{x509cert}
-	return _certs, nil
+	certs := []tls.Certificate{x509cert}
+	return certs, nil
 }
 
 // HttpClient is HTTP client for urlfetch server
@@ -244,7 +239,8 @@ func FetchResponse(rurl, args string) ResponseType {
 			"error":   err1,
 		}).Info("http request")
 	}
-	resp, err := _client.Do(req)
+	client := HttpClient()
+	resp, err := client.Do(req)
 	if VERBOSE > 2 {
 		dump2, err2 := httputil.DumpResponse(resp, true)
 		logs.WithFields(logs.Fields{
