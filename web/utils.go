@@ -199,9 +199,9 @@ func makeUrl(url, urlType string, startIdx, limit, nres int) string {
 }
 
 // helper function to provide pagination
-func pagination(base, query string, nres, startIdx, limit int) string {
+func pagination(base, query, inst string, nres, startIdx, limit int) string {
 	var templates DASTemplates
-	url := fmt.Sprintf("%s?input=%s", base, query)
+	url := fmt.Sprintf("%s?input=%s&instance=%s", base, query, inst)
 	tmplData := make(map[string]interface{})
 	if nres > 0 {
 		tmplData["StartIndex"] = fmt.Sprintf("%d", startIdx+1)
@@ -334,7 +334,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 	if len(dasquery.Aggregators) > 0 {
 		total = len(dasquery.Aggregators)
 	}
-	out = append(out, pagination(path, dasquery.Query, total, startIdx, limit))
+	out = append(out, pagination(path, dasquery.Query, dasquery.Instance, total, startIdx, limit))
 	patMsg := datasetPattern(dasquery.Query)
 	if patMsg != "" {
 		out = append(out, patMsg)
@@ -480,6 +480,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			out = append(out, line)
 		}
 	}
+	out = append(out, pagination(path, dasquery.Query, dasquery.Instance, total, startIdx, limit))
 	ts := das.TimeStamp(dasquery)
 	procTime := time.Now().Sub(time.Unix(ts, 0)).String()
 	out = append(out, fmt.Sprintf("<div align=\"right\">processing time: %s</div>", procTime))
