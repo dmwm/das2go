@@ -70,7 +70,6 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	vals := url.Values{}
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
-	fields := dasquery.Fields
 	base, ok := dasmap["url"].(string)
 	system, _ := dasmap["system"].(string)
 	// Adjust DBS URL wrt dbs instance name from query
@@ -79,8 +78,8 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		if len(dbsInst) > 0 && dbsInst != "prod/global" {
 			base = strings.Replace(base, "prod/global", dbsInst, -1)
 		}
-		// adjust summary API with multiple runs
-		if len(fields) > 0 && fields[0] == "summary" && utils.InList("run", skeys) {
+		// adjust APIs with 'run between' clause
+		if strings.Contains(dasquery.Query, "between") && utils.InList("run", skeys) {
 			var minr, maxr, run string
 			val := spec["run"]
 			switch r := val.(type) {
@@ -94,7 +93,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 				spec["run"] = r
 			}
 			vals.Add("run_num", run)
-		}
+        }
 		// return only valid files by default
 		if strings.Contains(base, "file") && !utils.InList("status", skeys) {
 			// do not use valid files for filechildren/fileparents
