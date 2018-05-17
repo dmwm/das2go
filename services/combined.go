@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+    "net/url"
 	"strings"
 
 	"github.com/dmwm/das2go/dasql"
@@ -107,6 +108,37 @@ func rec2num(rec interface{}) int64 {
 			log.Println("Unable to convert json.Number to int64", rec, e)
 		}
 		out = v
+	}
+	return out
+}
+
+// L_combined_site4block returns site info for given block
+func (LocalAPIs) L_combined_site4block(dasquery dasql.DASQuery) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	spec := dasquery.Spec
+	block := spec["block"].(string)
+	// Phedex part find block replicas for given dataset
+    api := "blockReplicas"
+    furl := fmt.Sprintf("%s/%s?block=%s", phedexUrl(), api, url.QueryEscape(block))
+    resp := utils.FetchResponse(furl, "") // "" specify optional args
+    records := PhedexUnmarshal(api, resp.Data)
+	for _, rec := range records {
+		replicas := rec["replica"].([]interface{})
+		rec := make(mongo.DASRecord)
+		for _, val := range replicas {
+			row := val.(map[string]interface{})
+			var node, se string
+			switch v := row["node"].(type) {
+			case string:
+				node = v
+			}
+			switch v := row["se"].(type) {
+			case string:
+				se = v
+			}
+            rec["site"] = []mongo.DASRecord{{"name": node, "se": se}}
+            out = append(out, rec)
+		}
 	}
 	return out
 }
