@@ -310,6 +310,17 @@ func (LocalAPIs) L_dbs3_datasetlist(dasquery dasql.DASQuery) []mongo.DASRecord {
 	inst := dasquery.Instance
 	api := "datasetlist"
 	furl := fmt.Sprintf("%s/%s", dbsUrl(inst), api)
+    switch d := spec["dataset"].(type) {
+    case string:
+        if strings.Contains(d, "*") { // patterns are not supported by this API
+            return []mongo.DASRecord{}
+        }
+        spec["dataset"] = []string{d} // API accepts list of datasets
+    case []string:
+        fmt.Println("### valid data type", d)
+    default:
+        return []mongo.DASRecord{} // no other data types are allowed
+    }
 	spec["detail"] = 1 // get detailed results from DBS
 	spec["dataset_access_type"] = "VALID"
 	s := spec["status"]
