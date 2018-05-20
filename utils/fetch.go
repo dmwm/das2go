@@ -52,7 +52,7 @@ func tlsCerts() ([]tls.Certificate, error) {
 			uproxy = fname
 		}
 	}
-	if WEBSERVER == 1 {
+	if WEBSERVER == 1 && VERBOSE > 0 {
 		logs.WithFields(logs.Fields{
 			"X509_USER_PROXY": uproxy,
 			"X509_USER_KEY":   uckey,
@@ -87,8 +87,8 @@ func HttpClient() *http.Client {
 	if err != nil {
 		panic(err.Error())
 	}
-	if WEBSERVER > 0 {
-		log.Println("Number of certificates", len(certs))
+	if WEBSERVER > 0 && VERBOSE > 0 {
+		log.Println("iCreate TLSClientconfig: #certificates", len(certs))
 	}
 	if len(certs) == 0 {
 		return &http.Client{}
@@ -96,9 +96,6 @@ func HttpClient() *http.Client {
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{Certificates: certs,
 			InsecureSkipVerify: true},
-	}
-	if WEBSERVER > 0 {
-		log.Println("Create TLSClientConfig")
 	}
 	return &http.Client{Transport: tr}
 }
