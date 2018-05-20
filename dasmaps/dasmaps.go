@@ -211,6 +211,9 @@ func (m *DASMaps) DASKeysMaps() []DASKeysMap {
 			for key, rows := range prec {
 				var desc string
 				var examples, rels []string
+				if rows == nil {
+					continue
+				}
 				for _, row := range rows.([]interface{}) {
 					v := row.(mongo.DASRecord)
 					exit := false
@@ -219,11 +222,17 @@ func (m *DASMaps) DASKeysMaps() []DASKeysMap {
 						exit = true
 					}
 					if r, ok := v["examples"]; ok {
+						if r == nil {
+							continue
+						}
 						for _, i := range r.([]interface{}) {
 							examples = append(examples, i.(string))
 						}
 					}
 					if r, ok := v["link"]; ok {
+						if r == nil {
+							continue
+						}
 						for _, i := range r.([]interface{}) {
 							l := i.(mongo.DASRecord)
 							name := l["name"].(string)
