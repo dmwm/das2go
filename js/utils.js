@@ -187,12 +187,12 @@ function AddFilters() {
         }
     }
     updateTag('input', newval);
-    load('/das2go/request?'+$('das_search').serialize());
+    load('/das/request?'+$('das_search').serialize());
 }
 function ClearFilters() {
     var uin=document.getElementById('input');
     if (uin.value.indexOf('|') != -1) {
         updateTag('input', uin.value.substring(0, uin.value.indexOf('|')));
     }
-    load('/das2go/request?'+$('das_search').serialize());
+    load('/das/request?'+$('das_search').serialize());
 }
