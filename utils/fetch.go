@@ -29,6 +29,9 @@ import (
 	"github.com/vkuznet/x509proxy"
 )
 
+// TIMEOUT defines timeout for net/url request
+var TIMEOUT int
+
 // TotalGetCalls counts total number of GET requests made by the server
 var TotalGetCalls uint64
 
@@ -88,16 +91,23 @@ func HttpClient() *http.Client {
 		panic(err.Error())
 	}
 	if WEBSERVER > 0 && VERBOSE > 0 {
-		log.Println("iCreate TLSClientconfig: #certificates", len(certs))
+		log.Println("Create TLSClientconfig: #certificates", len(certs))
 	}
+    timeout := time.Duration(TIMEOUT) * time.Second
 	if len(certs) == 0 {
-		return &http.Client{}
+        if TIMEOUT > 0 {
+            return &http.Client{Timeout: time.Duration(timeout)}
+        }
+        return &http.Client{}
 	}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{Certificates: certs,
 			InsecureSkipVerify: true},
 	}
-	return &http.Client{Transport: tr}
+    if TIMEOUT > 0 {
+        return &http.Client{Transport: tr, Timeout: timeout}
+    }
+    return &http.Client{Transport: tr}
 }
 
 // ResponseType structure is what we expect to get for our URL call.
@@ -298,9 +308,8 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 	var resp, r ResponseType
 	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
-		//                 fmt.Println("DAS WARNING, fail to fetch data", ColorUrl(rurl), "error", resp.Error)
 		logs.WithFields(logs.Fields{
-			"url":   ColorUrl(rurl),
+			"url":   rurl,
 			"error": resp.Error,
 		}).Warn("fail to fetch data")
 		for i := 1; i <= UrlRetry; i++ {
@@ -310,9 +319,8 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 			if r.Error == nil {
 				break
 			}
-			//             fmt.Println("DAS WARNING", ColorUrl(rurl), "retry", i, "error", r.Error)
 			logs.WithFields(logs.Fields{
-				"url":   ColorUrl(rurl),
+				"url":   rurl,
 				"retry": i,
 				"error": resp.Error,
 			}).Warn("fetch data retry")
@@ -320,9 +328,8 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 		resp = r
 	}
 	if resp.Error != nil {
-		//         fmt.Println("DAS ERROR, fail to fetch data", ColorUrl(rurl), "retries", UrlRetry, "error", resp.Error)
 		logs.WithFields(logs.Fields{
-			"url":     ColorUrl(rurl),
+			"url":     rurl,
 			"retries": UrlRetry,
 			"error":   resp.Error,
 		}).Error("fail to fetch data")
