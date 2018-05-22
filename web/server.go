@@ -110,6 +110,7 @@ func Server(configFile string) {
 	utils.UrlQueueLimit = config.Config.UrlQueueLimit
 	utils.UrlRetry = config.Config.UrlRetry
 	utils.DASMAPS = config.Config.DasMaps
+	utils.TIMEOUT = config.Config.Timeout
 	logs.Info(config.Config.String())
 	// init CMS Authentication module
 	if config.Config.Hkey != "" {
