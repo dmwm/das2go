@@ -87,13 +87,11 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 				minr = r[0]
 				maxr = r[len(r)-1]
 				run = fmt.Sprintf("'%s-%s'", minr, maxr)
-				spec["run"] = run
 			case string:
 				run = r
-				spec["run"] = r
 			}
 			vals.Add("run_num", run)
-        }
+		}
 		// return only valid files by default
 		if strings.Contains(base, "file") && !utils.InList("status", skeys) {
 			// do not use valid files for filechildren/fileparents
@@ -183,6 +181,9 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 				}
 			} else { // let's try array of strings
 				arr, ok := spec[dkey].([]string)
+				if system == "dbs3" && arg == "run_num" { // we already changed runs parameters above for DBS call
+					continue
+				}
 				if !ok {
 					fmt.Println("WARNING, unable to get value(s) for daskey=", dkey,
 						", reckey=", rkey, " from spec=", spec, " das map=", dmap)
