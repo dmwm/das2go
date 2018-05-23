@@ -64,6 +64,8 @@ func RunRegistryUnmarshal(api string, data []byte) []mongo.DASRecord {
 				}
 				delete(rec, "number")
 				out = append(out, rec)
+			} else {
+				out = append(out, rec)
 			}
 		}
 		return out
