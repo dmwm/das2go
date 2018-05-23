@@ -42,7 +42,7 @@ func loadSiteDBData(api string, data []byte) []mongo.DASRecord {
 				"data":  string(data),
 			}).Error("SiteDB unable to unmarshal the data")
 		}
-		out = append(out, mongo.DASErrorRecord(msg))
+		out = append(out, mongo.DASErrorRecord(msg, utils.SiteDBErrorName, utils.SiteDBError))
 		return out
 	}
 	desc := rec["desc"].(map[string]interface{})

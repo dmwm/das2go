@@ -29,7 +29,7 @@ func loadDashboardData(api string, data []byte) []mongo.DASRecord {
 				"data":  string(data),
 			}).Error("Dashboard unable to unmarshal the data")
 		}
-		out = append(out, mongo.DASErrorRecord(msg))
+		out = append(out, mongo.DASErrorRecord(msg, utils.DashboardErrorName, utils.DashboardError))
 	}
 	val := rec["summaries"]
 	switch summaries := val.(type) {

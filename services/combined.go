@@ -10,7 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-    "net/url"
+	"net/url"
 	"strings"
 
 	"github.com/dmwm/das2go/dasql"
@@ -118,10 +118,10 @@ func (LocalAPIs) L_combined_site4block(dasquery dasql.DASQuery) []mongo.DASRecor
 	spec := dasquery.Spec
 	block := spec["block"].(string)
 	// Phedex part find block replicas for given dataset
-    api := "blockReplicas"
-    furl := fmt.Sprintf("%s/%s?block=%s", phedexUrl(), api, url.QueryEscape(block))
-    resp := utils.FetchResponse(furl, "") // "" specify optional args
-    records := PhedexUnmarshal(api, resp.Data)
+	api := "blockReplicas"
+	furl := fmt.Sprintf("%s/%s?block=%s", phedexUrl(), api, url.QueryEscape(block))
+	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	records := PhedexUnmarshal(api, resp.Data)
 	for _, rec := range records {
 		replicas := rec["replica"].([]interface{})
 		rec := make(mongo.DASRecord)
@@ -136,8 +136,8 @@ func (LocalAPIs) L_combined_site4block(dasquery dasql.DASQuery) []mongo.DASRecor
 			case string:
 				se = v
 			}
-            rec["site"] = []mongo.DASRecord{{"name": node, "se": se}}
-            out = append(out, rec)
+			rec["site"] = []mongo.DASRecord{{"name": node, "se": se}}
+			out = append(out, rec)
 		}
 	}
 	return out
@@ -242,7 +242,7 @@ func (LocalAPIs) L_combined_site4dataset(dasquery dasql.DASQuery) []mongo.DASRec
 // L_combined_lumi4dataset returns lumi info for given dataset
 func (LocalAPIs) L_combined_lumi4dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	var out []mongo.DASRecord
-	out = append(out, mongo.DASErrorRecord("combined_lumi4dataset API is not implemented"))
+	out = append(out, mongo.DASErrorRecord("combined_lumi4dataset API is not implemented", utils.CombinedErrorName, utils.CombinedError))
 	return out
 }
 

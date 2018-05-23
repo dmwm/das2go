@@ -51,7 +51,7 @@ func loadMcMData(api string, data []byte) []mongo.DASRecord {
 				"data":  string(data),
 			}).Error("McM unable to unmarshal the data")
 		}
-		out = append(out, mongo.DASErrorRecord(msg))
+		out = append(out, mongo.DASErrorRecord(msg, utils.McMErrorName, utils.McMError))
 		return out
 	}
 	out = append(out, rec)

@@ -70,9 +70,11 @@ func (r DASRecord) ToHtml() string {
 }
 
 // DASErrorRecord provides DAS error record
-func DASErrorRecord(msg string) DASRecord {
+func DASErrorRecord(msg, etype string, ecode int) DASRecord {
 	erec := make(DASRecord)
 	erec["error"] = msg
+	erec["type"] = etype
+	erec["code"] = ecode
 	return erec
 }
 
@@ -212,7 +214,7 @@ func GetSorted(dbname, collname string, spec bson.M, skeys []string) []DASRecord
 			logs.WithFields(logs.Fields{
 				"Error": err,
 			}).Error("Unable to find records")
-			out = append(out, DASErrorRecord(fmt.Sprintf("%v", err)))
+			out = append(out, DASErrorRecord(fmt.Sprintf("%v", err), utils.MongoDBErrorName, utils.MongoDBError))
 		}
 	}
 	return out

@@ -40,7 +40,7 @@ func loadPhedexData(api string, data []byte) []mongo.DASRecord {
 				"data":  string(data),
 			}).Error("Phedex unable to unmarshal the data")
 		}
-		out = append(out, mongo.DASErrorRecord(msg))
+		out = append(out, mongo.DASErrorRecord(msg, utils.PhedexErrorName, utils.PhedexError))
 	}
 	out = append(out, rec)
 	return out

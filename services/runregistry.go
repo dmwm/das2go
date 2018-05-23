@@ -43,7 +43,7 @@ func loadRunRegistryData(api string, data []byte) []mongo.DASRecord {
 				"data":  string(data),
 			}).Error("RunRegistry unable to unmarshal the data")
 		}
-		out = append(out, mongo.DASErrorRecord(msg))
+		out = append(out, mongo.DASErrorRecord(msg, utils.RunRegistryErrorName, utils.RunRegistryError))
 	}
 	return out
 }

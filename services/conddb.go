@@ -28,7 +28,7 @@ func loadCondDBData(api string, data []byte) []mongo.DASRecord {
 				"data":  string(data),
 			}).Error("CondDB unable to unmarshal the data")
 		}
-		out = append(out, mongo.DASErrorRecord(msg))
+		out = append(out, mongo.DASErrorRecord(msg, utils.CondDBErrorName, utils.CondDBError))
 	}
 	return out
 }

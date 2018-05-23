@@ -42,7 +42,7 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 					"data":  string(data),
 				}).Error("ReqMgr unable to unmarshal the data")
 			}
-			out = append(out, mongo.DASErrorRecord(msg))
+			out = append(out, mongo.DASErrorRecord(msg, utils.ReqMgrErrorName, utils.ReqMgrError))
 		}
 		out = append(out, rec)
 	} else if api == "recentDatasetByPrepID" {
@@ -57,7 +57,7 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 					"data":  string(data),
 				}).Error("ReqMgr unable to unmarshal the data")
 			}
-			out = append(out, mongo.DASErrorRecord(msg))
+			out = append(out, mongo.DASErrorRecord(msg, utils.ReqMgrErrorName, utils.ReqMgrError))
 		}
 		for _, d := range datasets {
 			rec := make(mongo.DASRecord)
@@ -75,7 +75,7 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 					"data":  string(data),
 				}).Error("ReqMgr unable to unmarshal the data")
 			}
-			out = append(out, mongo.DASErrorRecord(msg))
+			out = append(out, mongo.DASErrorRecord(msg, utils.ReqMgrErrorName, utils.ReqMgrError))
 		}
 	}
 	return out
