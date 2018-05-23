@@ -13,10 +13,12 @@ const (
 	CondDBError
 	CombinedError
 	MongoDBError
+	DASProxyError
+	DASQueryError
 )
 
 const (
-	DASErrorName         = "DAS error"
+	DASServerErrorName   = "DAS error"
 	DBSErrorName         = "DBS upstream error"
 	PhedexErrorName      = "PhEDEx upstream error"
 	ReqMgrErrorName      = "ReqMgr upstream error"
@@ -27,4 +29,6 @@ const (
 	CondDBErrorName      = "CondDB upstream error"
 	CombinedErrorName    = "Combined error"
 	MongoDBErrorName     = "MongoDB error"
+	DASProxyErrorName    = "DAS proxy error"
+	DASQueryErrorName    = "DAS query error"
 )
