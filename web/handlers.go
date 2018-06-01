@@ -120,10 +120,11 @@ func examples() []string {
 }
 
 // helper function to form DAS error used in web Handlers
-func dasError(query, msg string) string {
+func dasError(query, msg, posLine string) string {
 	tmplData := make(map[string]interface{})
 	tmplData["Error"] = msg
 	tmplData["Query"] = query
+	tmplData["PositionLine"] = posLine
 	var templates DASTemplates
 	page := templates.DASError(config.Config.Templates, tmplData)
 	return _top + _search + _hiddenCards + page + _bottom
@@ -425,7 +426,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	inst := r.FormValue("instance")
 	view := r.FormValue("view")
 	if hash != "" {
-		dasquery, err := dasql.Parse(query, inst, _dasmaps.DASKeys())
+		dasquery, err, _ := dasql.Parse(query, inst, _dasmaps.DASKeys())
 		msg := fmt.Sprintf("%s, spec=%v, filters=%v, aggregators=%v, err=%s", dasquery, dasquery.Spec, dasquery.Filters, dasquery.Aggregators, err)
 		w.Write([]byte(msg))
 		return
@@ -478,9 +479,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			w.Write(js)
 		}
 	}()
-	dasquery, err2 := dasql.Parse(query, inst, _dasmaps.DASKeys())
+	dasquery, err2, pLine := dasql.Parse(query, inst, _dasmaps.DASKeys())
 	if err2 != "" {
-		w.Write([]byte(dasError(query, err2)))
+		w.Write([]byte(dasError(query, err2, pLine)))
 		return
 	}
 	if pid == "" {

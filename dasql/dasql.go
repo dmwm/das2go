@@ -99,21 +99,37 @@ func relax(query string) string {
 	return strings.Join(out, " ")
 }
 
-func qlError(query string, idx int, msg string) string {
+func posLine(query string, idx int) string {
+    var dashes []string
+    for i, q := range strings.Split(query, " ") {
+        if i == idx {
+            break
+        }
+        for range strings.Split(q, "") {
+            dashes = append(dashes, "-")
+        }
+    }
+    for i:=len(query); i<idx; i++ {
+        dashes = append(dashes, "-")
+    }
+    return fmt.Sprintf("%s^", strings.Join(dashes, ""))
+}
+func qlError(query string, idx int, msg string) (string, string) {
 	fullmsg := fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, idx, msg)
 	logs.WithFields(logs.Fields{
 		"Query": query,
 		"idx":   idx,
 		"msg":   msg,
 	}).Error("DAS QL error")
-	return fullmsg
+	return fullmsg, posLine(query, idx)
 }
-func parseArray(rquery string, odx int, oper string, val string) ([]string, int, string) {
+func parseArray(rquery string, odx int, oper string, val string) ([]string, int, string, string) {
 	qlerr := ""
+    posLine := ""
 	out := []string{}
 	if !(oper == "in" || oper == "between") {
-		qlerr = qlError(rquery, odx, "Invalid operator '"+oper+"' for DAS array")
-		return out, -1, qlerr
+		qlerr, posLine = qlError(rquery, odx, "Invalid operator '"+oper+"' for DAS array")
+		return out, -1, qlerr, posLine
 	}
 	// we receive relatex query, let's split it by spaces and extract array part
 	arr := strings.Split(rquery, " ")
@@ -127,20 +143,20 @@ func parseArray(rquery string, odx int, oper string, val string) ([]string, int,
 	} else if oper == "between" {
 		minr, e1 := strconv.Atoi(strings.TrimSpace(vals[0]))
 		if e1 != nil {
-			qlerr = qlError(rquery, odx, fmt.Sprintf("%v", e1))
-			return out, -1, qlerr
+			qlerr, posLine = qlError(rquery, odx, fmt.Sprintf("%v", e1))
+			return out, -1, qlerr, posLine
 		}
 		maxr, e2 := strconv.Atoi(strings.TrimSpace(vals[1]))
 		if e2 != nil {
-			qlerr = qlError(rquery, odx, fmt.Sprintf("%v", e2))
-			return out, -1, qlerr
+			qlerr, posLine = qlError(rquery, odx, fmt.Sprintf("%v", e2))
+			return out, -1, qlerr, posLine
 		}
 		for v := minr; v <= maxr; v++ {
 			values = append(values, fmt.Sprintf("%d", v))
 		}
 	} else {
-		qlerr = qlError(rquery, odx, "Invalid operator '"+oper+"' for DAS array")
-		return out, -1, qlerr
+		qlerr, posLine = qlError(rquery, odx, "Invalid operator '"+oper+"' for DAS array")
+		return out, -1, qlerr, posLine
 	}
 	for _, v := range values {
 		// here we had originally conversion of input value string into integer
@@ -156,7 +172,7 @@ func parseArray(rquery string, odx int, oper string, val string) ([]string, int,
 			break
 		}
 	}
-	return out, jdx + 2 - odx, qlerr
+	return out, jdx + 2 - odx, qlerr, posLine
 }
 func parseQuotes(query string, idx int, quote string) (string, int) {
 	out := "parseQuotes"
@@ -217,9 +233,9 @@ func parseLastValue(val string) []string {
 }
 
 // Parse method provides DAS query parser
-func Parse(query, inst string, daskeys []string) (DASQuery, string) {
+func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 	time0 := time.Now()
-	var qlerr string
+	var qlerr, posLine string
 	var rec DASQuery
 	if strings.HasPrefix(query, "/") {
 		if strings.HasSuffix(query, ".root") {
@@ -280,20 +296,20 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		} else if utils.InList(nval, operators()) {
 			firstNextNextValue := string(nnval[0])
 			if !utils.InList(val, append(daskeys, specials...)) {
-				qlerr = qlError(relaxedQuery, idx, "Wrong DAS key: "+val)
-				return rec, qlerr
+				qlerr, posLine = qlError(relaxedQuery, idx, "Wrong DAS key: "+val)
+				return rec, qlerr, posLine
 			}
 			if firstNextNextValue == "[" {
-				value, step, qlerr := parseArray(relaxedQuery, idx+2, nval, val)
+				value, step, qlerr, posLine := parseArray(relaxedQuery, idx+2, nval, val)
 				if qlerr != "" {
-					return rec, qlerr
+					return rec, qlerr, posLine
 				}
 				updateSpec(spec, specEntry(val, nval, value))
 				idx += step
 			} else if utils.InList(nval, specOps) {
 				msg := "operator " + nval + " should be followed by square bracket"
-				qlerr = qlError(relaxedQuery, idx, msg)
-				return rec, qlerr
+				qlerr, posLine = qlError(relaxedQuery, idx, msg)
+				return rec, qlerr, posLine
 			} else if nval == "last" {
 				updateSpec(spec, specEntry(val, nval, parseLastValue(nnval)))
 				idx += 2
@@ -312,12 +328,12 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 				idx += 1
 				continue
 			} else {
-				qlerr = qlError(relaxedQuery, idx, "Not a DAS key")
-				return rec, qlerr
+				qlerr, posLine = qlError(relaxedQuery, idx, "Not a DAS key")
+				return rec, qlerr, posLine
 			}
 		} else {
-			qlerr = qlError(relaxedQuery, idx, "unable to parse DAS query")
-			return rec, qlerr
+			qlerr, posLine = qlError(relaxedQuery, idx, "unable to parse DAS query")
+			return rec, qlerr, posLine
 		}
 
 	}
@@ -335,7 +351,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		}
 	}
 	fields = clean_fields
-	filters, aggregators, qlerror := parsePipe(pipe)
+	filters, aggregators, qlerror, pLine := parsePipe(relaxedQuery, pipe)
 
 	// default DBS instance
 	if inst == "" {
@@ -361,6 +377,9 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 		system = spec["system"].(string)
 		delete(spec, "system")
 	}
+    if len(qlerror) > 0 {
+        return rec, qlerror, pLine
+    }
 
 	rec.Query = query
 	rec.relaxedQuery = relaxedQuery
@@ -374,11 +393,12 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string) {
 	rec.Aggregators = aggregators
 	rec.System = system
 	rec.Time = time0
-	return rec, qlerror
+	return rec, qlerror, pLine
 }
 
-func parsePipe(pipe string) (map[string][]string, [][]string, string) {
+func parsePipe(query, pipe string) (map[string][]string, [][]string, string, string) {
 	qlerr := ""
+    pLine := ""
 	filters := make(map[string][]string)
 	aggregators := [][]string{}
 	var item, next, nnext, nnnext, cfilter string
@@ -388,9 +408,12 @@ func parsePipe(pipe string) (map[string][]string, [][]string, string) {
 	idx := 0
 	arr := strings.Split(pipe, " ")
 	qlen := len(arr)
-	if qlen == 0 {
-		return filters, aggregators, qlerr
-	}
+    if arr == nil || (qlen == 1 && arr[0] == "") || qlen == 0 {
+        msg := "No filter found"
+        qlerr = fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, len(query)+2, msg)
+        pLine = posLine(query, len(query)+2)
+		return filters, aggregators, qlerr, pLine
+    }
 	for idx < qlen {
 		item = arr[idx]
 		if idx+1 < qlen {
@@ -440,8 +463,8 @@ func parsePipe(pipe string) (map[string][]string, [][]string, string) {
 			right := nnnext
 			if left != "(" || right != ")" || idx+3 >= qlen {
 				msg := "Wrong aggregator representation, please check your query"
-				qlerr = qlError(pipe, idx, msg)
-				return filters, aggregators, qlerr
+				qlerr, pLine = qlError(pipe, idx, msg)
+				return filters, aggregators, qlerr, pLine
 			}
 			pair := []string{item, val}
 			aggregators = append(aggregators, pair)
@@ -450,5 +473,10 @@ func parsePipe(pipe string) (map[string][]string, [][]string, string) {
 			idx += 1
 		}
 	}
-	return filters, aggregators, qlerr
+    if len(filters) == 0 && len(aggregators) == 0 {
+        msg := "No valid pipe operator found"
+        qlerr = fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, len(query)+2+idx, msg)
+        pLine = posLine(query, len(query)+2+idx)
+    }
+	return filters, aggregators, qlerr, pLine
 }
