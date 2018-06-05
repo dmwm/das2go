@@ -100,19 +100,19 @@ func relax(query string) string {
 }
 
 func posLine(query string, idx int) string {
-    var dashes []string
-    for i, q := range strings.Split(query, " ") {
-        if i == idx {
-            break
-        }
-        for range strings.Split(q, "") {
-            dashes = append(dashes, "-")
-        }
-    }
-    for i:=len(query); i<idx; i++ {
-        dashes = append(dashes, "-")
-    }
-    return fmt.Sprintf("%s^", strings.Join(dashes, ""))
+	var dashes []string
+	for i, q := range strings.Split(query, " ") {
+		if i == idx {
+			break
+		}
+		for range strings.Split(q, "") {
+			dashes = append(dashes, "-")
+		}
+	}
+	for i := len(query); i < idx; i++ {
+		dashes = append(dashes, "-")
+	}
+	return fmt.Sprintf("%s^", strings.Join(dashes, ""))
 }
 func qlError(query string, idx int, msg string) (string, string) {
 	fullmsg := fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, idx, msg)
@@ -125,7 +125,7 @@ func qlError(query string, idx int, msg string) (string, string) {
 }
 func parseArray(rquery string, odx int, oper string, val string) ([]string, int, string, string) {
 	qlerr := ""
-    posLine := ""
+	posLine := ""
 	out := []string{}
 	if !(oper == "in" || oper == "between") {
 		qlerr, posLine = qlError(rquery, odx, "Invalid operator '"+oper+"' for DAS array")
@@ -377,9 +377,9 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 		system = spec["system"].(string)
 		delete(spec, "system")
 	}
-    if len(qlerror) > 0 {
-        return rec, qlerror, pLine
-    }
+	if len(qlerror) > 0 {
+		return rec, qlerror, pLine
+	}
 
 	rec.Query = query
 	rec.relaxedQuery = relaxedQuery
@@ -398,9 +398,12 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 
 func parsePipe(query, pipe string) (map[string][]string, [][]string, string, string) {
 	qlerr := ""
-    pLine := ""
+	pLine := ""
 	filters := make(map[string][]string)
 	aggregators := [][]string{}
+	if !strings.Contains(query, "|") {
+		return filters, aggregators, qlerr, pLine
+	}
 	var item, next, nnext, nnnext, cfilter string
 	nan := "_NA_"
 	aggrs := []string{"sum", "min", "max", "avg", "median", "count"}
@@ -408,12 +411,12 @@ func parsePipe(query, pipe string) (map[string][]string, [][]string, string, str
 	idx := 0
 	arr := strings.Split(pipe, " ")
 	qlen := len(arr)
-    if arr == nil || (qlen == 1 && arr[0] == "") || qlen == 0 {
-        msg := "No filter found"
-        qlerr = fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, len(query)+2, msg)
-        pLine = posLine(query, len(query)+2)
+	if arr == nil || (qlen == 1 && arr[0] == "") || qlen == 0 {
+		msg := "No filter found"
+		qlerr = fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, len(query)+2, msg)
+		pLine = posLine(query, len(query)+2)
 		return filters, aggregators, qlerr, pLine
-    }
+	}
 	for idx < qlen {
 		item = arr[idx]
 		if idx+1 < qlen {
@@ -473,10 +476,10 @@ func parsePipe(query, pipe string) (map[string][]string, [][]string, string, str
 			idx += 1
 		}
 	}
-    if len(filters) == 0 && len(aggregators) == 0 {
-        msg := "No valid pipe operator found"
-        qlerr = fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, len(query)+2+idx, msg)
-        pLine = posLine(query, len(query)+2+idx)
-    }
+	if len(filters) == 0 && len(aggregators) == 0 {
+		msg := "No valid pipe operator found"
+		qlerr = fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, len(query)+2+idx, msg)
+		pLine = posLine(query, len(query)+2+idx)
+	}
 	return filters, aggregators, qlerr, pLine
 }
