@@ -351,7 +351,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 		}
 	}
 	fields = clean_fields
-	filters, aggregators, qlerror, pLine := parsePipe(relaxedQuery, pipe)
+	filters, aggregators, qlerror, pLine := parsePipe(relax(query), pipe)
 
 	// default DBS instance
 	if inst == "" {
