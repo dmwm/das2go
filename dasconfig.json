@@ -18,5 +18,6 @@
     "serverkey": "/opt/certs/server.key",
     "hkey": "",
     "updateDNs": 60,
+    "timeout": 180,
     "verbose": 0
 }
