@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -11,12 +12,15 @@ import (
 	"regexp"
 	"time"
 
+	_ "expvar"         // to be used for monitoring, see https://github.com/divan/expvarmon
+	_ "net/http/pprof" // profiler, see https://golang.org/pkg/net/http/pprof/
+
 	logs "github.com/sirupsen/logrus"
 )
 
 func checkHttpEndpoint(endpoint, pat string) bool {
-    timeout := time.Duration(5 * time.Second)
-    client := http.Client{Timeout: timeout}
+	timeout := time.Duration(5 * time.Second)
+	client := http.Client{Timeout: timeout}
 	resp, err := client.Get(endpoint)
 
 	if err != nil {
@@ -62,23 +66,39 @@ func checkProcess(pat string) bool {
 	return false
 }
 
-func start(config string) {
+// helper function to start underlying das2go server
+// for pipe usage see https://zupzup.org/io-pipe-go/
+func start(config string, pw *io.PipeWriter) {
 	cmd := exec.Command("das2go", "-config", config)
+	cmd.Stdout = pw
+	cmd.Stderr = pw
 	err := cmd.Run()
 	if err != nil {
 		logs.WithFields(logs.Fields{
 			"Error": err,
-		}).Error("untable to start DAS server")
+		}).Error("unable to start DAS server")
+		return
 	}
 }
 
 func monitor(port int64, config string) {
+	pr, pw := io.Pipe()
+	defer pr.Close()
+	defer pw.Close()
+	go func() {
+		if _, err := io.Copy(os.Stdout, pr); err != nil {
+			logs.WithFields(logs.Fields{
+				"Error": err,
+			}).Error("Unable to pipe das2go output")
+			return
+		}
+	}()
 	pat := "das2go -config"
 	// check local server
 	status := checkProcess(pat)
 	if !status {
 		logs.Info("DAS server is not running, starting ...")
-		start(config)
+		start(config, pw)
 	}
 	// check running process, it should respond on localhost
 	endpoint := fmt.Sprintf("http://localhost:%d", port)
@@ -86,7 +106,7 @@ func monitor(port int64, config string) {
 		status = checkHttpEndpoint(endpoint, pat)
 		if !status {
 			logs.Warn("DAS HTTP endpoint failure, re-starting ...")
-			start(config)
+			start(config, pw)
 		}
 		sleep := time.Duration(10) * time.Second
 		time.Sleep(sleep)
@@ -108,5 +128,6 @@ func main() {
 	var c map[string]interface{}
 	e = json.Unmarshal(data, &c)
 	port := int64(c["port"].(float64))
-	monitor(port, config)
+	go monitor(port, config)
+	http.ListenAndServe(":8218", nil)
 }
