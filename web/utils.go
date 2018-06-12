@@ -433,8 +433,12 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 							} else {
 								value = fmt.Sprintf("<b><span %s>TAPE</span> no user access</b>", red)
 							}
-						} else if webkey == "Status" && value != "VALID" {
-							value = fmt.Sprintf("<span %s>%s</span>", red, value)
+						} else if webkey == "Status" {
+							if value == "VALID" {
+								value = fmt.Sprintf("<b><span %s>%s</span></b>", green, value)
+							} else {
+								value = fmt.Sprintf("<b><span %s>%s</span></b>", red, value)
+							}
 						} else if webkey == "Tag" && value == "UNKNOWN" {
 							value = fmt.Sprintf("<span %s>%s</span>", red, value)
 						} else if webkey == "Dataset presence" || webkey == "Block presence" || webkey == "Block completion" || webkey == "File-replica presence" {
