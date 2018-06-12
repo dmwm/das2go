@@ -453,7 +453,7 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 			if len(records) != 0 {
 				rec := records[0]
 				recexpire := services.GetExpire(rec)
-				if dasexpire > recexpire {
+				if dasexpire < recexpire {
 					dasexpire = recexpire
 				}
 			}
