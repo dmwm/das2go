@@ -116,9 +116,26 @@ func GetValue(rec DASRecord, key string) interface{} {
 	return value
 }
 
+// helper function to return single entry (e.g. from a list) of given value
+func singleEntry(data interface{}) interface{} {
+	switch v := data.(type) {
+	case []interface{}:
+		return v[0]
+	default:
+		return v
+	}
+}
+
 // GetStringValue function to get string value from DAS record for given key
 func GetStringValue(rec DASRecord, key string) (string, error) {
 	value := GetValue(rec, key)
+	val := fmt.Sprintf("%v", value)
+	return val, nil
+}
+
+// GetSingleStringValue function to get string value from DAS record for given key
+func GetSingleStringValue(rec DASRecord, key string) (string, error) {
+	value := singleEntry(GetValue(rec, key))
 	val := fmt.Sprintf("%v", value)
 	return val, nil
 }

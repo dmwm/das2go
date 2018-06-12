@@ -262,8 +262,8 @@ func MergeDASRecords(dasquery dasql.DASQuery) ([]mongo.DASRecord, int64) {
 		if expire > dasexpire {
 			expire = dasexpire
 		}
-		data1, err1 := mongo.GetStringValue(oldrec, pkey)
-		data2, err2 := mongo.GetStringValue(rec, pkey)
+		data1, err1 := mongo.GetSingleStringValue(oldrec, pkey)
+		data2, err2 := mongo.GetSingleStringValue(rec, pkey)
 		if err1 == nil && err2 == nil && data1 != data2 {
 			out = append(out, oldrec)
 		} else {
