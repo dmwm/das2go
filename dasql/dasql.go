@@ -33,7 +33,7 @@ type DASQuery struct {
 	Filters      map[string][]string `json:"filters"`
 	Aggregators  [][]string          `json:"aggregators"`
 	Error        string              `json:"error"`
-	Time         time.Time           `json:"tstamp"`
+	Time         int64               `json:"tstamp"`
 }
 
 // String method implements own formatter using DASQuery rather then *DASQuery, since
@@ -41,7 +41,7 @@ type DASQuery struct {
 // http://stackoverflow.com/questions/16976523/in-go-why-isnt-my-stringer-interface-method-getting-invoked-when-using-fmt-pr
 func (q DASQuery) String() string {
 	if utils.VERBOSE == 0 {
-		return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s time=%s>", q.Query, q.Instance, q.Qhash, utils.TimeFormat(float64(q.Time.Unix())))
+		return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s time=%s>", q.Query, q.Instance, q.Qhash, utils.TimeFormat(float64(q.Time)))
 	}
 	return fmt.Sprintf("<DASQuery=\"%s\" inst=%s hash=%s system=%s fields=%s spec=%s filters=%s aggrs=%s detail=%v>", q.Query, q.Instance, q.Qhash, q.System, q.Fields, q.Spec, q.Filters, q.Aggregators, q.Detail)
 }
@@ -234,7 +234,7 @@ func parseLastValue(val string) []string {
 
 // Parse method provides DAS query parser
 func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
-	time0 := time.Now()
+	time0 := time.Now().Unix() - 1 // we'll use this time to check DASQuery readiness
 	var qlerr, posLine string
 	var rec DASQuery
 	if strings.HasPrefix(query, "/") {
