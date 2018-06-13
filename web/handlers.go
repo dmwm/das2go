@@ -145,13 +145,14 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 	response := make(map[string]interface{})
 	if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
 		status, data := das.GetData(dasquery, "merge", idx, limit)
+		ts := das.TimeStamp(dasquery)
+		procTime := time.Now().Sub(time.Unix(ts, 0)).Seconds()
 		response["nresults"] = das.Count(pid)
 		response["timestamp"] = das.GetTimestamp(pid)
 		response["status"] = status
 		response["pid"] = pid
 		response["data"] = data
-		ts := das.TimeStamp(dasquery)
-		procTime := time.Now().Sub(time.Unix(ts, 0)).String()
+		response["procTime"] = procTime
 		logs.WithFields(logs.Fields{
 			"DASQuery":    dasquery,
 			"PID":         pid,
@@ -515,6 +516,10 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write(js)
 	} else if path == base+"/request" || path == base+"/request/" {
 		status := response["status"]
+		var procTime float64
+		if response["procTime"] != nil {
+			procTime = response["procTime"].(float64)
+		}
 		var page string
 		if status == "ok" {
 			data := response["data"].([]mongo.DASRecord)
@@ -528,7 +533,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 				page = dasZero()
 			} else {
 				presentationMap := _dasmaps.PresentationMap()
-				page = PresentData(path, dasquery, data, presentationMap, nres, idx, limit)
+				page = PresentData(path, dasquery, data, presentationMap, nres, idx, limit, procTime)
 			}
 		} else {
 			tmplData["Base"] = config.Config.Base
