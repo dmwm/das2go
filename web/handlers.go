@@ -150,10 +150,13 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 		response["status"] = status
 		response["pid"] = pid
 		response["data"] = data
+		ts := das.TimeStamp(dasquery)
+		procTime := time.Now().Sub(time.Unix(ts, 0)).String()
 		logs.WithFields(logs.Fields{
-			"DASQuery": dasquery,
-			"PID":      pid,
-			"Unix":     time.Now().Unix(),
+			"DASQuery":    dasquery,
+			"PID":         pid,
+			"Unix":        time.Now().Unix(),
+			"ProcessTime": procTime.String(),
 		}).Info("ready")
 	} else if das.CheckData(pid) { // data exists in cache but still processing
 		response["status"] = "processing"
