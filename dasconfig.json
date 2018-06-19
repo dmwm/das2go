@@ -11,7 +11,7 @@
     "images": "/Users/vk/Work/Languages/Go/gopath/src/github.com/dmwm/das2go/images",
     "yuiRoot": "/Users/vk/CMS/yui",
     "dbsInstances": ["prod/global", "prod/phys01", "prod/phys02", "prod/phys03"],
-    "views": ["list", "plain", "table", "json", "xml"],
+    "views": ["list", "plain"],
     "X509_USER_KEY": "/Users/vk/.globus/userkey.pem",
     "X509_USER_CERT": "/Users/vk/.globus/usercert.pem",
     "servercrt": "",

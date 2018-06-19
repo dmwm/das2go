@@ -133,7 +133,7 @@ func Server(configFile string) {
 	tmplData["Time"] = time.Now()
 	tmplData["Input"] = ""
 	tmplData["DBSinstance"] = config.Config.DbsInstances[0]
-	tmplData["Views"] = []string{"list", "plain", "table", "json", "xml"}
+	tmplData["Views"] = []string{"list", "plain"}
 	tmplData["DBSes"] = config.Config.DbsInstances
 	tmplData["CardClass"] = "show"
 	tmplData["Version"] = utils.VERSION
