@@ -439,6 +439,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		limit = 50
 	}
+	if view == "plain" {
+		limit = -1 // always look-up all data for plain view
+	}
 	idx, err := strconv.Atoi(r.FormValue("idx"))
 	if err != nil {
 		idx = 0
