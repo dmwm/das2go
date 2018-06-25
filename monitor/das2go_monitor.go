@@ -127,6 +127,12 @@ func main() {
 	}
 	var c map[string]interface{}
 	e = json.Unmarshal(data, &c)
+	if e != nil {
+		logs.WithFields(logs.Fields{
+			"Config": c,
+		}).Error("Unable to unmarshal")
+		os.Exit(1)
+	}
 	port := int64(c["port"].(float64))
 	go monitor(port, config)
 	http.ListenAndServe(":8218", nil)

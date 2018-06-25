@@ -39,7 +39,7 @@ var _top, _bottom, _search, _cards, _hiddenCards string
 var _cmsAuth cmsauth.CMSAuth
 var _auth bool
 
-// Time0 represents inital time when we started the server
+// Time0 represents initial time when we started the server
 var Time0 time.Time
 
 // UserDNs structure holds information about user DNs
