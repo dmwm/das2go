@@ -19,9 +19,6 @@ import (
 	logs "github.com/sirupsen/logrus"
 )
 
-// LocalAPIs structure to hold information about local APIs
-type LocalAPIs struct{}
-
 func dbsUrl(inst string) string {
 	//     return "https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
 	return fmt.Sprintf("https://cmsweb.cern.ch/dbs/%s/DBSReader", inst)
@@ -31,20 +28,6 @@ func phedexUrl() string {
 }
 func sitedbUrl() string {
 	return "https://cmsweb.cern.ch/sitedb/data/prod"
-}
-
-// DASLocalAPIs contains list of __ONLY__ exceptional apis due to mistake in DAS maps
-func DASLocalAPIs() []string {
-	out := []string{
-		// dbs3 APIs which should be treated as local_api, but they have
-		// url: http://.... in their map instead of local_api
-		"file_run_lumi4dataset", "file_run_lumi4block",
-		"file_run_lumi_evts4dataset", "file_run_lumi_evts4block",
-		"run_lumi_evts4dataset", "file_lumi_evts4dataset",
-		"file_lumi4dataset", "file_lumi4block", "run_lumi4dataset", "run_lumi4block",
-		"block_run_lumi4dataset", "file4dataset_run_lumi", "blocks4tier_dates",
-		"lumi4block_run", "datasetlist", "configs"}
-	return out
 }
 
 // helper function to find file,run,lumis for given dataset or block

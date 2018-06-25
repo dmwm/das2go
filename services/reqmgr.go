@@ -220,18 +220,13 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	return utils.List2Set(ids), idict
 }
 
-// L_reqmgr2_configs reqmgr APIs to lookup configs for given dataset
+// Cconfigs reqmgr APIs to lookup configs for given dataset
 // The logic: we look-up ReqMgr ids for given dataset and scan them
 // if id has length 32 we use configFile URL, otherwise we look-up record
 // in couchdb and fetch ConfigIDs to construct configFile URL
-func (LocalAPIs) L_reqmgr2_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
+func (LocalAPIs) Configs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return reqmgrConfigs(dasquery)
 }
-
-// L_reqmgr_configs reqmgr APIs
-// func (LocalAPIs) L_reqmgr_configs(dasquery dasql.DASQuery) []mongo.DASRecord {
-//     return reqmgrConfigs(dasquery)
-// }
 
 func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec

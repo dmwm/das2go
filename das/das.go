@@ -334,31 +334,39 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 	// defer function will propagate panic message to higher level
 	//     defer utils.ErrPropagate("processLocalApis")
 
+	localApiMap := services.LocalAPIMap()
 	for _, dmap := range dmaps {
 		urn := dasmaps.GetString(dmap, "urn")
 		system := dasmaps.GetString(dmap, "system")
 		expire := dasmaps.GetInt(dmap, "expire")
-		api := fmt.Sprintf("L_%s_%s", system, urn)
+		api := fmt.Sprintf("%s_%s", system, urn)
+		apiFunc := localApiMap[api]
 		if utils.VERBOSE > 0 {
-			fmt.Println("DAS local API", api)
+			logs.WithFields(logs.Fields{
+				"Api":      api,
+				"Function": apiFunc,
+			}).Info("DAS look-up")
 		}
 		// we use reflection to look-up api from our services/localapis.go functions
 		// for details on reflection see
 		// http://stackoverflow.com/questions/12127585/go-lookup-function-by-name
 		t := reflect.ValueOf(services.LocalAPIs{})         // type of LocalAPIs struct
-		m := t.MethodByName(api)                           // associative function name for given api
+		m := t.MethodByName(apiFunc)                       // associative function name for given api
 		args := []reflect.Value{reflect.ValueOf(dasquery)} // list of function arguments
 		vals := m.Call(args)[0]                            // return value
 		records := vals.Interface().([]mongo.DASRecord)    // cast reflect value to its type
-		logs.WithFields(logs.Fields{
-			"urn":     urn,
-			"System":  system,
-			"Expire":  expire,
-			"dmap":    dmap,
-			"api":     api,
-			"method":  m,
-			"records": len(records),
-		}).Debug("local apis")
+		if utils.VERBOSE > 1 {
+			logs.WithFields(logs.Fields{
+				"urn":     urn,
+				"System":  system,
+				"Expire":  expire,
+				"dmap":    dmap,
+				"api":     api,
+				"func":    apiFunc,
+				"method":  m,
+				"records": len(records),
+			}).Info("local apis")
+		}
 
 		records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
 

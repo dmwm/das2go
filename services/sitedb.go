@@ -84,8 +84,8 @@ func getSiteDBData(api string) []mongo.DASRecord {
 	return out
 }
 
-// L_sitedb2_site_names local API returns site-names
-func (LocalAPIs) L_sitedb2_site_names(dasquery dasql.DASQuery) []mongo.DASRecord {
+// SiteNames local API returns site-names
+func (LocalAPIs) SiteNames(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "site-names"
@@ -110,8 +110,8 @@ func (LocalAPIs) L_sitedb2_site_names(dasquery dasql.DASQuery) []mongo.DASRecord
 	return out
 }
 
-// L_sitedb2_groups local API returns group names
-func (LocalAPIs) L_sitedb2_groups(dasquery dasql.DASQuery) []mongo.DASRecord {
+// Groups local API returns group names
+func (LocalAPIs) Groups(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "groups"
@@ -132,8 +132,8 @@ func (LocalAPIs) L_sitedb2_groups(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return out
 }
 
-// L_sitedb2_group_responsibilities return group responsibilities
-func (LocalAPIs) L_sitedb2_group_responsibilities(dasquery dasql.DASQuery) []mongo.DASRecord {
+// GroupResponsibilities return group responsibilities
+func (LocalAPIs) GroupResponsibilities(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "group-responsibilities"
@@ -158,8 +158,8 @@ func (LocalAPIs) L_sitedb2_group_responsibilities(dasquery dasql.DASQuery) []mon
 	return out
 }
 
-// L_sitedb2_people_via_email returns SiteDB people via email
-func (LocalAPIs) L_sitedb2_people_via_email(dasquery dasql.DASQuery) []mongo.DASRecord {
+// PeopleEmail returns SiteDB people via email
+func (LocalAPIs) PeopleEmail(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "people"
@@ -173,8 +173,8 @@ func (LocalAPIs) L_sitedb2_people_via_email(dasquery dasql.DASQuery) []mongo.DAS
 	return out
 }
 
-// L_sitedb2_people_via_name returns SiteDB people via names
-func (LocalAPIs) L_sitedb2_people_via_name(dasquery dasql.DASQuery) []mongo.DASRecord {
+// PeopleName returns SiteDB people via names
+func (LocalAPIs) PeopleName(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "people"
@@ -192,8 +192,8 @@ func (LocalAPIs) L_sitedb2_people_via_name(dasquery dasql.DASQuery) []mongo.DASR
 	return out
 }
 
-// L_sitedb2_roles returns SiteDB roles
-func (LocalAPIs) L_sitedb2_roles(dasquery dasql.DASQuery) []mongo.DASRecord {
+// Roles returns SiteDB roles
+func (LocalAPIs) Roles(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	var out []mongo.DASRecord
 	api := "roles"
