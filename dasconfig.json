@@ -19,5 +19,5 @@
     "hkey": "",
     "updateDNs": 60,
     "timeout": 180,
-    "verbose": 1
+    "verbose": 0
 }

@@ -538,16 +538,35 @@ func DASWarning(args ...interface{}) {
 	fmt.Println(Color(BROWN, "DAS WARNING"), args)
 }
 
-// colors
+// BLACK color
 const BLACK = "0;30m"
+
+// RED color
 const RED = "0;31m"
+
+// GREEN color
 const GREEN = "0;32m"
+
+// BROWN color
 const BROWN = "0;33m"
+
+// BLUE color
 const BLUE = "0;34m"
+
+// PURPLE color
 const PURPLE = "0;35m"
+
+// CYAN color
 const CYAN = "0;36m"
+
+// LIGHT_PURPLE color
 const LIGHT_PURPLE = "1;35m"
+
+// LIGHT_CYAN color
 const LIGHT_CYAN = "1;36m"
 
+// BOLD type
 const BOLD = "\x1b[1m"
+
+// PLAIN type
 const PLAIN = "\x1b[0m"

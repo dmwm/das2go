@@ -299,13 +299,11 @@ func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 							return base[0:len(base)-1] + val
 						}
 						return base + val
-					} else {
-						if strings.HasSuffix(base, "/") {
-							return base + val
-						}
-						return base + "/" + val
 					}
-					return base + val
+					if strings.HasSuffix(base, "/") {
+						return base + val
+					}
+					return base + "/" + val
 				}
 			case []string:
 				val, _ := spec[dkey].([]string)

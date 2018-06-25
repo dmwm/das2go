@@ -220,7 +220,7 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	return utils.List2Set(ids), idict
 }
 
-// Cconfigs reqmgr APIs to lookup configs for given dataset
+// Configs reqmgr APIs to lookup configs for given dataset
 // The logic: we look-up ReqMgr ids for given dataset and scan them
 // if id has length 32 we use configFile URL, otherwise we look-up record
 // in couchdb and fetch ConfigIDs to construct configFile URL

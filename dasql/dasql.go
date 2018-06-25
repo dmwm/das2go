@@ -344,13 +344,13 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 		}
 	}
 	// remove special keys from fields
-	var clean_fields []string
+	var cleanFields []string
 	for _, key := range fields {
 		if !utils.InList(key, specials) {
-			clean_fields = append(clean_fields, key)
+			cleanFields = append(cleanFields, key)
 		}
 	}
-	fields = clean_fields
+	fields = cleanFields
 	filters, aggregators, qlerror, pLine := parsePipe(relax(query), pipe)
 
 	// default DBS instance

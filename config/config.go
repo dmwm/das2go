@@ -38,7 +38,7 @@ type Configuration struct {
 	Timeout       int      `json:"timeout"`       // query time out
 }
 
-// global variables
+// Config variable represents configuration object
 var Config Configuration
 
 // String returns string representation of DAS Config
@@ -46,6 +46,7 @@ func (c *Configuration) String() string {
 	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s yui=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s timeout=%d>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.YuiRoot, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey, c.Timeout)
 }
 
+// ParseConfig parse given config file
 func ParseConfig(configFile string) error {
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {

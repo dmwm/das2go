@@ -22,6 +22,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
+// DASKeysMap keesp track of das keys and their attributes
 type DASKeysMap struct {
 	Key           string
 	Description   string
@@ -193,7 +194,7 @@ func (m *DASMaps) PresentationMap() mongo.DASRecord {
 	return m.presentations
 }
 
-// DASKeysMap provides presentation map of DAS maps
+// DASKeysMaps provides presentation map of DAS maps
 func (m *DASMaps) DASKeysMaps() []DASKeysMap {
 	if len(m.daskeysMaps) != 0 {
 		return m.daskeysMaps
@@ -547,11 +548,11 @@ func (m *DASMaps) ChangeUrl(old, pat string) {
 				dmap["url"] = url
 			} else if strings.Contains(url, "combined") {
 				services := dmap["services"].(map[string]interface{})
-				new_services := make(map[string]string)
+				newServices := make(map[string]string)
 				for key, val := range services {
 					url := val.(string)
 					url = strings.Replace(url, old, pat, -1)
-					new_services[key] = url
+					newServices[key] = url
 				}
 				dmap["services"] = services
 			}

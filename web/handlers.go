@@ -325,12 +325,15 @@ func ApisHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(_top + page + _bottom))
 }
 
+// Memory structure keeps track of server memory
 type Memory struct {
 	Total       uint64  `json:"total"`
 	Free        uint64  `json:"free"`
 	Used        uint64  `json:"used"`
 	UsedPercent float64 `json:"usedPercent"`
 }
+
+// Mem structure keeps track of virtual/swap memory of the server
 type Mem struct {
 	Virtual Memory
 	Swap    Memory

@@ -1,5 +1,6 @@
 package utils
 
+// DASServerError and others are represent different types of errors in DAS
 const (
 	_ = iota
 	DASServerError
@@ -17,6 +18,7 @@ const (
 	DASQueryError
 )
 
+// DASServerErrorName and others provides human based definition of the DAS error
 const (
 	DASServerErrorName   = "DAS error"
 	DBSErrorName         = "DBS upstream error"
