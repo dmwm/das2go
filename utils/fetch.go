@@ -93,21 +93,21 @@ func HttpClient() *http.Client {
 	if WEBSERVER > 0 && VERBOSE > 0 {
 		log.Println("Create TLSClientconfig: #certificates", len(certs))
 	}
-    timeout := time.Duration(TIMEOUT) * time.Second
+	timeout := time.Duration(TIMEOUT) * time.Second
 	if len(certs) == 0 {
-        if TIMEOUT > 0 {
-            return &http.Client{Timeout: time.Duration(timeout)}
-        }
-        return &http.Client{}
+		if TIMEOUT > 0 {
+			return &http.Client{Timeout: time.Duration(timeout)}
+		}
+		return &http.Client{}
 	}
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{Certificates: certs,
 			InsecureSkipVerify: true},
 	}
-    if TIMEOUT > 0 {
-        return &http.Client{Transport: tr, Timeout: timeout}
-    }
-    return &http.Client{Transport: tr}
+	if TIMEOUT > 0 {
+		return &http.Client{Transport: tr, Timeout: timeout}
+	}
+	return &http.Client{Transport: tr}
 }
 
 // ResponseType structure is what we expect to get for our URL call.
