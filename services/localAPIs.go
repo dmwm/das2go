@@ -28,7 +28,7 @@ func LocalAPIMap() map[string]string {
 	localAPIMap["dbs3_file_run_lumi4block"] = "FileRunLumi4Block"
 	localAPIMap["dbs3_file_run_lumi_evts4block"] = "RunLumiEvents4Block"
 	localAPIMap["dbs3_block_run_lumi4dataset"] = "RunLumi4Dataset"
-	localAPIMap["dbs3_file4dataset_run_lumi"] = "File4DatastRunLumi"
+	localAPIMap["dbs3_file4dataset_run_lumi"] = "File4DatasetRunLumi"
 	localAPIMap["dbs3_blocks4tier_dates"] = "Blocks4TierDates"
 	localAPIMap["dbs3_lumi4block_run"] = "Lumi4BlockRun"
 	localAPIMap["dbs3_datasetlist"] = "DatasetList"
