@@ -508,18 +508,20 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// process given query
 	response := processRequest(dasquery, pid, idx, limit)
 	if path == base+"/cache" || path == base+"/cache/" {
-		status := response["status"]
-		if status != "ok" {
-			w.Write([]byte(response["pid"].(string)))
-			return
-		}
-		js, err := json.Marshal(&response)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(js)
+		//         status := response["status"]
+		//         if status != "ok" {
+		//             w.Write([]byte(response["pid"].(string)))
+		//             return
+		//         }
+		//         js, err := json.Marshal(&response)
+		//         if err != nil {
+		//             http.Error(w, err.Error(), http.StatusInternalServerError)
+		//             return
+		//         }
+		//         w.Header().Set("Content-Type", "application/json")
+		//         w.Write(js)
+		msg := "DAS web server no longer support python clients, please switch to dasgoclient"
+		http.Error(w, msg, http.StatusInternalServerError)
 	} else if path == base+"/request" || path == base+"/request/" {
 		status := response["status"]
 		var procTime float64
