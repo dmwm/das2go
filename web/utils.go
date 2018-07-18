@@ -19,7 +19,7 @@ import (
 )
 
 // helper function to make a link
-func href(path, daskey, value string) string {
+func href(path, daskey, value, inst string) string {
 	key := strings.Split(daskey, ".")[0]
 	ref := fmt.Sprintf("%s=%s", key, value)
 	var furl url.URL
@@ -27,7 +27,7 @@ func href(path, daskey, value string) string {
 	parameters := url.Values{}
 	parameters.Add("input", ref)
 	furl.RawQuery = parameters.Encode()
-	out := fmt.Sprintf("<span class=\"highlight\"><a href=\"%s\">%s</a></span>", furl.String(), value)
+	out := fmt.Sprintf("<span class=\"highlight\"><a href=\"%s&instance=%s\">%s</a></span>", furl.String(), inst, value)
 	return out
 }
 
@@ -457,7 +457,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 							webkey = tooltip(webkey)
 						}
 						if daskey == pkey {
-							row = fmt.Sprintf("%s: %v\n<br/>\n", webkey, href(path, pkey, value))
+							row = fmt.Sprintf("%s: %v\n<br/>\n", webkey, href(path, pkey, value, inst))
 						} else {
 							row = fmt.Sprintf("%s: %v\n", webkey, value)
 						}
