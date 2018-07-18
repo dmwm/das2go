@@ -21,7 +21,12 @@ import (
 // helper function to make a link
 func href(path, daskey, value, inst string) string {
 	key := strings.Split(daskey, ".")[0]
-	ref := fmt.Sprintf("%s=%s", key, value)
+	var ref string
+	if key == "parent" || key == "child" {
+		ref = fmt.Sprintf("dataset=%s", value)
+	} else {
+		ref = fmt.Sprintf("%s=%s", key, value)
+	}
 	var furl url.URL
 	furl.Path = path
 	parameters := url.Values{}
