@@ -327,7 +327,8 @@ func (LocalAPIs) DatasetList(dasquery dasql.DASQuery) []mongo.DASRecord {
 	if s != nil {
 		status := s.(string)
 		if status != "" {
-			spec["dataset_access_type"] = status
+			spec["dataset_access_type"] = strings.Replace(status, "*", "", -1)
+			delete(spec, "status")
 		}
 	}
 	args, err := json.Marshal(spec)
