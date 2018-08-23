@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
@@ -20,13 +21,26 @@ import (
 )
 
 func dbsUrl(inst string) string {
-	//     return "https://cmsweb.cern.ch/dbs/prod/global/DBSReader"
+	if config.Config.Frontend != "" {
+		return fmt.Sprintf("%s/dbs/%s/DBSReader", config.Config.Frontend, inst)
+	}
+	if strings.Contains(inst, "int") {
+		return fmt.Sprintf("https://cmsweb-testbed.cern.ch/dbs/%s/DBSReader", inst)
+	} else if strings.Contains(inst, "dev") {
+		return fmt.Sprintf("https://cmsweb-dev.cern.ch/dbs/%s/DBSReader", inst)
+	}
 	return fmt.Sprintf("https://cmsweb.cern.ch/dbs/%s/DBSReader", inst)
 }
 func phedexUrl() string {
+	if config.Config.Frontend != "" {
+		return fmt.Sprintf("%s/phedex/datasvc/json/prod", config.Config.Frontend)
+	}
 	return "https://cmsweb.cern.ch/phedex/datasvc/json/prod"
 }
 func sitedbUrl() string {
+	if config.Config.Frontend != "" {
+		return fmt.Sprintf("%s/sitedb/data/prod", config.Config.Frontend)
+	}
 	return "https://cmsweb.cern.ch/sitedb/data/prod"
 }
 
