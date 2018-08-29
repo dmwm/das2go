@@ -60,7 +60,10 @@ func findBlocks(dasquery dasql.DASQuery) []string {
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
-		out = append(out, rec["block_name"].(string))
+		v := rec["block_name"]
+		if v != nil {
+			out = append(out, v.(string))
+		}
 	}
 	return out
 }
