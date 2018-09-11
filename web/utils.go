@@ -49,8 +49,15 @@ func genColor(system string) (string, string) {
 		col = "white"
 	} else if system == "phedex" {
 		bkg = "#00BFBF"
+	} else if system == "rucio" {
+		bkg = "#11d7b5"
+	} else if system == "dynamo" {
+		bkg = "#13d152"
 	} else if system == "sitedb2" {
 		bkg = "#6495ED"
+		col = "white"
+	} else if system == "cric" {
+		bkg = "#00d9ff"
 		col = "white"
 	} else if system == "runregistry" {
 		bkg = "#FF8C00"
