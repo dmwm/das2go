@@ -39,6 +39,12 @@ func LocalAPIMap() map[string]string {
 	localAPIMap["sitedb2_people_via_email"] = "PeopleEmail"
 	localAPIMap["sitedb2_people_via_name"] = "PeopleName"
 	localAPIMap["sitedb2_roles"] = "Roles"
+	localAPIMap["cric_site_names"] = "CricSiteNames"
+	localAPIMap["cric_groups"] = "CricGroups"
+	localAPIMap["cric_group_responsibilities"] = "CricGroupResponsibilities"
+	localAPIMap["cric_people_via_email"] = "CricPeopleEmail"
+	localAPIMap["cric_people_via_name"] = "CricPeopleName"
+	localAPIMap["cric_roles"] = "CricRoles"
 	return localAPIMap
 }
 
