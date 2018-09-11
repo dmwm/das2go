@@ -6,11 +6,14 @@ const (
 	DASServerError
 	DBSError
 	PhedexError
+	RucioError
+	DynamoError
 	ReqMgrError
 	RunRegistryError
 	McMError
 	DashboardError
 	SiteDBError
+	CRICError
 	CondDBError
 	CombinedError
 	MongoDBError
@@ -23,11 +26,14 @@ const (
 	DASServerErrorName   = "DAS error"
 	DBSErrorName         = "DBS upstream error"
 	PhedexErrorName      = "PhEDEx upstream error"
+	RucoErrorName        = "Rucio upstream error"
+	DynamoErrorName      = "Dynamo upstream error"
 	ReqMgrErrorName      = "ReqMgr upstream error"
 	RunRegistryErrorName = "RunRegistry upstream error"
 	McMErrorName         = "McM upstream error"
 	DashboardErrorName   = "Dashboard upstream error"
 	SiteDBErrorName      = "SiteDB upstream error"
+	CRICErrorName        = "CRIC upstream error"
 	CondDBErrorName      = "CondDB upstream error"
 	CombinedErrorName    = "Combined error"
 	MongoDBErrorName     = "MongoDB error"
