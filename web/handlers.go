@@ -273,7 +273,7 @@ func CliHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	w.WriteHeader(http.StatusOK)
-	page := "Please use dasgoclient which is available in any CMSSW releases"
+	page := "Please use dasgoclient tool or Utilities/General/python/cmssw_das_client.py module from CMSSW"
 	w.Write([]byte(_top + page + _bottom))
 }
 
