@@ -1,7 +1,7 @@
 package services
 
 // DAS service module
-// It aggregates information from: DBS, PhEDEx, SiteDB, McM, ReqMgr, Dashboard, RunSummary, CondDB
+// It aggregates information from: DBS, PhEDEx, SiteDB, CRIC, McM, ReqMgr, Dashboard, RunSummary, CondDB
 //
 // Copyright (c) 2015-2016 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 //
@@ -72,6 +72,8 @@ func Unmarshal(dasquery dasql.DASQuery, system, api string, r utils.ResponseType
 		out = RunRegistryUnmarshal(api, data)
 	case system == "sitedb2":
 		out = SiteDBUnmarshal(api, data)
+	case system == "cric":
+		out = CRICUnmarshal(api, data)
 	}
 	return remap(api, out, notations)
 }
