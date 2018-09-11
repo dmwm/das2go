@@ -43,6 +43,12 @@ func sitedbUrl() string {
 	}
 	return "https://cmsweb.cern.ch/sitedb/data/prod"
 }
+func cricUrl(api string) string {
+	if strings.Contains(api, "site") {
+		return "https://cms-cric.cern.ch/api/cms/site/query"
+	}
+	return "https://cms-cric.cern.ch/api/accounts/user/query"
+}
 
 // helper function to find file,run,lumis for given dataset or block
 func findBlocks(dasquery dasql.DASQuery) []string {
