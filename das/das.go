@@ -610,6 +610,13 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 		return
 	}
 	dasrecord := services.CreateDASRecord(dasquery, srvs, pkeys)
+	if utils.VERBOSE > 0 {
+		logs.WithFields(logs.Fields{
+			"Record":   dasrecord,
+			"Services": srvs,
+			"pkeys":    pkeys,
+		}).Info("CreateDASRecord")
+	}
 	var records []mongo.DASRecord
 	records = append(records, dasrecord)
 	mongo.Insert("das", "cache", records)
