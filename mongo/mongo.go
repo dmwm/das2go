@@ -83,7 +83,16 @@ func GetValue(rec DASRecord, key string) interface{} {
 	var val DASRecord
 	keys := strings.Split(key, ".")
 	if len(keys) > 1 {
-		switch v := rec[keys[0]].(type) {
+		value, ok := rec[keys[0]]
+		if !ok {
+			logs.WithFields(logs.Fields{
+				"Time":         time.Now(),
+				"Mongo record": rec,
+				"key":          key,
+			}).Warn("Unable to find key value in DASRecord")
+			return ""
+		}
+		switch v := value.(type) {
 		case DASRecord:
 			val = v
 		case []DASRecord:
@@ -101,9 +110,12 @@ func GetValue(rec DASRecord, key string) interface{} {
 			}
 		default:
 			logs.WithFields(logs.Fields{
-				"Time": time.Now(),
-				"Type": fmt.Sprintf("%T", v),
-				"data": v,
+				"Time":         time.Now(),
+				"Type":         fmt.Sprintf("%T", v),
+				"DAS record":   v,
+				"Mongo record": rec,
+				"key":          key,
+				"keys":         keys,
 			}).Error("Unknown type")
 			return ""
 		}
