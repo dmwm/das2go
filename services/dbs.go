@@ -317,7 +317,8 @@ func (LocalAPIs) DatasetList(dasquery dasql.DASQuery) []mongo.DASRecord {
 		}
 		spec["dataset"] = []string{d} // API accepts list of datasets
 	case []string:
-		fmt.Println("### valid data type", d)
+		//         fmt.Println("### valid data type", d)
+		spec["dataset"] = d
 	default:
 		return []mongo.DASRecord{} // no other data types are allowed
 	}
