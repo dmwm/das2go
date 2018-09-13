@@ -2,47 +2,15 @@
 system : phedex
 format : XML
 ---
-urn : blockReplicas4dataset
+urn : blockReplicas
 url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
 expire : 3600
-params : {"se":"optional", "node":"optional", "dataset":"required"}
+params : {"se":"*", "block":"*", "node":"*", "dataset":"*"}
 lookup : block
 das_map : [
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
         {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
         {"das_key":"site", "rec_key":"site.name", "api_arg": "node", "pattern":"^T[0-3]_"},
-        {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
-]
----
-urn : blockReplicas4block
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
-expire : 3600
-params : {"se":"optional", "block":"required", "node":"optional"}
-lookup : block
-das_map : [
-        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
-        {"das_key":"site", "rec_key":"site.name", "api_arg": "node", "pattern":"^T[0-3]_"},
-        {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
-]
----
-urn : block4site
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
-expire : 3600
-params : {"node":"required", "dataset":"optional"}
-lookup: block
-das_map : [
-        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
-        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
-        {"das_key":"site", "rec_key":"site.name", "api_arg":"node", "pattern":"^T[0-3]_"},
-]
----
-urn : block4se
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
-expire : 3600
-params : {"se":"required", "dataset":"optional"}
-lookup : block
-das_map : [
-        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
-        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
         {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
 ]
 ---
@@ -121,7 +89,7 @@ das_map : [
 urn : fileReplicas
 url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/fileReplicas"
 expire : 3600
-params : {"se":"optional", "block":"required", "node":"optional"}
+params : {"se":"*", "block":"required", "node":"*"}
 lookup : file
 das_map : [
         {"das_key":"file", "rec_key":"file.name", "api_arg":""},
@@ -133,7 +101,7 @@ das_map : [
 urn : fileReplicas4dataset
 url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/fileReplicas"
 expire : 3600
-params : {"se":"optional", "dataset":"required", "node":"optional"}
+params : {"se":"*", "dataset":"required", "node":"*"}
 lookup : file
 das_map : [
         {"das_key":"file", "rec_key":"file.name", "api_arg":""},
@@ -145,7 +113,7 @@ das_map : [
 urn : fileReplicas4file
 url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/fileReplicas"
 expire : 3600
-params : {"se":"optional", "lfn":"required", "node":"optional"}
+params : {"se":"*", "lfn":"required", "node":"*"}
 lookup : file
 das_map : [
         {"das_key":"file", "rec_key":"file.name", "api_arg":"lfn", "pattern":"/.*/.*/.*.root"},
@@ -156,7 +124,7 @@ das_map : [
 urn : nodes
 url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/nodes"
 expire : 3600
-params : {"node":"required", "noempty":""}
+params : {"node":"*", "noempty":""}
 lookup : site
 das_map : [
     {"das_key":"site", "rec_key":"site.name", "api_arg":"node", "pattern":"^T[0-3]_"}
@@ -165,21 +133,21 @@ das_map : [
 urn : nodeusage
 url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/nodeusage"
 expire : 3600
-params : {"node":"required"}
+params : {"node":"*"}
 lookup : site
 das_map : [{"das_key":"site", "rec_key":"site.name", "api_arg":"node", "pattern":"^T[0-3]_"}]
 ---
 urn : groups
 url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/groups"
 expire : 3600
-params : {"group":"required"}
+params : {"group":"*"}
 lookup : group
 das_map : [{"das_key":"group", "rec_key":"group.name", "api_arg":"group"}]
 ---
 urn : groupusage
 url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/groupusage"
 expire : 3600
-params : {"se": "required", "group":"optional"}
+params : {"se": "*", "group":"*"}
 lookup : site
 das_map : [
     {"das_key":"site", "rec_key":"site.name", "api_arg":"node", "pattern":"^T[0-3]_"},
