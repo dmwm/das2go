@@ -6,7 +6,8 @@ format: JSON
 # we use it for matching api with das key and handle it as optional in
 # cric_service.py module
 urn : site_names
-url : "https://cms-cric.cern.ch/api/cms/site/query"
+# url : "https://cms-cric.cern.ch/api/cms/site/query"
+url : "local_api"
 expire : 3600
 params : {"preset":"site-names", "rcsite_state":"ANY", "json":1, "match":"optional"}
 lookup : site
@@ -16,7 +17,8 @@ das_map : [
 ]
 ---
 urn : groups
-url : "https://cms-cric.cern.ch/api/accounts/user/query"
+# url : "https://cms-cric.cern.ch/api/accounts/user/query"
+url : "local_api"
 expire : 3600
 params : {"preset":"group-responsibilities", "json":1, "match":"optional"}
 lookup : group
@@ -25,7 +27,8 @@ das_map : [
 ]
 ---
 urn : group_responsibilities
-url : "https://cms-cric.cern.ch/api/accounts/user/query"
+# url : "https://cms-cric.cern.ch/api/accounts/user/query"
+url : "local_api"
 expire : 3600
 params : {"preset":"group-responsibilities", "json":1, "match":"optional"}
 lookup : group
@@ -34,7 +37,8 @@ das_map : [
 ]
 ---
 urn : people_via_email
-url : "https://cms-cric.cern.ch/api/accounts/user/query"
+# url : "https://cms-cric.cern.ch/api/accounts/user/query"
+url : "local_api"
 expire : 3600
 params : {"preset":"people", "json":1, "match":"optional"}
 lookup : user
@@ -44,7 +48,8 @@ das_map : [
 ]
 ---
 urn : people_via_name
-url : "https://cms-cric.cern.ch/api/accounts/user/query"
+# url : "https://cms-cric.cern.ch/api/accounts/user/query"
+url : "local_api"
 expire : 3600
 params : {"preset":"people", "json":1, "match":"optional"}
 lookup : user
@@ -53,7 +58,8 @@ das_map : [
 ]
 ---
 urn : roles
-url : "https://cms-cric.cern.ch/api/accounts/user/query"
+# url : "https://cms-cric.cern.ch/api/accounts/user/query"
+url : "local_api"
 expire : 3600
 params : {"preset":"roles", "json":1, "match":"optional"}
 lookup : role
