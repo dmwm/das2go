@@ -26,7 +26,7 @@ const (
 	DASServerErrorName   = "DAS error"
 	DBSErrorName         = "DBS upstream error"
 	PhedexErrorName      = "PhEDEx upstream error"
-	RucoErrorName        = "Rucio upstream error"
+	RucioErrorName       = "Rucio upstream error"
 	DynamoErrorName      = "Dynamo upstream error"
 	ReqMgrErrorName      = "ReqMgr upstream error"
 	RunRegistryErrorName = "RunRegistry upstream error"
