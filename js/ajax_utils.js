@@ -19,6 +19,9 @@ function ajaxCheckPid(base, method, input, inst, pid, view, interval) {
 //        if (url.indexOf('view=xml') != -1 ||
 //            url.indexOf('view=json') != -1 ||
 //            url.indexOf('view=plain') != -1) return;
+          if(view == "plain") {
+              location.reload(); // reload page
+          }
           return
       },
       onSuccess : function(transport) {
@@ -31,6 +34,9 @@ function ajaxCheckPid(base, method, input, inst, pid, view, interval) {
             transport.responseText += msg;
             setTimeout('ajaxCheckPid("'+base+'","'+method+'","'+input+'","'+inst+'","'+pid+'","'+view+'","'+wait+'")', wait);
         } else {
+            if(view == "plain") {
+                location.reload(); // reload page
+            }
             return;
         }
       }
