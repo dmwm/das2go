@@ -41,6 +41,9 @@ var TotalPostCalls uint64
 // CLIENT_VERSION represents client version
 var CLIENT_VERSION string
 
+// RucioAuth represents rucio authentication
+var RucioAuth RucioAuthModule
+
 // client X509 certificates
 func tlsCerts() ([]tls.Certificate, error) {
 	uproxy := os.Getenv("X509_USER_PROXY")
@@ -229,6 +232,11 @@ func FetchResponse(rurl, args string) ResponseType {
 		req.Header.Add("Accept-Encoding", "identity")
 		if strings.Contains(rurl, "sitedb") || strings.Contains(rurl, "reqmgr") {
 			req.Header.Add("Accept", "application/json")
+		}
+		if strings.Contains(rurl, "rucio") { // we need to fetch auth token
+			req.Header.Add("X-Rucio-Auth-Token", RucioAuth.Token())
+			req.Header.Add("Connection", "Keep-Alive")
+			req.Header.Add("X-Rucio-Account", RucioAuth.Account())
 		}
 		atomic.AddUint64(&TotalGetCalls, 1)
 	}
