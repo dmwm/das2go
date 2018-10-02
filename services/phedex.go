@@ -89,6 +89,7 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 				}
 			}
 		} else if api == "site4dataset" || api == "site4block" {
+			var sites []string
 			if rec["phedex"] != nil {
 				val := rec["phedex"].(map[string]interface{})
 				blocks := val["block"].([]interface{})
@@ -105,8 +106,11 @@ func PhedexUnmarshal(api string, data []byte) []mongo.DASRecord {
 						if row["se"] != nil {
 							se = row["se"].(string)
 						}
-						rec := mongo.DASRecord{"name": node, "se": se}
-						out = append(out, rec)
+						if !utils.InList(node, sites) {
+							sites = append(sites, node)
+							rec := mongo.DASRecord{"name": node, "se": se}
+							out = append(out, rec)
+						}
 					}
 				}
 			}

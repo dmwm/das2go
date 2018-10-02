@@ -147,7 +147,8 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 		status, data := das.GetData(dasquery, "merge", idx, limit)
 		ts := das.TimeStamp(dasquery)
 		procTime := time.Now().Sub(time.Unix(ts, 0)).Seconds()
-		response["nresults"] = das.Count(pid)
+		//         response["nresults"] = das.Count(pid)
+		response["nresults"] = len(data)
 		response["timestamp"] = das.GetTimestamp(pid)
 		response["status"] = status
 		response["pid"] = pid

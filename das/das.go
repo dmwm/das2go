@@ -718,6 +718,10 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 	if len(aggrs) > 0 {
 		data = aggregateAll(data, aggrs)
 	}
+
+	// perform post-processing of DAS records
+	data = PostProcessing(dasquery, data)
+
 	// Get DAS status from merge collection
 	spec = bson.M{"qhash": pid, "das.record": 0}
 	dasData := mongo.Get("das", "merge", spec, 0, 1)
@@ -729,6 +733,42 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 		return status, emptyData
 	}
 	return status, data
+}
+
+// helper function to perform post-processing of DAS data, e.g.
+// when we call site query we need to distinguish the case when
+// to show original site
+func PostProcessing(dasquery dasql.DASQuery, data []mongo.DASRecord) []mongo.DASRecord {
+	// site4dataset use case
+	fields := dasquery.Fields
+	if utils.InList("site", fields) {
+		var out []mongo.DASRecord
+		for _, r := range data {
+			origPlacement := false
+			var recs []mongo.DASRecord
+			switch v := r["site"].(type) {
+			case []interface{}:
+				for _, v := range v {
+					recs = append(recs, v.(mongo.DASRecord))
+				}
+			case []mongo.DASRecord:
+				recs = v
+			}
+			for _, s := range recs {
+				k, ok := s["kind"]
+				if ok && k.(string) == "original placement" {
+					origPlacement = true
+				}
+			}
+			if !origPlacement {
+				out = append(out, r)
+			}
+		}
+		if len(out) > 0 && len(out) != len(data) {
+			return out
+		}
+	}
+	return data
 }
 
 // helper function to aggregate results over provided aggregators

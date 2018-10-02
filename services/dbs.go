@@ -66,9 +66,14 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 		}
 		return out
 	} else if api == "site4dataset" || api == "site4block" {
+		var sites []string
 		for _, rec := range records {
 			r := mongo.DASRecord{"name": rec["origin_site_name"], "dataset": rec["dataset"], "kind": "original placement"}
-			out = append(out, r)
+			site := rec["origin_site_name"].(string)
+			if !utils.InList(site, sites) {
+				out = append(out, r)
+				sites = append(sites, site)
+			}
 		}
 		return out
 	} else if api == "fileparents" {
