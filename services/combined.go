@@ -271,8 +271,10 @@ func files4dbRunsSite(dasquery dasql.DASQuery) []mongo.DASRecord {
 	files := processUrls("dbs3", api, urls)
 	var fileList []string
 	for _, rec := range files {
-		fname := rec["logical_file_name"].(string)
-		fileList = append(fileList, fname)
+		if rec != nil && rec["logical_file_name"] != nil {
+			fname := rec["logical_file_name"].(string)
+			fileList = append(fileList, fname)
+		}
 	}
 	// check files in Phedex for give site (should take it form spec)
 	site := spec["site"].(string)
