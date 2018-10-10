@@ -271,6 +271,16 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		base += "2" // add 2 at the end
 	}
 
+	// adjust datasets API to look-up all datasets regardless of their status
+	// if dataset name is provided
+	if system == "dbs3" && urn == "datasets" {
+		val, ok := spec["dataset"].(string)
+		if ok && !strings.Contains(val, "*") {
+			delete(vals, "dataset_access_type")
+			vals.Add("dataset_access_type", "*")
+		}
+	}
+
 	// Encode all arguments for url
 	args := vals.Encode()
 	if len(vals) < len(skeys) {
