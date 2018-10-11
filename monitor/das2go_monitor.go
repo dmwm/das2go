@@ -39,18 +39,18 @@ func checkHttpEndpoint(endpoint, pat string) bool {
 		return false
 	}
 	matched, _ := regexp.MatchString(pat, string(data))
-	if matched {
+	if !matched {
 		logs.WithFields(logs.Fields{
 			"Error":   err,
 			"Pattern": pat,
 		}).Error("Unable to read response body with pattern")
-		return true
+		return false
 	}
-	return false
+	return true
 }
 
 func checkProcess(pat string) bool {
-	cmd := fmt.Sprintf("ps auxw | grep %s | grep -v grep", pat)
+	cmd := fmt.Sprintf("ps auxw | grep \"%s\" | grep -v grep", pat)
 	out, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
 		logs.WithFields(logs.Fields{
@@ -97,15 +97,23 @@ func monitor(port int64, config string) {
 	// check local server
 	status := checkProcess(pat)
 	if !status {
-		logs.Info("DAS server is not running, starting ...")
+		logs.WithFields(logs.Fields{
+			"pattern": pat,
+			"status":  status,
+		}).Info("DAS server is not running, starting ...")
 		start(config, pw)
 	}
 	// check running process, it should respond on localhost
-	endpoint := fmt.Sprintf("http://localhost:%d", port)
+	endpoint := fmt.Sprintf("http://localhost:%d/das/status", port)
+	pat = "DAS server status"
 	for {
 		status = checkHttpEndpoint(endpoint, pat)
 		if !status {
-			logs.Warn("DAS HTTP endpoint failure, re-starting ...")
+			logs.WithFields(logs.Fields{
+				"endpoint": endpoint,
+				"pattern":  pat,
+				"status":   status,
+			}).Warn("DAS HTTP endpoint failure, re-starting ...")
 			start(config, pw)
 		}
 		sleep := time.Duration(10) * time.Second
