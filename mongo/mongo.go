@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"html"
 	"log"
 	"strings"
 	"time"
@@ -72,8 +73,8 @@ func (r DASRecord) ToHtml() string {
 // DASErrorRecord provides DAS error record
 func DASErrorRecord(msg, etype string, ecode int) DASRecord {
 	erec := make(DASRecord)
-	erec["error"] = msg
-	erec["type"] = etype
+	erec["error"] = html.EscapeString(msg)
+	erec["type"] = html.EscapeString(etype)
 	erec["code"] = ecode
 	return erec
 }
