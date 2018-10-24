@@ -23,9 +23,9 @@ func loadMcMData(api string, data []byte) []mongo.DASRecord {
 	var rec mongo.DASRecord
 
 	// McM output for https://cms-pdmv.cern.ch/mcm/public/restapi/requests/produces/WToENu_Tune4C_13TeV-pythia8/Fall13dr-tsg_PU40bx25_POSTLS162_V2-v1/GEN-SIM-RAW
-	// returns formatted JSON with \n. We convert bytes back to string
-	// and replace/trim unnecessary stuff
-	if api == "mcm4dataset" {
+	// returns formatted JSON with \n because of text/html Content-type.
+	// We convert bytes back to string and replace/trim unnecessary stuff
+	if api == "mcm4dataset" && strings.Contains(string(data), "\\n") {
 		r := strings.Replace(string(data), "\\n", "", -1)
 		r = strings.Replace(r, " ", "", -1)
 		r = strings.Replace(r, "\\", "", -1)
