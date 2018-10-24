@@ -131,8 +131,9 @@ func dasError(query, msg, posLine string) string {
 }
 
 // helper function to form no results response
-func dasZero() string {
+func dasZero(base string) string {
 	tmplData := make(map[string]interface{})
+	tmplData["Base"] = base
 	var templates DASTemplates
 	page := templates.DASZeroResults(config.Config.Templates, tmplData)
 	return page
@@ -539,7 +540,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			}
 			nres := response["nresults"].(int)
 			if nres == 0 {
-				page = dasZero()
+				page = dasZero(config.Config.Base)
 			} else {
 				presentationMap := _dasmaps.PresentationMap()
 				page = PresentData(path, dasquery, data, presentationMap, nres, idx, limit, procTime)
