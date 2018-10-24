@@ -230,7 +230,7 @@ func FetchResponse(rurl, args string) ResponseType {
 	} else {
 		req, _ = http.NewRequest("GET", rurl, nil)
 		req.Header.Add("Accept-Encoding", "identity")
-		if strings.Contains(rurl, "sitedb") || strings.Contains(rurl, "reqmgr") {
+		if strings.Contains(rurl, "sitedb") || strings.Contains(rurl, "reqmgr") || strings.Contains(rurl, "mcm") {
 			req.Header.Add("Accept", "application/json")
 		}
 		if strings.Contains(rurl, "rucio") { // we need to fetch auth token
