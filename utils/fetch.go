@@ -41,9 +41,6 @@ var TotalPostCalls uint64
 // CLIENT_VERSION represents client version
 var CLIENT_VERSION string
 
-// RucioAuth represents rucio authentication
-var RucioAuth RucioAuthModule
-
 // client X509 certificates
 func tlsCerts() ([]tls.Certificate, error) {
 	uproxy := os.Getenv("X509_USER_PROXY")
