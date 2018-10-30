@@ -49,6 +49,10 @@ func cricUrl(api string) string {
 	}
 	return "https://cms-cric.cern.ch/api/accounts/user/query"
 }
+func rucioUrl(api string) string {
+	rurl := fmt.Sprintf("http://cms-rucio-test.cern.ch/%s/", api)
+	return rurl
+}
 
 // helper function to find file,run,lumis for given dataset or block
 func findBlocks(dasquery dasql.DASQuery) []string {
