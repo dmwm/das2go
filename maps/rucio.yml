@@ -1,0 +1,45 @@
+# Rucio API mapping to DAS
+system : rucio
+format : JSON
+---
+urn : replicas
+url : "http://cms-rucio-test.cern.ch/replicas"
+expire : 3600
+params : {"se":"*", "block":"*", "node":"*", "dataset":"*"}
+lookup : block
+das_map : [
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
+        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+        {"das_key":"site", "rec_key":"site.name", "api_arg": "node", "pattern":"^T[0-3]_"},
+        {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
+]
+---
+urn : rses
+url : "http://cms-rucio-test.cern.ch/rses"
+expire : 3600
+params : {"node":"required", "dataset":"optional"}
+lookup: dataset
+das_map : [
+        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+        {"das_key":"site", "rec_key":"site.name", "api_arg":"node", "pattern":"^T[0-3]_"},
+]
+---
+urn : accounts
+url : "http://cms-rucio-test.cern.ch/accounts"
+expire : 3600
+params : {}
+lookup: dataset
+das_map : [
+]
+---
+notations : [
+    {"api_output":"time_create", "rec_key":"creation_time", "api":""},
+    {"api_output":"time_update", "rec_key":"modification_time", "api":""},
+    {"api_output":"bytes", "rec_key":"size", "api":""},
+    {"api_output":"node", "rec_key":"site", "api":""},
+    {"api_output":"node", "rec_key":"node", "api":"nodeusage"},
+    {"api_output":"files", "rec_key":"nfiles", "api":""},
+    {"api_output":"events", "rec_key":"nevents", "api":""},
+    {"api_output":"lfn", "rec_key":"name", "api":""},
+]
+
