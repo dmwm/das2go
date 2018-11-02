@@ -2,11 +2,23 @@
 system : rucio
 format : JSON
 ---
-urn : replicas
+urn : replicasBlocks
 url : "http://cms-rucio-test.cern.ch/replicas"
 expire : 3600
-params : {"se":"*", "block":"*", "node":"*", "dataset":"*"}
+params : {"se":"optional", "block":"optional", "node":"optional", "dataset":"optional"}
 lookup : block
+das_map : [
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
+        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+        {"das_key":"site", "rec_key":"site.name", "api_arg": "node", "pattern":"^T[0-3]_"},
+        {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
+]
+---
+urn : replicasFiles
+url : "http://cms-rucio-test.cern.ch/replicas"
+expire : 3600
+params : {"se":"optional", "block":"optional", "node":"optional", "dataset":"optional"}
+lookup : file
 das_map : [
         {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
         {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
@@ -17,8 +29,8 @@ das_map : [
 urn : rses
 url : "http://cms-rucio-test.cern.ch/rses"
 expire : 3600
-params : {"node":"required", "dataset":"optional"}
-lookup: dataset
+params : {"node":"optional", "dataset":"optional"}
+lookup: site
 das_map : [
         {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
         {"das_key":"site", "rec_key":"site.name", "api_arg":"node", "pattern":"^T[0-3]_"},
@@ -28,7 +40,7 @@ urn : accounts
 url : "http://cms-rucio-test.cern.ch/accounts"
 expire : 3600
 params : {}
-lookup: dataset
+lookup: user
 das_map : [
 ]
 ---
