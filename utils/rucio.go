@@ -28,18 +28,22 @@ type RucioAuthModule struct {
 	agent   string
 	token   string
 	url     string
-	ts      time.Time
+	ts      int64
 }
 
 // Token returns Rucio authentication token
-func (r *RucioAuthModule) Token() string {
-	t := time.Now().Unix() - r.ts.Unix()
-	if r.token != "" && t < RucioValidity {
-		return r.token
+func (r *RucioAuthModule) Token() (string, error) {
+	t := time.Now().Unix()
+	if r.token != "" && t < r.ts {
+		return r.token, nil
 	}
-	FetchRucioTokenViaCurl(r.url)
-	r.ts = time.Now()
-	return r.token
+	token, expire, err := FetchRucioTokenViaCurl(r.url)
+	if err != nil {
+		return "", err
+	}
+	r.ts = expire
+	r.token = token
+	return r.token, nil
 }
 
 // Account returns Rucio authentication account
@@ -68,7 +72,9 @@ func (r *RucioAuthModule) Url() string {
 
 // run go-routine to periodically obtain rucio token
 // FetchRucioToken request new Rucio token
-func FetchRucioToken(rurl string) string {
+func FetchRucioToken(rurl string) (string, int64, error) {
+	// I need to replace expire with time provided by Rucio auth server
+	expire := time.Now().Add(time.Minute * 59).Unix()
 	req, _ := http.NewRequest("GET", rurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("X-Rucio-Account", RucioAuth.Account())
@@ -79,7 +85,7 @@ func FetchRucioToken(rurl string) string {
 		logs.WithFields(logs.Fields{
 			"Error": err,
 		}).Error("unable to Http client")
-		return ""
+		return "", 0, err
 	}
 	defer resp.Body.Close()
 	_, err = ioutil.ReadAll(resp.Body)
@@ -87,16 +93,18 @@ func FetchRucioToken(rurl string) string {
 		logs.WithFields(logs.Fields{
 			"Error": err,
 		}).Error("unable to close the response body")
-		return ""
+		return "", 0, err
 	}
 	if v, ok := resp.Header["X-Rucio-Auth-Token"]; ok {
-		return v[0]
+		return v[0], expire, nil
 	}
-	return ""
+	return "", 0, err
 }
 
 // FetchRucioTokenViaCurl is a helper function to get Rucio token by using curl command
-func FetchRucioTokenViaCurl(rurl string) string {
+func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
+	// I need to replace expire with time provided by Rucio auth server
+	expire := time.Now().Add(time.Minute * 59).Unix()
 	proxy := os.Getenv("X509_USER_PROXY")
 	account := fmt.Sprint("X-Rucio-Account:%s", RucioAuth.Account())
 	agent := RucioAuth.Agent()
@@ -107,7 +115,7 @@ func FetchRucioTokenViaCurl(rurl string) string {
 		logs.WithFields(logs.Fields{
 			"Error": err,
 		}).Error("unable to execute")
-		return ""
+		return "", 0, err
 	}
 	var token string
 	for _, v := range strings.Split(string(out), "\n") {
@@ -116,5 +124,5 @@ func FetchRucioTokenViaCurl(rurl string) string {
 			token = strings.Trim(arr[len(arr)-1], " ")
 		}
 	}
-	return token
+	return token, expire, nil
 }

@@ -231,7 +231,11 @@ func FetchResponse(rurl, args string) ResponseType {
 			req.Header.Add("Accept", "application/json")
 		}
 		if strings.Contains(rurl, "rucio") { // we need to fetch auth token
-			req.Header.Add("X-Rucio-Auth-Token", RucioAuth.Token())
+			token, err := RucioAuth.Token()
+			if err == nil {
+				req.Header.Add("X-Rucio-Auth-Token", token)
+			}
+			req.Header.Add("Accept", "application/json")
 			req.Header.Add("Connection", "Keep-Alive")
 			req.Header.Add("X-Rucio-Account", RucioAuth.Account())
 		}
