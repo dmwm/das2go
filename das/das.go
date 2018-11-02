@@ -571,7 +571,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 			} else {
 				furl = fmt.Sprintf("%s/api/GLOBAL/runsummary/json/%s/none/data", furl, columns)
 			}
-		} else if system == "reqmgr" || system == "mcm" {
+		} else if system == "reqmgr" || system == "mcm" || system == "rucio" {
 			furl = FormRESTUrl(dasquery, dmap)
 		} else {
 			furl = FormUrlCall(dasquery, dmap)
