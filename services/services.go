@@ -56,6 +56,8 @@ func Unmarshal(dasquery dasql.DASQuery, system, api string, r utils.ResponseType
 	}
 	data := r.Data
 	switch {
+	case system == "rucio":
+		out = RucioUnmarshal(api, data)
 	case system == "phedex":
 		out = PhedexUnmarshal(api, data)
 	case system == "dbs3" || system == "dbs":
