@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/http/httputil"
 	"os"
 	"os/exec"
 	"strings"
@@ -37,7 +38,7 @@ func (r *RucioAuthModule) Token() (string, error) {
 	if r.token != "" && t < r.ts {
 		return r.token, nil
 	}
-	token, expire, err := FetchRucioTokenViaCurl(r.url)
+	token, expire, err := FetchRucioToken(r.Url())
 	if err != nil {
 		return "", err
 	}
@@ -77,8 +78,19 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	req, _ := http.NewRequest("GET", rurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
-	req.Header.Add("X-Rucio-Account", RucioAuth.Account())
-	req.Header.Set("User-Agent", RucioAuth.Agent())
+	req.Header.Add("X-Rucio-Account", "das")
+	req.Header.Add("User-Agent", "dasgoserver-rucio")
+	req.Header.Add("Accept", "application/json")
+	req.Header.Add("Connection", "keep-alive")
+	if VERBOSE > 1 {
+		dump1, err1 := httputil.DumpRequestOut(req, true)
+		logs.WithFields(logs.Fields{
+			"url":    rurl,
+			"header": req.Header,
+			"dump":   string(dump1),
+			"error":  err1,
+		}).Info("http request")
+	}
 	client := HttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
@@ -86,6 +98,14 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 			"Error": err,
 		}).Error("unable to Http client")
 		return "", 0, err
+	}
+	if VERBOSE > 1 {
+		dump2, err2 := httputil.DumpResponse(resp, true)
+		logs.WithFields(logs.Fields{
+			"url":   rurl,
+			"dump":  string(dump2),
+			"error": err2,
+		}).Info("http response")
 	}
 	defer resp.Body.Close()
 	_, err = ioutil.ReadAll(resp.Body)
@@ -106,7 +126,7 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	// I need to replace expire with time provided by Rucio auth server
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	proxy := os.Getenv("X509_USER_PROXY")
-	account := fmt.Sprint("X-Rucio-Account:%s", RucioAuth.Account())
+	account := fmt.Sprintf("X-Rucio-Account:%s", RucioAuth.Account())
 	agent := RucioAuth.Agent()
 	cmd := fmt.Sprintf("curl -v --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
 	fmt.Println(cmd)
