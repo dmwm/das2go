@@ -2,8 +2,19 @@
 system : rucio
 format : JSON
 ---
+urn : dataset4site
+url : "http://cms-rucio-test.cern.ch/replicas/rse"
+expire : 3600
+params : {"se":"optional", "node":"optional"}
+lookup : dataset
+das_map : [
+        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+        {"das_key":"site", "rec_key":"site.name", "api_arg": "node", "pattern":"^T[0-3]_"},
+        {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
+]
+---
 urn : replicasBlocks
-url : "http://cms-rucio-test.cern.ch/replicas"
+url : "http://cms-rucio-test.cern.ch/replicas/cms"
 expire : 3600
 params : {"se":"optional", "block":"optional", "node":"optional", "dataset":"optional"}
 lookup : block
@@ -15,7 +26,7 @@ das_map : [
 ]
 ---
 urn : replicasFiles
-url : "http://cms-rucio-test.cern.ch/replicas"
+url : "http://cms-rucio-test.cern.ch/replicas/cms"
 expire : 3600
 params : {"se":"optional", "block":"optional", "node":"optional", "dataset":"optional"}
 lookup : file
