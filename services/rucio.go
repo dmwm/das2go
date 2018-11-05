@@ -68,12 +68,21 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 					rec["name"] = rse
 					out = append(out, rec)
 				}
-			} else {
-				fmt.Println("### unable to look-up site from specs", specs, ok)
 			}
-		} else if api == "replicas" {
-			out = append(out, rec)
+		} else if api == "site4dataset" || api == "site4block" || api == "site4file" {
+			states := rec["states"].(map[string]interface{})
+			for k, _ := range states {
+				rec["name"] = k
+				out = append(out, rec)
+			}
 		} else {
+			states := rec["states"].(map[string]interface{})
+			var replicas []mongo.DASRecord
+			for k, v := range states {
+				rep := mongo.DASRecord{"name": k, "state": v}
+				replicas = append(replicas, rep)
+			}
+			rec["replicas"] = replicas
 			out = append(out, rec)
 		}
 	}
