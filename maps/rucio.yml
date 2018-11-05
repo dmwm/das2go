@@ -13,28 +13,44 @@ das_map : [
         {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
 ]
 ---
-urn : replicasBlocks
+urn : site4dataset
 url : "http://cms-rucio-test.cern.ch/replicas/cms"
 expire : 3600
-params : {"se":"optional", "block":"optional", "node":"optional", "dataset":"optional"}
-lookup : block
+params : {"dataset":"required"}
+lookup : site
 das_map : [
-        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
         {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
-        {"das_key":"site", "rec_key":"site.name", "api_arg": "node", "pattern":"^T[0-3]_"},
-        {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
+        {"das_key":"site", "rec_key":"site.name", "pattern":"^T[0-3]_"},
 ]
 ---
-urn : replicasFiles
+urn : site4block
 url : "http://cms-rucio-test.cern.ch/replicas/cms"
 expire : 3600
-params : {"se":"optional", "block":"optional", "node":"optional", "dataset":"optional"}
-lookup : file
+params : {"block":"required"}
+lookup : site
 das_map : [
         {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
+        {"das_key":"site", "rec_key":"site.name", "pattern":"^T[0-3]_"},
+]
+---
+urn : site4file
+url : "http://cms-rucio-test.cern.ch/replicas/cms"
+expire : 3600
+params : {"file":"required"}
+lookup : site
+das_map : [
+        {"das_key":"file", "rec_key":"file.name", "api_arg":"file"},
+        {"das_key":"site", "rec_key":"site.name", "pattern":"^T[0-3]_"},
+]
+---
+urn : file4dataset
+url : "http://cms-rucio-test.cern.ch/replicas/cms"
+expire : 3600
+params : {"dataset":"required"}
+lookup : file
+das_map : [
         {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
-        {"das_key":"site", "rec_key":"site.name", "api_arg": "node", "pattern":"^T[0-3]_"},
-        {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
+        {"das_key":"file", "rec_key":"file.name", "pattern":"^T[0-3]_"},
 ]
 ---
 urn : rses
