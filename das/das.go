@@ -573,6 +573,14 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 			}
 		} else if system == "reqmgr" || system == "mcm" || system == "rucio" {
 			furl = FormRESTUrl(dasquery, dmap)
+			if system == "rucio" {
+				urn, _ := dmap["urn"].(string)
+				if urn == "rses" {
+					// cut off site parameter from REST URL since no site condition is supported yet
+					arr := strings.Split(furl, "/rses/")
+					furl = fmt.Sprintf("%s/rses/", arr[0])
+				}
+			}
 		} else {
 			furl = FormUrlCall(dasquery, dmap)
 		}
