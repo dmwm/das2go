@@ -64,6 +64,28 @@ das_map : [
         {"das_key":"file", "rec_key":"file.name", "pattern":"^T[0-3]_"},
 ]
 ---
+urn : file4block_site
+url : "http://cms-rucio-test.cern.ch/replicas/cms"
+expire : 3600
+params : {"block":"required", "site":"required"}
+lookup : file
+das_map : [
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
+        {"das_key":"site", "rec_key":"site.name", "api_arg":"site", "pattern":"^T[0-3]_"},
+        {"das_key":"file", "rec_key":"file.name", "pattern":"^T[0-3]_"},
+]
+---
+urn : block4dataset_site
+url : "http://cms-rucio-test.cern.ch/replicas/cms"
+expire : 3600
+params : {"dataset":"required", "site":"required"}
+lookup : block
+das_map : [
+        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+        {"das_key":"site", "rec_key":"site.name", "api_arg":"site", "pattern":"^T[0-3]_"},
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
+]
+---
 urn : rses
 url : "http://cms-rucio-test.cern.ch/rses"
 expire : 3600
