@@ -583,6 +583,10 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 				if ok && urn == "file4dataset_site" { // put back site condition into dasquery spec
 					dasquery.Spec["site"] = site
 				}
+				if urn == "block4dataset_size" {
+					// add datasets after url which will return CMS blocks (Rucio datasets)
+					furl = fmt.Sprintf("%s/datasets/", furl)
+				}
 				if urn == "rses" {
 					// cut off site parameter from REST URL since no site condition is supported yet
 					arr := strings.Split(furl, "/rses/")
