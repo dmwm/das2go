@@ -572,14 +572,24 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 				furl = fmt.Sprintf("%s/api/GLOBAL/runsummary/json/%s/none/data", furl, columns)
 			}
 		} else if system == "reqmgr" || system == "mcm" || system == "rucio" {
-			furl = FormRESTUrl(dasquery, dmap)
 			if system == "rucio" {
 				urn, _ := dmap["urn"].(string)
+				site, ok := dasquery.Spec["site"]
+				if ok && urn == "file4dataset_site" {
+					// remove site from site since it should not go to REST URL
+					delete(dasquery.Spec, "site")
+				}
+				furl = FormRESTUrl(dasquery, dmap)
+				if ok && urn == "file4dataset_site" { // put back site condition into dasquery spec
+					dasquery.Spec["site"] = site
+				}
 				if urn == "rses" {
 					// cut off site parameter from REST URL since no site condition is supported yet
 					arr := strings.Split(furl, "/rses/")
 					furl = fmt.Sprintf("%s/rses/", arr[0])
 				}
+			} else {
+				furl = FormRESTUrl(dasquery, dmap)
 			}
 		} else {
 			furl = FormUrlCall(dasquery, dmap)
