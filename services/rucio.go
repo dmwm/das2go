@@ -75,6 +75,18 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 				rec["name"] = k
 				out = append(out, rec)
 			}
+		} else if api == "file4dataset_site" {
+			if val, ok := specs["site"]; ok {
+				site := fmt.Sprintf("%s", val)
+				states := rec["states"].(map[string]interface{})
+				var sites []string
+				for k, _ := range states {
+					sites = append(sites, k)
+				}
+				if utils.InList(site, sites) {
+					out = append(out, rec)
+				}
+			}
 		} else {
 			states := rec["states"].(map[string]interface{})
 			var replicas []mongo.DASRecord
