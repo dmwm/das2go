@@ -208,12 +208,18 @@ func (LocalAPIs) Site4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 			siteInfo[node] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "block_complete": bComplete, "se": se, "kind": _phedexNodes.NodeType(node)}
 		}
 	}
+	if utils.VERBOSE > 0 {
+		fmt.Println("### bfiles", bfiles)
+		for s, v := range siteInfo {
+			fmt.Println("### site", s, v)
+		}
+	}
 	var pfiles, pblks string
 	var out []mongo.DASRecord
 	for key, val := range siteInfo {
 		row := val.(mongo.DASRecord)
+		nfiles := rec2num(row["files"])
 		if totfiles > 0 {
-			nfiles := rec2num(row["files"])
 			pfiles = fmt.Sprintf("%5.2f%%", 100*float64(nfiles)/float64(totfiles))
 		} else {
 			pfiles = "N/A"
@@ -229,6 +235,9 @@ func (LocalAPIs) Site4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 		ratio := float64(rec2num(row["block_complete"])) / float64(rec2num(row["blocks"]))
 		bc := fmt.Sprintf("%5.2f%%", 100*ratio)
 		rf := fmt.Sprintf("%5.2f%%", 100*float64(nfiles)/float64(bfiles))
+		if utils.VERBOSE > 0 {
+			fmt.Println("### site", key, "nfiles", nfiles, "bfiles", bfiles)
+		}
 		// put into file das record, internal type must be list
 		rec := make(mongo.DASRecord)
 		rec["site"] = []mongo.DASRecord{{"name": key,
