@@ -25,6 +25,7 @@ import (
 	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/dasmaps"
 	"github.com/dmwm/das2go/mongo"
+	"github.com/dmwm/das2go/services"
 	"github.com/dmwm/das2go/utils"
 	logs "github.com/sirupsen/logrus"
 
@@ -126,6 +127,13 @@ func Server(configFile string) {
 		logs.Info("DAS services ", _dasmaps.Services())
 		logs.Info("DAS keys ", _dasmaps.DASKeys())
 	}
+	// list URLs we're going to use
+	logs.Info("DBSUrl: ", services.DBSUrl("prod"))
+	logs.Info("PhedexUrl: ", services.PhedexUrl())
+	logs.Info("SitedbUrl: ", services.SitedbUrl())
+	logs.Info("CricUrl w/ site API: ", services.CricUrl("site"))
+	logs.Info("RucioUrl w/ replicas API: ", services.RucioUrl("replicas"))
+	logs.Info("RucioAuthUrl: ", utils.RucioAuth.Url())
 
 	// DAS templates
 	tmplData := make(map[string]interface{})

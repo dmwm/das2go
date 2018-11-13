@@ -20,7 +20,7 @@ import (
 	logs "github.com/sirupsen/logrus"
 )
 
-func dbsUrl(inst string) string {
+func DBSUrl(inst string) string {
 	v := utils.GetEnv("DBS_URL")
 	surl := fmt.Sprintf("%s/dbs/%s/DBSReader", config.Config.Frontend, inst)
 	if v != "" {
@@ -28,7 +28,7 @@ func dbsUrl(inst string) string {
 	}
 	return surl
 }
-func phedexUrl() string {
+func PhedexUrl() string {
 	v := utils.GetEnv("PHEDEX_URL")
 	surl := fmt.Sprintf("%s/phedex/datasvc/json/prod", config.Config.Frontend)
 	if v != "" {
@@ -36,7 +36,7 @@ func phedexUrl() string {
 	}
 	return surl
 }
-func sitedbUrl() string {
+func SitedbUrl() string {
 	v := utils.GetEnv("SITEDB_URL")
 	surl := fmt.Sprintf("%s/sitedb/data/prod", config.Config.Frontend)
 	if v != "" {
@@ -44,7 +44,7 @@ func sitedbUrl() string {
 	}
 	return surl
 }
-func cricUrl(api string) string {
+func CricUrl(api string) string {
 	v := utils.GetEnv("CRIC_URL")
 	surl := "https://cms-cric.cern.ch"
 	if v != "" {
@@ -55,7 +55,7 @@ func cricUrl(api string) string {
 	}
 	return fmt.Sprintf("%s/api/accounts/user/query", surl)
 }
-func rucioUrl(api string) string {
+func RucioUrl(api string) string {
 	v := utils.GetEnv("RUCIO_URL")
 	surl := "http://cms-rucio-test.cern.ch"
 	if v != "" {
@@ -76,7 +76,7 @@ func findBlocks(dasquery dasql.DASQuery) []string {
 	}
 	dataset := spec["dataset"].(string)
 	api := "blocks"
-	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(inst), api, dataset)
+	furl := fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
@@ -179,7 +179,7 @@ func dbsUrls(dasquery dasql.DASQuery, api string) []string {
 	// find all blocks for given dataset or block
 	var urls []string
 	for _, blk := range findBlocks(dasquery) {
-		myurl := fmt.Sprintf("%s/%s?block_name=%s", dbsUrl(inst), api, url.QueryEscape(blk))
+		myurl := fmt.Sprintf("%s/%s?block_name=%s", DBSUrl(inst), api, url.QueryEscape(blk))
 		if len(runsArgs) > 0 {
 			myurl += runsArgs // append run arguments
 		}
@@ -267,7 +267,7 @@ func dataset4release(dasquery dasql.DASQuery) []string {
 	var out []string
 	api := "datasets"
 	release := spec["release"].(string)
-	furl := fmt.Sprintf("%s/%s?release_version=%s", dbsUrl(inst), api, release)
+	furl := fmt.Sprintf("%s/%s?release_version=%s", DBSUrl(inst), api, release)
 	parent := spec["parent"]
 	if parent != nil {
 		furl = fmt.Sprintf("%s&parent_dataset=%s", furl, parent.(string))
@@ -316,7 +316,7 @@ func dataset4siteRelease(dasquery dasql.DASQuery) []mongo.DASRecord {
 	api := "blockReplicas"
 	node := phedexNode(spec["site"].(string))
 	for _, dataset := range dataset4release(dasquery) {
-		furl := fmt.Sprintf("%s/%s?dataset=%s&%s", phedexUrl(), api, dataset, node)
+		furl := fmt.Sprintf("%s/%s?dataset=%s&%s", PhedexUrl(), api, dataset, node)
 		if !utils.InList(furl, urls) {
 			urls = append(urls, furl)
 		}
@@ -351,7 +351,7 @@ func (p *PhedexNodes) Nodes() []mongo.DASRecord {
 		return p.nodes
 	}
 	api := "nodes"
-	furl := fmt.Sprintf("%s/%s", phedexUrl(), api)
+	furl := fmt.Sprintf("%s/%s", PhedexUrl(), api)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	p.nodes = PhedexUnmarshal(api, resp.Data)
 	p.tstamp = time.Now().Unix()

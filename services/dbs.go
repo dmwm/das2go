@@ -288,7 +288,7 @@ func (LocalAPIs) Blocks4TierDates(dasquery dasql.DASQuery) []mongo.DASRecord {
 	mind := utils.UnixTime(dates[0])
 	maxd := utils.UnixTime(dates[1]) + 24*60*60 // inclusive date
 	api := "blocks"
-	furl := fmt.Sprintf("%s/%s?data_tier_name=%s&min_cdate=%d&max_cdate=%d", dbsUrl(inst), api, tier, mind, maxd)
+	furl := fmt.Sprintf("%s/%s?data_tier_name=%s&min_cdate=%d&max_cdate=%d", DBSUrl(inst), api, tier, mind, maxd)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var blocks []string
@@ -321,7 +321,7 @@ func (LocalAPIs) DatasetList(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	inst := dasquery.Instance
 	api := "datasetlist"
-	furl := fmt.Sprintf("%s/%s", dbsUrl(inst), api)
+	furl := fmt.Sprintf("%s/%s", DBSUrl(inst), api)
 	switch d := spec["dataset"].(type) {
 	case string:
 		if strings.Contains(d, "*") { // patterns are not supported by this API

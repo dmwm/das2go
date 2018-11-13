@@ -41,7 +41,7 @@ func (LocalAPIs) Child4SiteReleaseDataset(dasquery dasql.DASQuery) []mongo.DASRe
 	release := spec["release"].(string)
 	site := spec["site"].(string)
 	api := "datasetchildren"
-	furl := fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(inst), api, dataset)
+	furl := fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	// collect dbs urls to fetch versions for given set of datasets
@@ -49,7 +49,7 @@ func (LocalAPIs) Child4SiteReleaseDataset(dasquery dasql.DASQuery) []mongo.DASRe
 	var dbsUrls []string
 	for _, rec := range records {
 		dataset := rec["child_dataset"].(string)
-		furl = fmt.Sprintf("%s/%s?dataset=%s", dbsUrl(inst), api, dataset)
+		furl = fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
 		if !utils.InList(furl, dbsUrls) {
 			dbsUrls = append(dbsUrls, furl)
 		}
@@ -58,7 +58,7 @@ func (LocalAPIs) Child4SiteReleaseDataset(dasquery dasql.DASQuery) []mongo.DASRe
 	// collect children datasets
 	for _, rec := range processUrls("dbs3", api, dbsUrls) {
 		url := rec["url"].(string)
-		furl = fmt.Sprintf("%s/%s?dataset=", dbsUrl(inst), api)
+		furl = fmt.Sprintf("%s/%s?dataset=", DBSUrl(inst), api)
 		dataset := strings.Trim(url, furl)
 		if !strings.HasPrefix(dataset, "/") {
 			dataset = fmt.Sprintf("/%s", dataset)
@@ -74,7 +74,7 @@ func (LocalAPIs) Child4SiteReleaseDataset(dasquery dasql.DASQuery) []mongo.DASRe
 	node := phedexNode(site)
 	var phedexUrls []string
 	for _, dataset := range datasets {
-		furl = fmt.Sprintf("%s/%s?dataset=%s&%s", phedexUrl(), api, dataset, node)
+		furl = fmt.Sprintf("%s/%s?dataset=%s&%s", PhedexUrl(), api, dataset, node)
 		if !utils.InList(furl, phedexUrls) {
 			phedexUrls = append(phedexUrls, furl)
 		}
@@ -119,7 +119,7 @@ func (LocalAPIs) Site4Block(dasquery dasql.DASQuery) []mongo.DASRecord {
 	block := spec["block"].(string)
 	// Phedex part find block replicas for given dataset
 	api := "blockReplicas"
-	furl := fmt.Sprintf("%s/%s?block=%s", phedexUrl(), api, url.QueryEscape(block))
+	furl := fmt.Sprintf("%s/%s?block=%s", PhedexUrl(), api, url.QueryEscape(block))
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := PhedexUnmarshal(api, resp.Data)
 	for _, rec := range records {
@@ -150,7 +150,7 @@ func (LocalAPIs) Site4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	// DBS part, find total number of blocks and files for given dataset
 	dataset := spec["dataset"].(string)
 	api := "filesummaries"
-	furl := fmt.Sprintf("%s/%s?dataset=%s&validFileOnly=1", dbsUrl(inst), api, dataset)
+	furl := fmt.Sprintf("%s/%s?dataset=%s&validFileOnly=1", DBSUrl(inst), api, dataset)
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var totblocks, totfiles int64
@@ -161,7 +161,7 @@ func (LocalAPIs) Site4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	totfiles = rec2num(records[0]["num_file"])
 	// Phedex part find block replicas for given dataset
 	api = "blockReplicas"
-	furl = fmt.Sprintf("%s/%s?dataset=%s", phedexUrl(), api, dataset)
+	furl = fmt.Sprintf("%s/%s?dataset=%s", PhedexUrl(), api, dataset)
 	resp = utils.FetchResponse(furl, "") // "" specify optional args
 	records = PhedexUnmarshal(api, resp.Data)
 	siteInfo := make(mongo.DASRecord)
@@ -261,7 +261,7 @@ func filterFiles(files []string, site string) []string {
 	api := "fileReplicas"
 	node := phedexNode(site)
 	for _, fname := range files {
-		furl := fmt.Sprintf("%s/%s?lfn=%s&%s", phedexUrl(), api, fname, node)
+		furl := fmt.Sprintf("%s/%s?lfn=%s&%s", PhedexUrl(), api, fname, node)
 		urls = append(urls, furl)
 	}
 	for _, rec := range processUrls("phedex", api, urls) {

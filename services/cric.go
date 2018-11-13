@@ -70,7 +70,7 @@ func CRICUnmarshal(api string, data []byte) []mongo.DASRecord {
 }
 
 func getCRICData(api string) []mongo.DASRecord {
-	furl := cricUrl(api)
+	furl := CricUrl(api)
 	if strings.Contains(api, "site") {
 		furl = fmt.Sprintf("%s?json&preset=site-names&rcsite_state=ANY", furl)
 	} else if strings.Contains(api, "group") {
