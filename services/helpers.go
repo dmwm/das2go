@@ -22,7 +22,11 @@ import (
 
 func DBSUrl(inst string) string {
 	v := utils.GetEnv("DBS_URL")
-	surl := fmt.Sprintf("%s/dbs/%s/DBSReader", config.Config.Frontend, inst)
+	burl := config.Config.Frontend
+	if burl == "" { // case of dasgoclient
+		burl = "https://cmsweb.cern.ch"
+	}
+	surl := fmt.Sprintf("%s/dbs/%s/DBSReader", burl, inst)
 	if v != "" {
 		surl = v
 	}
@@ -30,7 +34,11 @@ func DBSUrl(inst string) string {
 }
 func PhedexUrl() string {
 	v := utils.GetEnv("PHEDEX_URL")
-	surl := fmt.Sprintf("%s/phedex/datasvc/json/prod", config.Config.Frontend)
+	burl := config.Config.Frontend
+	if burl == "" { // case of dasgoclient
+		burl = "https://cmsweb.cern.ch"
+	}
+	surl := fmt.Sprintf("%s/phedex/datasvc/json/prod", burl)
 	if v != "" {
 		surl = v
 	}
@@ -38,7 +46,11 @@ func PhedexUrl() string {
 }
 func SitedbUrl() string {
 	v := utils.GetEnv("SITEDB_URL")
-	surl := fmt.Sprintf("%s/sitedb/data/prod", config.Config.Frontend)
+	burl := config.Config.Frontend
+	if burl == "" { // case of dasgoclient
+		burl = "https://cmsweb.cern.ch"
+	}
+	surl := fmt.Sprintf("%s/sitedb/data/prod", burl)
 	if v != "" {
 		surl = v
 	}
