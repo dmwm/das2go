@@ -66,7 +66,12 @@ func (r *RucioAuthModule) Agent() string {
 // Url returns Rucio authentication url
 func (r *RucioAuthModule) Url() string {
 	if r.url == "" {
-		r.url = "https://cms-rucio-authz.cern.ch/auth/x509"
+		v := GetEnv("RUCIO_AUTH_URL")
+		if v != "" {
+			r.url = fmt.Sprintf("%s/auth/x509", v)
+		} else {
+			r.url = "https://cms-rucio-authz.cern.ch/auth/x509"
+		}
 	}
 	return r.url
 }
