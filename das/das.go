@@ -776,23 +776,41 @@ func PostProcessing(dasquery dasql.DASQuery, data []mongo.DASRecord) []mongo.DAS
 	if utils.InList("site", fields) {
 		var out []mongo.DASRecord
 		for _, r := range data {
-			origPlacement := false
-			var recs []mongo.DASRecord
-			switch v := r["site"].(type) {
+			var das mongo.DASRecord
+			switch v := r["das"].(type) {
+			case interface{}:
+				das = v.(mongo.DASRecord)
+			case mongo.DASRecord:
+				das = v
+			}
+			var srvs []string
+			switch v := das["services"].(type) {
 			case []interface{}:
 				for _, v := range v {
-					recs = append(recs, v.(mongo.DASRecord))
+					srvs = append(srvs, v.(string))
 				}
-			case []mongo.DASRecord:
-				recs = v
+			case []string:
+				srvs = v
 			}
-			for _, s := range recs {
-				k, ok := s["kind"]
-				if ok && k.(string) == "original placement" {
-					origPlacement = true
+			orig := false // original placement
+			if len(srvs) == 1 {
+				var recs []mongo.DASRecord
+				switch v := r["site"].(type) {
+				case []interface{}:
+					for _, v := range v {
+						recs = append(recs, v.(mongo.DASRecord))
+					}
+				case []mongo.DASRecord:
+					recs = v
+				}
+				for _, s := range recs {
+					k, ok := s["kind"]
+					if ok && k.(string) == "original placement" {
+						orig = true
+					}
 				}
 			}
-			if !origPlacement {
+			if orig == false {
 				out = append(out, r)
 			}
 		}
