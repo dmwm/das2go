@@ -21,37 +21,47 @@ import (
 )
 
 func dbsUrl(inst string) string {
-	if config.Config.Frontend != "" {
-		return fmt.Sprintf("%s/dbs/%s/DBSReader", config.Config.Frontend, inst)
+	v := utils.GetEnv("DBS_URL")
+	surl := fmt.Sprintf("%s/dbs/%s/DBSReader", config.Config.Frontend, inst)
+	if v != "" {
+		surl = v
 	}
-	if strings.Contains(inst, "int") {
-		return fmt.Sprintf("https://cmsweb-testbed.cern.ch/dbs/%s/DBSReader", inst)
-	} else if strings.Contains(inst, "dev") {
-		return fmt.Sprintf("https://cmsweb-dev.cern.ch/dbs/%s/DBSReader", inst)
-	}
-	return fmt.Sprintf("https://cmsweb.cern.ch/dbs/%s/DBSReader", inst)
+	return surl
 }
 func phedexUrl() string {
-	if config.Config.Frontend != "" {
-		return fmt.Sprintf("%s/phedex/datasvc/json/prod", config.Config.Frontend)
+	v := utils.GetEnv("PHEDEX_URL")
+	surl := fmt.Sprintf("%s/phedex/datasvc/json/prod", config.Config.Frontend)
+	if v != "" {
+		surl = v
 	}
-	return "https://cmsweb.cern.ch/phedex/datasvc/json/prod"
+	return surl
 }
 func sitedbUrl() string {
-	if config.Config.Frontend != "" {
-		return fmt.Sprintf("%s/sitedb/data/prod", config.Config.Frontend)
+	v := utils.GetEnv("SITEDB_URL")
+	surl := fmt.Sprintf("%s/sitedb/data/prod", config.Config.Frontend)
+	if v != "" {
+		surl = v
 	}
-	return "https://cmsweb.cern.ch/sitedb/data/prod"
+	return surl
 }
 func cricUrl(api string) string {
-	if strings.Contains(api, "site") {
-		return "https://cms-cric.cern.ch/api/cms/site/query"
+	v := utils.GetEnv("CRIC_URL")
+	surl := "https://cms-cric.cern.ch"
+	if v != "" {
+		surl = v
 	}
-	return "https://cms-cric.cern.ch/api/accounts/user/query"
+	if strings.Contains(api, "site") {
+		return fmt.Sprintf("%s/api/cms/site/query", surl)
+	}
+	return fmt.Sprintf("%s/api/accounts/user/query", surl)
 }
 func rucioUrl(api string) string {
-	rurl := fmt.Sprintf("http://cms-rucio-test.cern.ch/%s/", api)
-	return rurl
+	v := utils.GetEnv("RUCIO_URL")
+	surl := "http://cms-rucio-test.cern.ch"
+	if v != "" {
+		return fmt.Sprintf("%s/%s/", v, api)
+	}
+	return fmt.Sprintf("%s/%s/", surl, api)
 }
 
 // helper function to find file,run,lumis for given dataset or block
