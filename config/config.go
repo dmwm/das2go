@@ -7,6 +7,7 @@ package config
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 
@@ -58,6 +59,10 @@ func ParseConfig(configFile string) error {
 	if err != nil {
 		logs.WithFields(logs.Fields{"configFile": configFile}).Fatal("Unable to parse", err)
 		return err
+	}
+	if Config.Frontend == "" {
+		logs.WithFields(logs.Fields{"configFile": configFile}).Fatal("The frontend record is not set", err)
+		return errors.New("No frontend record found in config")
 	}
 	return nil
 }
