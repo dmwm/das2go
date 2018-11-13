@@ -470,6 +470,17 @@ func GetBytes(data interface{}) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+// GetEnv fetches value from user environement
+func GetEnv(key string) string {
+	for _, item := range os.Environ() {
+		value := strings.Split(item, "=")
+		if value[0] == key {
+			return value[1]
+		}
+	}
+	return ""
+}
+
 // LoadExamples loads DAS examples from github or local file
 func LoadExamples(ename, home string) string {
 	githubUrl := fmt.Sprintf("https://raw.githubusercontent.com/dmwm/das2go/master/examples/%s", ename)
