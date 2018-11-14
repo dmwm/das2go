@@ -79,18 +79,29 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 			base = strings.Replace(base, "prod/global", dbsInst, -1)
 		}
 		// adjust APIs with 'run between' clause
-		if strings.Contains(dasquery.Query, "between") && utils.InList("run", skeys) {
-			var minr, maxr, run string
+		if utils.InList("run", skeys) {
 			val := spec["run"]
-			switch r := val.(type) {
-			case []string:
-				minr = r[0]
-				maxr = r[len(r)-1]
-				run = fmt.Sprintf("'%s-%s'", minr, maxr)
-			case string:
-				run = r
+			if strings.Contains(dasquery.Query, "between") {
+				var minr, maxr, run string
+				switch runs := val.(type) {
+				case []string:
+					minr = runs[0]
+					maxr = runs[len(runs)-1]
+					run = fmt.Sprintf("\"%s-%s\"", minr, maxr)
+					vals.Add("run_num", run)
+				case string:
+					vals.Add("run_num", runs)
+				}
+			} else if strings.Contains(dasquery.Query, "in") && utils.InList("run", skeys) {
+				switch runs := val.(type) {
+				case []string:
+					for _, r := range runs {
+						vals.Add("run_num", r)
+					}
+				case string:
+					vals.Add("run_num", runs)
+				}
 			}
-			vals.Add("run_num", run)
 		}
 		// return only valid files by default
 		if strings.Contains(base, "file") && !utils.InList("status", skeys) {
