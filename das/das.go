@@ -858,8 +858,13 @@ func aggregateAll(data []mongo.DASRecord, aggrs [][]string) []mongo.DASRecord {
 	return out
 }
 
-// helper function to aggregate results for given function and key
+// helper function to aggregate results for given function and key and yield them to channel
 func aggregate(data []mongo.DASRecord, agg, key string, ch chan mongo.DASRecord) {
+	ch <- Aggregate(data, agg, key)
+}
+
+// Aggregate function aggregates results for given function and key
+func Aggregate(data []mongo.DASRecord, agg, key string) mongo.DASRecord {
 	var values []interface{}
 	for _, r := range data {
 		val := mongo.GetValue(r, key)
@@ -885,7 +890,7 @@ func aggregate(data []mongo.DASRecord, agg, key string, ch chan mongo.DASRecord)
 		rec = make(mongo.DASRecord)
 	}
 	rec["das"] = data[0]["das"]
-	ch <- rec
+	return rec
 }
 
 // Count gets number of records for given DAS query qhash
