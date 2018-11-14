@@ -8,6 +8,7 @@ package utils
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -331,6 +332,11 @@ func Sum(data []interface{}) float64 {
 			switch v := val.(type) {
 			case float64:
 				out += v
+			case json.Number:
+				vv, e := v.Float64()
+				if e == nil {
+					out += vv
+				}
 			case int64:
 				out += float64(v)
 			}
@@ -349,15 +355,16 @@ func Max(data []interface{}) float64 {
 				if v > out {
 					out = v
 				}
+			case json.Number:
+				vv, e := v.Float64()
+				if e == nil && vv > out {
+					out = vv
+				}
 			case int64:
 				if float64(v) > out {
 					out = float64(v)
 				}
 			}
-			//             v := val.(float64)
-			//             if v > out {
-			//                 out = v
-			//             }
 		}
 	}
 	return out
@@ -375,15 +382,16 @@ func Min(data []interface{}) float64 {
 			if v < out {
 				out = v
 			}
+		case json.Number:
+			vv, e := v.Float64()
+			if e == nil && vv < out {
+				out = vv
+			}
 		case int64:
 			if float64(v) < out {
 				out = float64(v)
 			}
 		}
-		//         v := val.(float64)
-		//         if v < out {
-		//             out = v
-		//         }
 	}
 	return out
 }
@@ -406,10 +414,14 @@ func Median(data []interface{}) float64 {
 		switch val := v.(type) {
 		case float64:
 			input = append(input, val)
+		case json.Number:
+			vv, e := val.Float64()
+			if e == nil {
+				input = append(input, vv)
+			}
 		case int64:
 			input = append(input, float64(val))
 		}
-		//         input = append(input, v.(float64))
 	}
 	input.Sort()
 	l := len(input)
