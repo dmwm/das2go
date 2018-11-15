@@ -287,8 +287,10 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	if system == "dbs3" && urn == "datasets" {
 		val, ok := spec["dataset"].(string)
 		if ok && !strings.Contains(val, "*") {
-			delete(vals, "dataset_access_type")
-			vals.Add("dataset_access_type", "*")
+			if _, ok := spec["status"]; !ok { // only if user didn't specified a status
+				delete(vals, "dataset_access_type")
+				vals.Add("dataset_access_type", "*")
+			}
 		}
 	}
 
