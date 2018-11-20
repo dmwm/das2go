@@ -404,7 +404,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 				records = append(records, r)
 			}
 			//             records := item[key].([]interface{})
-			uiRows := pmap[key].([]interface{})
+			uiRows := sortUiRows(pmap[key].([]interface{}), pkey)
 			for idx, elem := range records {
 				if elem == nil {
 					continue
@@ -418,7 +418,9 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					uirow := uir.(mongo.DASRecord)
 					daskey := uirow["das"].(string)
 					if links == nil {
-						links = uirow["link"].([]interface{})
+						if uirow["link"] != nil {
+							links = uirow["link"].([]interface{})
+						}
 					}
 					if idx != 0 && daskey == pkey {
 						continue // look-up only once primary key
@@ -510,6 +512,34 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 	}
 	out = append(out, fmt.Sprintf("<div align=\"right\">processing time: %v sec</div>", procTime))
 	return strings.Join(out, "\n")
+}
+
+// helper function to sort ui rows to have persistent view on DAS web page for ui names
+func sortUiRows(uiRows []interface{}, pkey string) []interface{} {
+	var out []interface{}
+	urows := make(map[string]interface{})
+	var keys []string
+	var dasUiKey string
+	for _, uir := range uiRows {
+		r := uir.(mongo.DASRecord)
+		k := r["ui"].(string)
+		urows[k] = r
+		daskey := r["das"].(string)
+		if daskey != pkey {
+			keys = append(keys, k)
+		} else {
+			dasUiKey = k
+		}
+	}
+	sort.Sort(utils.StringList(keys))
+	// place dasUiKey (primary key) first in a list such that on web page we'll show it first
+	keys = append([]string{dasUiKey}, keys...)
+	for _, k := range keys {
+		if urows[k] != nil {
+			out = append(out, urows[k])
+		}
+	}
+	return out
 }
 
 // ExtractValue helper function to extract value from das record
