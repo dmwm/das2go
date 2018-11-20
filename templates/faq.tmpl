@@ -91,7 +91,7 @@ How I can get DAS command line tool?
 </li>
 </ul>
 <p>
-The DAS command line tool (dasgoclient or das_client) is available in any CMSSW releases.
+The DAS command line tool dasgoclient is available in any CMSSW releases.
 </p>
 
 <ul>
@@ -100,36 +100,20 @@ How can I use DAS CLI?
 </li>
 </ul>
 
-See help section of the DAS CLI tool (dasgoclient or das_client):
+See help section of the DAS CLI tool:
 <pre class="example">
 dasgoclient --help # Go-based DAS CLI tool (recommended)
-das_client --help # Python-based DAS CLI tool (obsolete, soon will be linked to dasgoclient)
+dasgoclient --examples # provides list of queries it supports
 </pre>
 
 Here are few examples of DAS cli usage:
 <pre class="example">
-das_client --query="dataset=/EG/Run2010A*/AOD"
-das_client --query="dataset=/EG/Run2010A*/AOD" --verbose=1
-das_client --query="dataset=/EG/Run2010A*/AOD | grep dataset.name"
-das_client --query="dataset=/EG/Run2010A*/AOD | grep dataset.name" --format=json
+dasgoclient --query="dataset=/EG/Run2010A*/AOD"
+dasgoclient --query="dataset=/EG/Run2010A*/AOD" --verbose=1
+dasgoclient --query="dataset=/EG/Run2010A*/AOD | grep dataset.name"
+dasgoclient --query="dataset=/EG/Run2010A*/AOD | grep dataset.name" --format=json
 </pre>
 
-</div>
-</div>
-<hr class="line" />
-<!-- END OF SECTION -->
-
-<!-- BEGIN NEW SECTION -->
-<h3>DAS-QL vs DBS-QL query guide</h3>
-<a href="javascript:ToggleTag('guide_table', 'link_guide_table')" id="link_guide_table">show</a>
-this section
-<div id="guide_table" name="guide_table" class="hide">
-<div class="navcontainer">
-Below we summarize DBS-QL and their equivalent DAS-QL queries. For more information
-please refer to
-<a href="https://twiki.cern.ch/twiki/bin/viewauth/CMS/DASQueryGuide">DASQueryGuide</a>
-twiki page.
-{{.Guide}}
 </div>
 </div>
 <hr class="line" />
@@ -343,21 +327,12 @@ How can I sort my results?
 </li>
 </ul>
 <p>
-The sorting is part of DAS query language. Just provide a sort filter, for example
-</p>
+The sorting can be done for the command line client (dasgoclient) by using
+UNIX sort function, e.g.
 <div class="example">
-file dataset=/a/b/c | sort file.nevents
+    dasgoclient -query="file dataset=/a/b/c | grep file.name" | sort 
 </div>
-this query will sort output records by number of events in file. The default
-sort order is ascending. To reverse the sort order use minus sign at the end of
-sort key, e.g.
-<div class="example">
-file dataset=/a/b/c | sort file.nevents-
-</div>
-Please note that you can combined both grep and sort filters together, e.g.
-<div class="example">
-file dataset=/a/b/c | grep file.name, file.nevents | sort file.size
-</div>
+The sorting in DAS web UI is not implemented due to lack of generalization of DAS back-end.
 
 <ul>
 <li>
@@ -563,14 +538,11 @@ dataset group=Top
 dataset group=local site=T2_CH_CERN
 dataset=*ZMM*
 dataset=/ZMM*/*/*
-dataset=/ZMM*/*/* | sort dataset.nfiles
-dataset=/ZMM*/*/* | sort dataset.nfiles-
 
 # should show hints from global/phys01 instance
 dataset=/ZMM_7TeV*/*/*
 dataset=/ZMM_7TeV*
 
-dataset=/*/Run2013A-PromptReco*/* | sort dataset.name
 dataset=/Cosmics/Run2010B-TkAlCosmics0T*/* site=T1_DE_KIT
 dataset dataset=/Cosmics/Run2010B-TkAlCosmics0T*/* site=T1_DE_KIT
 dataset release=CMSSW_4_2_0 site=T2_EE_Estonia
@@ -664,8 +636,6 @@ file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD
 file dataset=/Cosmics/Run2010B-TkAlCosmics0T-v1/ALCARECO site=T1_US_FNAL_Buffer
 file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep file.name, file.size, file.size>0
 file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep file.name, file.size, file.size<2000000000
-file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep file.name, file.size, file.size<2000000000 | sort file.size
-file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | grep file.name, file.size, file.size<2000000000 | sort file.size-
 file dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD | sum(file.size), min(file.size), max(file.size), avg(file.size), median(file.size)
 file dataset=/WGstarToLNu2Tau_TuneZ2_7TeV-madgraph-tauola/Summer11-PU_S4_START42_V11-v1/AODSIM status=INVALID
 

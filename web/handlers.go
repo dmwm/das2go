@@ -289,7 +289,6 @@ func FAQHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Operators"] = []string{"=", "between", "last", "in"}
 	tmplData["Daskeys"] = []string{}
 	tmplData["Aggregators"] = []string{}
-	tmplData["Guide"] = templates.Guide(config.Config.Templates, tmplData)
 	page := templates.FAQ(config.Config.Templates, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))

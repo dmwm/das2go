@@ -149,14 +149,10 @@ python das_cli --query="dataset=/ExpressPhysics* | grep dataset.name, dataset.ne
 </div>
 <div style="position:absolute;left:5400px;width:900px;">
 <h3 class="big">Help: DAS filters</h3>
-DAS supports <b>grep</b>, <b>sort</b> and <b>unique</b> filters. You can use
+DAS supports <b>grep</b> and <b>unique</b> filters. You can use
 <b>grep</b> filter to select part of the DAS record. For example,
 <pre>
 dataset=/ZMM/Summer11-DESIGN42_V11_428_SLHC1-v1/GEN-SIM | grep dataset.nevents
-</pre>
-To sort your results use sort filter (add '-', e.g. sort dataset.nfiles- to sort in reverse direction)
-<pre>
-dataset=/ZMM*/*/* | sort dataset.nfiles
 </pre>
 Multiple filters can be applied together, for instance
 <pre>

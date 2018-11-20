@@ -89,15 +89,6 @@ func (q DASTemplates) FAQ(tdir string, tmplData map[string]interface{}) string {
 	return q.top
 }
 
-// Guide method for DASTemplates structure
-func (q DASTemplates) Guide(tdir string, tmplData map[string]interface{}) string {
-	if q.top != "" {
-		return q.top
-	}
-	q.top = parseTmpl(config.Config.Templates, "dbsql_vs_dasql.tmpl", tmplData)
-	return q.top
-}
-
 // ApiRecord method for DASTemplates structure
 func (q DASTemplates) ApiRecord(tdir string, tmplData map[string]interface{}) string {
 	if q.top != "" {
