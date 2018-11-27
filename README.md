@@ -41,3 +41,19 @@ and [go-torch](https://github.com/uber/go-torch)
   - `go-torch -u http://localhost:8217 --seconds 10` will generate svg flame
     graph
 
+### Adding debugging information
+It is possible to change verbosity level and log type of running DAS server.
+To change verbosity level please issue the following command:
+```
+# increase verbose level to 1
+scurl -X POST -d '{"level":1}' http://localhost:8217/das/server
+# set verbose level to 0
+scurl -X POST -d '{"level":0}' http://localhost:8217/das/server
+```
+To change log type please use this command:
+```
+# to change log formatter to json
+scurl -X POST -d '{"logFormatter":"json"}' http://localhost:8217/das/server
+# to change log formatter to text
+scurl -X POST -d '{"logFormatter":"text"}' http://localhost:8217/das/server
+```
