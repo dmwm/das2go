@@ -99,9 +99,11 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	client := HttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-		}).Error("unable to Http client")
+		if VERBOSE > 0 {
+			logs.WithFields(logs.Fields{
+				"Error": err,
+			}).Error("unable to Http client")
+		}
 		return "", 0, err
 	}
 	if VERBOSE > 1 {
@@ -115,9 +117,11 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	defer resp.Body.Close()
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-		}).Error("unable to close the response body")
+		if VERBOSE > 0 {
+			logs.WithFields(logs.Fields{
+				"Error": err,
+			}).Error("unable to close the response body")
+		}
 		return "", 0, err
 	}
 	if v, ok := resp.Header["X-Rucio-Auth-Token"]; ok {
