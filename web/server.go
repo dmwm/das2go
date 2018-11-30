@@ -128,7 +128,7 @@ func Server(configFile string) {
 		logs.Info("DAS keys ", _dasmaps.DASKeys())
 	}
 	// list URLs we're going to use
-	logs.Info("DBSUrl: ", services.DBSUrl("prod"))
+	logs.Info("DBSUrl: ", services.DBSUrl(config.Config.DbsInstances[0]))
 	logs.Info("PhedexUrl: ", services.PhedexUrl())
 	logs.Info("SitedbUrl: ", services.SitedbUrl())
 	logs.Info("CricUrl w/ site API: ", services.CricUrl("site"))
