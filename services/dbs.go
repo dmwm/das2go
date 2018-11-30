@@ -293,11 +293,14 @@ func (LocalAPIs) Blocks4TierDates(dasquery dasql.DASQuery) []mongo.DASRecord {
 	records := DBSUnmarshal(api, resp.Data)
 	var blocks []string
 	for _, rec := range records {
-		blk := rec["block_name"].(string)
-		dataset := strings.Split(blk, "#")[0]
-		tierName := strings.Split(dataset, "/")[3]
-		if tierName == tier && !utils.InList(blk, blocks) {
-			blocks = append(blocks, blk)
+		brec := rec["block_name"]
+		if brec != nil {
+			blk := rec["block_name"].(string)
+			dataset := strings.Split(blk, "#")[0]
+			tierName := strings.Split(dataset, "/")[3]
+			if tierName == tier && !utils.InList(blk, blocks) {
+				blocks = append(blocks, blk)
+			}
 		}
 	}
 	for _, name := range blocks {
