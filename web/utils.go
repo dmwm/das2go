@@ -432,8 +432,11 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 						continue // look-up only once primary key
 					}
 					webkey := uirow["ui"].(string)
-					attrs := strings.Split(daskey, ".")
-					attr := strings.Join(attrs[1:], ".")
+					attr := daskey
+					if strings.Contains(daskey, ".") {
+						attrs := strings.Split(daskey, ".")
+						attr = strings.Join(attrs[1:], ".")
+					}
 					if attr == "replica.site" {
 						attr = "replica.node" // Phedex record contains replica.node instead of replica.site
 					}
