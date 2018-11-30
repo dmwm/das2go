@@ -239,25 +239,31 @@ func pagination(base, query, inst string, nres, startIdx, limit int) string {
 // Helper function to show lumi-events pairs suitable for web UI
 func lumiEvents(rec mongo.DASRecord) string {
 	var run int64
-	if rec["run"] == nil {
+	if rec == nil || rec["run"] == nil {
 		return ""
 	}
 	for _, v := range rec["run"].([]interface{}) {
 		r := v.(mongo.DASRecord)
-		run = r["run_number"].(int64)
-		break
+		if r != nil {
+			run = r["run_number"].(int64)
+			break
+		}
 	}
 	var lfn string
 	for _, v := range rec["file"].([]interface{}) {
 		r := v.(mongo.DASRecord)
-		lfn = r["name"].(string)
-		break
+		if r != nil {
+			lfn = r["name"].(string)
+			break
+		}
 	}
 	var lumis []int64
 	for _, v := range rec["lumi"].([]interface{}) {
 		r := v.(mongo.DASRecord)
-		for _, lumi := range r["number"].([]interface{}) {
-			lumis = append(lumis, lumi.(int64))
+		if r != nil {
+			for _, lumi := range r["number"].([]interface{}) {
+				lumis = append(lumis, lumi.(int64))
+			}
 		}
 	}
 	var events []int64
