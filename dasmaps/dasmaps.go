@@ -442,8 +442,6 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 		// we need that our selection keys not exceed number of possible matched keys
 		allMatches := specKeysMatches[rec["urn"].(string)]
 		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) && len(allMatches) >= len(keys) {
-			// adjust DBS instance
-			//             rec["url"] = strings.Replace(rec["url"].(string), "prod/global", inst, 1)
 			if utils.VERBOSE > 0 && utils.WEBSERVER > 0 {
 				logs.WithFields(logs.Fields{
 					"System":        rec["system"],
@@ -459,6 +457,19 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 				// used by dasgoclient, keep fmt.Println
 				msg := utils.Color(utils.GREEN, fmt.Sprintf("DAS match: system=%s urn=%s url=%s spec keys=%s requested keys=%s all api keys %s", rec["system"], rec["urn"], rec["url"], keys, rkeys, akeys))
 				fmt.Println(msg)
+			}
+			// special case of using site4dataset DBS api only for non global instances
+			system := rec["system"].(string)
+			urn := rec["urn"].(string)
+			if urn == "site4dataset" && system == "dbs3" && strings.Contains(dasquery.Instance, "global") {
+				if utils.VERBOSE > 0 && utils.WEBSERVER > 0 {
+					logs.Info(utils.Color(utils.CYAN, "DAS match but skip (special case)"))
+				}
+				if utils.VERBOSE > 1 && utils.WEBSERVER > 0 {
+					msg := utils.Color(utils.CYAN, "DAS match but skip (special case)")
+					fmt.Println(msg)
+				}
+				continue
 			}
 			out = append(out, rec)
 		}
