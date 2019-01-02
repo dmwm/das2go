@@ -765,7 +765,7 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 	}
 
 	// perform post-processing of DAS records
-	data = PostProcessing(dasquery, data)
+	//     data = PostProcessing(dasquery, data)
 
 	// Get DAS status from merge collection
 	spec = bson.M{"qhash": pid, "das.record": 0}
