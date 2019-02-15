@@ -538,14 +538,11 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 	}
 }
 
-// Process DAS query
-// func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) string {
-func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
-	// defer function will propagate panic message to higher level
-	//     defer utils.ErrPropagate("Process")
-
-	// find out list of APIs/CMS services which can process this query request
-	maps := dmaps.FindServices(dasquery)
+// ProcessLogic represents common logic for Process API shared both
+// in das2go and dasgoclient codebase. It figures out which services
+// pkeys, urls and localApis to use for given dasquery, das maps and selected Services
+// The selectedServices is only used in dasgoclient to speed up the process.
+func ProcessLogic(dasquery dasql.DASQuery, maps []mongo.DASRecord, selectedServices []string) ([]string, []string, map[string]string, []mongo.DASRecord) {
 	var srvs, pkeys []string
 	urls := make(map[string]string)
 	var localApis []mongo.DASRecord
@@ -554,6 +551,10 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	for _, dmap := range maps {
 		args := ""
 		system, _ := dmap["system"].(string)
+		// for das2go we'll use empty selectedServices while for dasgoclient we'll pay attention here
+		if len(selectedServices) > 0 && !utils.InList(system, selectedServices) {
+			continue
+		}
 		if system == "runregistry" {
 			switch v := dasquery.Spec["run"].(type) {
 			case string:
@@ -605,6 +606,10 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 					arr := strings.Split(furl, "/rses/")
 					furl = fmt.Sprintf("%s/rses/", arr[0])
 				}
+				if urn == "rules4dataset" || urn == "rules4block" || urn == "rules4file" {
+					// adjust rest URL
+					//                     furl = fmt.Sprintf("%s/associated_rules", furl)
+				}
 			} else {
 				furl = FormRESTUrl(dasquery, dmap)
 			}
@@ -628,7 +633,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 		lkeys := strings.Split(dmap["lookup"].(string), ",")
 		for _, pkey := range lkeys {
 			for _, item := range dmap["das_map"].([]interface{}) {
-				rec := item.(mongo.DASRecord)
+				rec := mongo.Convert2DASRecord(item)
 				daskey := rec["das_key"].(string)
 				reckey := rec["rec_key"].(string)
 				if daskey == pkey {
@@ -638,6 +643,21 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 			}
 		}
 	}
+	return srvs, pkeys, urls, localApis
+}
+
+// Process takes care of processing given DAS query
+func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
+	// defer function will propagate panic message to higher level
+	//     defer utils.ErrPropagate("Process")
+
+	// find out list of APIs/CMS services which can process this query request
+	maps := dmaps.FindServices(dasquery)
+
+	// get list of services, pkeys, urls and localApis we need to process
+	// but for das2go we don't need to use selectedServices, here we'll pass empty list
+	var selectedServices []string
+	srvs, pkeys, urls, localApis := ProcessLogic(dasquery, maps, selectedServices)
 
 	if len(srvs) == 0 {
 		if utils.WEBSERVER > 0 {
