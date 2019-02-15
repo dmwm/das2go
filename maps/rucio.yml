@@ -13,6 +13,36 @@ das_map : [
         {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
 ]
 ---
+urn : rules4dataset
+url : "http://cms-rucio-test.cern.ch/dids/cms"
+expire : 3600
+params : {"dataset":"required"}
+lookup : rules
+das_map : [
+        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+        {"das_key":"rules", "rec_key":"rules.name", "pattern":"^T[0-3]_"},
+]
+---
+urn : rules4block
+url : "http://cms-rucio-test.cern.ch/dids/cms"
+expire : 3600
+params : {"block":"required"}
+lookup : rules
+das_map : [
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
+        {"das_key":"rules", "rec_key":"rules.name", "pattern":"^T[0-3]_"},
+]
+---
+urn : rules4file
+url : "http://cms-rucio-test.cern.ch/dids/cms"
+expire : 3600
+params : {"file":"required"}
+lookup : rules
+das_map : [
+        {"das_key":"file", "rec_key":"file.name", "api_arg":"file"},
+        {"das_key":"rules", "rec_key":"rules.name", "pattern":"^T[0-3]_"},
+]
+---
 urn : site4dataset
 url : "http://cms-rucio-test.cern.ch/replicas/cms"
 expire : 3600
