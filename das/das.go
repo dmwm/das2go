@@ -609,6 +609,9 @@ func ProcessLogic(dasquery dasql.DASQuery, maps []mongo.DASRecord, selectedServi
 				if urn == "rules4dataset" || urn == "rules4block" || urn == "rules4file" {
 					// adjust rest URL
 					furl = fmt.Sprintf("%s/rules", furl)
+					if strings.Contains(furl, "#") {
+						furl = strings.Replace(furl, "#", "%23", -1)
+					}
 				}
 			} else {
 				furl = FormRESTUrl(dasquery, dmap)
