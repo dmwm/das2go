@@ -23,3 +23,9 @@ _cgo_export.*
 _testmain.go
 
 *.exe
+
+# das2go stuff
+das2go
+das2go_linux
+das2go_monitor
+setup.sh
