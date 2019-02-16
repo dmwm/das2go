@@ -13,8 +13,9 @@ das_map : [
         {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
 ]
 ---
+# we need ending slash since Rucio rules API requires /dids/cms//a/b/c pattern
 urn : rules4dataset
-url : "http://cms-rucio-test.cern.ch/dids/cms"
+url : "http://cms-rucio-test.cern.ch/dids/cms/"
 expire : 3600
 params : {"dataset":"required"}
 lookup : rules
@@ -24,7 +25,7 @@ das_map : [
 ]
 ---
 urn : rules4block
-url : "http://cms-rucio-test.cern.ch/dids/cms"
+url : "http://cms-rucio-test.cern.ch/dids/cms/"
 expire : 3600
 params : {"block":"required"}
 lookup : rules
@@ -34,7 +35,7 @@ das_map : [
 ]
 ---
 urn : rules4file
-url : "http://cms-rucio-test.cern.ch/dids/cms"
+url : "http://cms-rucio-test.cern.ch/dids/cms/"
 expire : 3600
 params : {"file":"required"}
 lookup : rules
