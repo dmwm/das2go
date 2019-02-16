@@ -22,7 +22,6 @@ import (
 func loadRucioData(api string, data []byte) []mongo.DASRecord {
 	var out []mongo.DASRecord
 
-	fmt.Println("### data", string(data))
 	// Rucio uses application/x-json-stream content type which yields dict records from the server
 	var row []byte
 	for _, r := range data {
