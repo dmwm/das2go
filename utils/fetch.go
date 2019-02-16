@@ -258,11 +258,13 @@ func FetchResponse(rurl, args string) ResponseType {
 	client := HttpClient()
 	resp, err := client.Do(req)
 	if VERBOSE > 2 {
-		dump2, err2 := httputil.DumpResponse(resp, true)
-		logs.WithFields(logs.Fields{
-			"dump":  string(dump2),
-			"error": err2,
-		}).Info("http response")
+		if resp != nil {
+			dump2, err2 := httputil.DumpResponse(resp, true)
+			logs.WithFields(logs.Fields{
+				"dump":  string(dump2),
+				"error": err2,
+			}).Info("http response")
+		}
 	}
 	if err != nil {
 		response.Error = err
