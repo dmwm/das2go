@@ -30,6 +30,20 @@ primary_dataset : [
         {"das":"primary_dataset.type", "ui":"Type"},
         {"das":"primary_dataset.create_by", "ui":"Created by:"},
         ],
+rules : [
+        {"das":"rules.name", "ui":"Rucio rules",
+         "link":[],
+         "description":"is a rule on DID defined by Rucio",
+         "examples":[]
+        },
+        {"das":"rules.rse_expression", "ui":"RSE expression"},
+        {"das":"rules.copies", "ui":"Number of copies"},
+        {"das":"rules.split_container", "ui":"Split dataset"},
+        {"das":"rules.comments", "ui":"Comments"},
+        {"das":"rules.state", "ui":"State"},
+        {"das":"rules.expires_at", "ui":"Expires"},
+        {"das":"rules.account", "ui":"Rucio Account"},
+        ],
 summary : [
         {"das":"summary", "ui":"Summary",
          "diff":["summary.nlumis", "summary.file_size",
