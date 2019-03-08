@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"os"
 	"runtime"
 	"strconv"
 	"strings"
@@ -23,6 +24,7 @@ import (
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/load"
 	"github.com/shirou/gopsutil/mem"
+	"github.com/shirou/gopsutil/process"
 	logs "github.com/sirupsen/logrus"
 )
 
@@ -359,6 +361,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	s, _ := mem.SwapMemory()
 	l, _ := load.Avg()
 	c, _ := cpu.Percent(time.Millisecond, true)
+	process, perr := process.NewProcess(int32(os.Getpid()))
 
 	// get unfinished queries
 	var templates DASTemplates
@@ -373,6 +376,12 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Memory"] = Mem{Virtual: virt, Swap: swap}
 	tmplData["Load"] = l
 	tmplData["CPU"] = c
+	if perr == nil { // if we got process info
+		conn, _ := process.Connections()
+		openFiles, _ := process.OpenFiles()
+		tmplData["Connections"] = conn
+		tmplData["OpenFiles"] = openFiles
+	}
 	tmplData["Uptime"] = time.Since(Time0).Seconds()
 	tmplData["getRequests"] = TotalGetRequests
 	tmplData["postRequests"] = TotalPostRequests
