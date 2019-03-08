@@ -377,10 +377,14 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Load"] = l
 	tmplData["CPU"] = c
 	if perr == nil { // if we got process info
-		conn, _ := process.Connections()
-		openFiles, _ := process.OpenFiles()
-		tmplData["Connections"] = conn
-		tmplData["OpenFiles"] = openFiles
+		conn, err := process.Connections()
+		if err == nil {
+			tmplData["Connections"] = conn
+		}
+		openFiles, err := process.OpenFiles()
+		if err == nil {
+			tmplData["OpenFiles"] = openFiles
+		}
 	}
 	tmplData["Uptime"] = time.Since(Time0).Seconds()
 	tmplData["getRequests"] = TotalGetRequests
