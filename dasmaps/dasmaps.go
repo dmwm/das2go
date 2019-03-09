@@ -558,6 +558,9 @@ func (m *DASMaps) ChangeUrl(old, pat string) {
 				url = strings.Replace(url, old, pat, -1)
 				dmap["url"] = url
 			} else if strings.Contains(url, "combined") {
+				if dmap["services"] == nil {
+					continue
+				}
 				services := dmap["services"].(map[string]interface{})
 				newServices := make(map[string]string)
 				for key, val := range services {
