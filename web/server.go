@@ -103,6 +103,13 @@ func daskeysDescription() string {
 // Server is proxy server. It defines /fetch public interface
 func Server(configFile string) {
 	err := config.ParseConfig(configFile)
+	if config.Config.LogFormatter == "json" {
+		logs.SetFormatter(&logs.JSONFormatter{})
+	} else if config.Config.LogFormatter == "text" {
+		logs.SetFormatter(&logs.TextFormatter{})
+	} else {
+		logs.SetFormatter(&logs.JSONFormatter{})
+	}
 	if err != nil {
 		logs.WithFields(logs.Fields{"Time": time.Now(), "Config": configFile}).Error("Unable to parse")
 	}
