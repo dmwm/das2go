@@ -38,6 +38,7 @@ type Configuration struct {
 	UpdateDNs     int      `json:"updateDNs"`     // interval in minutes to update user DNs
 	Timeout       int      `json:"timeout"`       // query time out
 	Frontend      string   `json:"frontend"`      // frontend URI to use
+	LogFormatter  string   `json:"logFormatter"`  // LogFormatter type
 }
 
 // Config variable represents configuration object
@@ -45,7 +46,7 @@ var Config Configuration
 
 // String returns string representation of DAS Config
 func (c *Configuration) String() string {
-	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s yui=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s timeout=%d frontend=%s>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.YuiRoot, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey, c.Timeout, c.Frontend)
+	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s yui=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s timeout=%d frontend=%s logFormatter=%s>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.YuiRoot, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey, c.Timeout, c.Frontend, c.LogFormatter)
 }
 
 // ParseConfig parse given config file
