@@ -251,6 +251,10 @@ func (LocalAPIs) File4DatasetRunLumi(dasquery dasql.DASQuery) []mongo.DASRecord 
 	keys := []string{"logical_file_name", "lumi_section_num"}
 	records := fileRunLumi(dasquery, keys)
 	for _, rec := range records {
+		if _, ok := rec["error"]; ok {
+			out = append(out, rec)
+			continue
+		}
 		for _, row := range rec["lumi"].([]mongo.DASRecord) {
 			v := row["number"]
 			if v != nil {

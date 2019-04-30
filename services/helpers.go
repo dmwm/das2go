@@ -215,6 +215,9 @@ func fileRunLumi(dasquery dasql.DASQuery, keys []string) []mongo.DASRecord {
 	urls := dbsUrls(dasquery, api)
 	filelumis := processUrls("dbs3", api, urls)
 	for _, rec := range filelumis {
+		if _, ok := rec["error"]; ok {
+			out = append(out, rec)
+		}
 		row := make(mongo.DASRecord)
 		for _, key := range keys {
 			// put into file das record, internal type must be list
