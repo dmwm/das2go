@@ -488,26 +488,36 @@ func parsePipe(query, pipe string) (map[string][]string, [][]string, string, str
 // ValidateDASQuerySpecs validates given das query against patterns
 func ValidateDASQuerySpecs(dasquery DASQuery) error {
 	for k, v := range dasquery.Spec {
-		val := v.(string)
-		if k == "dataset" {
-			if utils.PatternDataset.MatchString(val) == false {
-				return errors.New("Validation error: unmatched dataset pattern")
+		var values []string
+		switch val := v.(type) {
+		case string:
+			values = append(values, val)
+		case []string:
+			for _, v := range val {
+				values = append(values, v)
 			}
-		} else if k == "block" {
-			if utils.PatternBlock.MatchString(val) == false {
-				return errors.New("Validation error: unmatched block pattern")
-			}
-		} else if k == "file" {
-			if utils.PatternFile.MatchString(val) == false {
-				return errors.New("Validation error: unmatched file pattern")
-			}
-		} else if k == "run" {
-			if utils.PatternRun.MatchString(val) == false {
-				return errors.New("Validation error: unmatched run pattern")
-			}
-		} else if k == "site" {
-			if utils.PatternSite.MatchString(val) == false {
-				return errors.New("Validation error: unmatched site pattern")
+		}
+		for _, val := range values {
+			if k == "dataset" {
+				if utils.PatternDataset.MatchString(val) == false {
+					return errors.New("Validation error: unmatched dataset pattern")
+				}
+			} else if k == "block" {
+				if utils.PatternBlock.MatchString(val) == false {
+					return errors.New("Validation error: unmatched block pattern")
+				}
+			} else if k == "file" {
+				if utils.PatternFile.MatchString(val) == false {
+					return errors.New("Validation error: unmatched file pattern")
+				}
+			} else if k == "run" {
+				if utils.PatternRun.MatchString(val) == false {
+					return errors.New("Validation error: unmatched run pattern")
+				}
+			} else if k == "site" {
+				if utils.PatternSite.MatchString(val) == false {
+					return errors.New("Validation error: unmatched site pattern")
+				}
 			}
 		}
 	}
