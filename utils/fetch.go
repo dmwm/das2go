@@ -72,12 +72,18 @@ func tlsCerts() ([]tls.Certificate, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse X509 proxy: %v", err)
 		}
+		if WEBSERVER == 1 && VERBOSE > 0 {
+			logs.WithFields(logs.Fields{"X509_USER_PROXY": uproxy}).Info("use proxy")
+		}
 		certs := []tls.Certificate{x509cert}
 		return certs, nil
 	}
 	x509cert, err := tls.LoadX509KeyPair(ucert, uckey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse user X509 certificate: %v", err)
+	}
+	if WEBSERVER == 1 && VERBOSE > 0 {
+		logs.WithFields(logs.Fields{"X509_USER_KEY": uckey, "X509_USER_CERT": ucert}).Info("use key/cert")
 	}
 	certs := []tls.Certificate{x509cert}
 	return certs, nil
