@@ -914,7 +914,11 @@ func Aggregate(data []mongo.DASRecord, agg, key string) mongo.DASRecord {
 	default:
 		rec = make(mongo.DASRecord)
 	}
-	rec["das"] = data[0]["das"]
+	if len(data) > 0 {
+		rec["das"] = data[0]["das"]
+	} else {
+		rec["das"] = "Unable to aggregate"
+	}
 	return rec
 }
 
