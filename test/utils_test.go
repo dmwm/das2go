@@ -2,7 +2,8 @@ package main
 
 import (
 	"testing"
-	"utils"
+
+	"github.com/dmwm/das2go/utils"
 )
 
 func TestInList(t *testing.T) {

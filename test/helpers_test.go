@@ -2,9 +2,10 @@ package main
 
 import (
 	"fmt"
-	"mongo"
-	"services"
 	"testing"
+
+	"github.com/dmwm/das2go/mongo"
+	"github.com/dmwm/das2go/services"
 )
 
 func TestOrderByRunLumis(t *testing.T) {
