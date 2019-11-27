@@ -400,6 +400,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 		// record part
 		var links []interface{}
 		var pval string
+		dtypes := make(map[string]string)
 		var values []string
 		for _, key := range fields {
 			var records []interface{}
@@ -446,6 +447,9 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					}
 					if pval == "" {
 						pval = value
+					}
+					if pkey == "dataset.name" {
+						dtypes[pval] = ExtractValue(rec, "datatype")
 					}
 					if len(value) > 0 {
 						var row string
@@ -506,6 +510,12 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 				primds := arr[1]
 				link := fmt.Sprintf("<a href=\"https://cms-gen-dev.cern.ch/xsdb/?searchQuery=DAS=%s\">XSDB</a>", primds)
 				out = append(out, link)
+				if v, ok := dtypes[pval]; ok {
+					if v == "mc" {
+						link = fmt.Sprintf("<a href=\"https://cms-pdmv.cern.ch/mcm/requests?produce=%s&page=0&shown=127\">McM</a>", pval)
+						out = append(out, link)
+					}
+				}
 			}
 		}
 		out = append(out, colServices(services))
