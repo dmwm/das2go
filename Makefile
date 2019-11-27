@@ -1,5 +1,5 @@
-GOPATH:=$(PWD):${GOPATH}
-export GOPATH
+#GOPATH:=$(PWD):${GOPATH}
+#xport GOPATH
 flags=-ldflags="-s -w"
 # flags=-ldflags="-s -w -extldflags -static"
 TAG := $(shell git tag | sed -e "s,v,,g" | sort -r | head -n 1)
@@ -9,6 +9,11 @@ all: build
 build:
 	sed -i -e "s,{{VERSION}},$(TAG),g" main.go
 	go clean; rm -rf pkg; go build ${flags}
+	sed -i -e "s,$(TAG),{{VERSION}},g" main.go
+
+build_debug:
+	sed -i -e "s,{{VERSION}},$(TAG),g" main.go
+	go clean; rm -rf pkg; go build ${flags} -gcflags="-m -m"
 	sed -i -e "s,$(TAG),{{VERSION}},g" main.go
 
 build_all: build_osx build_linux build
