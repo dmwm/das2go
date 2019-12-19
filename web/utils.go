@@ -213,7 +213,7 @@ func makeUrl(url, urlType string, startIdx, limit, nres int) string {
 // helper function to provide pagination
 func pagination(base, query, inst string, nres, startIdx, limit int) string {
 	var templates DASTemplates
-	url := fmt.Sprintf("%s?input=%s&instance=%s", base, query, inst)
+	url := fmt.Sprintf("%s?input=%s&instance=%s", base, url.QueryEscape(query), inst)
 	tmplData := make(map[string]interface{})
 	if nres > 0 {
 		tmplData["StartIndex"] = fmt.Sprintf("%d", startIdx+1)
