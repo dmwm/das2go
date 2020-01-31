@@ -85,7 +85,7 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	req.Header.Add("Accept-Encoding", "identity")
 	req.Header.Add("X-Rucio-Account", "das")
 	req.Header.Add("User-Agent", "dasgoserver-rucio")
-	req.Header.Add("Accept", "application/json")
+	//req.Header.Add("Accept", "application/json")
 	req.Header.Add("Connection", "keep-alive")
 	if VERBOSE > 1 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)

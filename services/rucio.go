@@ -107,14 +107,16 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 				}
 			}
 		} else {
-			states := rec["states"].(map[string]interface{})
-			var replicas []mongo.DASRecord
-			for k, v := range states {
-				rep := mongo.DASRecord{"name": k, "state": v}
-				replicas = append(replicas, rep)
+			if rec["states"] != nil {
+				states := rec["states"].(map[string]interface{})
+				var replicas []mongo.DASRecord
+				for k, v := range states {
+					rep := mongo.DASRecord{"name": k, "state": v}
+					replicas = append(replicas, rep)
+				}
+				rec["replicas"] = replicas
+				out = append(out, rec)
 			}
-			rec["replicas"] = replicas
-			out = append(out, rec)
 		}
 	}
 	return out
