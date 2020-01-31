@@ -3,7 +3,7 @@ system : rucio
 format : JSON
 ---
 urn : dataset4site
-url : "http://cms-rucio-test.cern.ch/replicas/rse"
+url : "http://cms-rucio-int.cern.ch/replicas/rse"
 expire : 3600
 params : {"se":"optional", "node":"optional"}
 lookup : dataset
@@ -15,7 +15,7 @@ das_map : [
 ---
 # we need ending slash since Rucio rules API requires /dids/cms//a/b/c pattern
 urn : rules4dataset
-url : "http://cms-rucio-test.cern.ch/dids/cms/"
+url : "http://cms-rucio-int.cern.ch/dids/cms/"
 expire : 3600
 params : {"dataset":"required"}
 lookup : rules
@@ -25,7 +25,7 @@ das_map : [
 ]
 ---
 urn : rules4block
-url : "http://cms-rucio-test.cern.ch/dids/cms/"
+url : "http://cms-rucio-int.cern.ch/dids/cms/"
 expire : 3600
 params : {"block":"required"}
 lookup : rules
@@ -35,7 +35,7 @@ das_map : [
 ]
 ---
 urn : rules4file
-url : "http://cms-rucio-test.cern.ch/dids/cms/"
+url : "http://cms-rucio-int.cern.ch/dids/cms/"
 expire : 3600
 params : {"file":"required"}
 lookup : rules
@@ -45,7 +45,7 @@ das_map : [
 ]
 ---
 urn : site4dataset
-url : "http://cms-rucio-test.cern.ch/replicas/cms"
+url : "http://cms-rucio-int.cern.ch/replicas/cms"
 expire : 3600
 params : {"dataset":"required"}
 lookup : site
@@ -55,7 +55,7 @@ das_map : [
 ]
 ---
 urn : site4block
-url : "http://cms-rucio-test.cern.ch/replicas/cms"
+url : "http://cms-rucio-int.cern.ch/replicas/cms"
 expire : 3600
 params : {"block":"required"}
 lookup : site
@@ -65,7 +65,7 @@ das_map : [
 ]
 ---
 urn : site4file
-url : "http://cms-rucio-test.cern.ch/replicas/cms"
+url : "http://cms-rucio-int.cern.ch/replicas/cms"
 expire : 3600
 params : {"file":"required"}
 lookup : site
@@ -75,7 +75,7 @@ das_map : [
 ]
 ---
 urn : file4dataset
-url : "http://cms-rucio-test.cern.ch/replicas/cms"
+url : "http://cms-rucio-int.cern.ch/replicas/cms"
 expire : 3600
 params : {"dataset":"required"}
 lookup : file
@@ -85,7 +85,7 @@ das_map : [
 ]
 ---
 urn : file4dataset_site
-url : "http://cms-rucio-test.cern.ch/replicas/cms"
+url : "http://cms-rucio-int.cern.ch/replicas/cms"
 expire : 3600
 params : {"dataset":"required", "site":"required"}
 lookup : file
@@ -96,7 +96,7 @@ das_map : [
 ]
 ---
 urn : file4block_site
-url : "http://cms-rucio-test.cern.ch/replicas/cms"
+url : "http://cms-rucio-int.cern.ch/replicas/cms"
 expire : 3600
 params : {"block":"required", "site":"required"}
 lookup : file
@@ -107,7 +107,7 @@ das_map : [
 ]
 ---
 urn : block4dataset_site
-url : "http://cms-rucio-test.cern.ch/replicas/cms"
+url : "http://cms-rucio-int.cern.ch/replicas/cms"
 expire : 3600
 params : {"dataset":"required", "site":"required"}
 lookup : block
@@ -118,7 +118,7 @@ das_map : [
 ]
 ---
 urn : rses
-url : "http://cms-rucio-test.cern.ch/rses"
+url : "http://cms-rucio-int.cern.ch/rses"
 expire : 3600
 params : {"node":"optional"}
 lookup: site
@@ -127,7 +127,7 @@ das_map : [
 ]
 ---
 urn : accounts
-url : "http://cms-rucio-test.cern.ch/accounts"
+url : "http://cms-rucio-int.cern.ch/accounts"
 expire : 3600
 params : {}
 lookup: user
