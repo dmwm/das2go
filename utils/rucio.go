@@ -83,9 +83,8 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	req, _ := http.NewRequest("GET", rurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
-	req.Header.Add("X-Rucio-Account", "das")
+	req.Header.Add("X-Rucio-Account", Rucio.Account())
 	req.Header.Add("User-Agent", "dasgoserver-rucio")
-	//req.Header.Add("Accept", "application/json")
 	req.Header.Add("Connection", "keep-alive")
 	if VERBOSE > 1 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
@@ -137,7 +136,7 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	proxy := os.Getenv("X509_USER_PROXY")
 	account := fmt.Sprintf("X-Rucio-Account:%s", RucioAuth.Account())
 	agent := RucioAuth.Agent()
-	cmd := fmt.Sprintf("curl -v --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
+	cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
 	fmt.Println(cmd)
 	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	if err != nil {
@@ -148,9 +147,10 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	}
 	var token string
 	for _, v := range strings.Split(string(out), "\n") {
-		if strings.Contains(v, "X-Rucio-Auth-Token") {
-			arr := strings.Split(v, ":")
-			token = strings.Trim(arr[len(arr)-1], " ")
+		if strings.Contains(strings.ToLower(v), "x-rucio-auth-token:") {
+			arr := strings.Split(v, "X-Rucio-Auth-Token: ")
+			token = strings.Replace(arr[len(arr)-1], "\n", "", -1)
+			return token, expire, nil
 		}
 	}
 	return token, expire, nil
