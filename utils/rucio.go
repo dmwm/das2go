@@ -38,7 +38,8 @@ func (r *RucioAuthModule) Token() (string, error) {
 	if r.token != "" && t < r.ts {
 		return r.token, nil
 	}
-	token, expire, err := FetchRucioToken(r.Url())
+	//     token, expire, err := FetchRucioToken(r.Url())
+	token, expire, err := FetchRucioTokenViaCurl(r.Url())
 	if err != nil {
 		return "", err
 	}
