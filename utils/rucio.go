@@ -20,6 +20,9 @@ import (
 // RucioValidity
 var RucioValidity int64
 
+// RucioTokenCurl
+var RucioTokenCurl bool
+
 // RucioAuth represents instance of rucio authentication module
 var RucioAuth RucioAuthModule
 
@@ -38,8 +41,14 @@ func (r *RucioAuthModule) Token() (string, error) {
 	if r.token != "" && t < r.ts {
 		return r.token, nil
 	}
-	//     token, expire, err := FetchRucioToken(r.Url())
-	token, expire, err := FetchRucioTokenViaCurl(r.Url())
+	var token string
+	var expire int64
+	var err error
+	if RucioTokenCurl {
+		token, expire, err = FetchRucioTokenViaCurl(r.Url())
+	} else {
+		token, expire, err = FetchRucioToken(r.Url())
+	}
 	if err != nil {
 		return "", err
 	}
@@ -84,8 +93,8 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	req, _ := http.NewRequest("GET", rurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
-	req.Header.Add("X-Rucio-Account", "das")
-	req.Header.Add("User-Agent", "dasgoserver-rucio")
+	req.Header.Add("X-Rucio-Account", RucioAuth.Account())
+	req.Header.Add("User-Agent", RucioAuth.Agent())
 	req.Header.Add("Connection", "keep-alive")
 	if VERBOSE > 1 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
@@ -135,7 +144,7 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	// I need to replace expire with time provided by Rucio auth server
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	proxy := os.Getenv("X509_USER_PROXY")
-	account := fmt.Sprintf("X-Rucio-Account:%s", "das")
+	account := fmt.Sprintf("X-Rucio-Account: %s", RucioAuth.Account())
 	agent := RucioAuth.Agent()
 	cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
 	fmt.Println(cmd)

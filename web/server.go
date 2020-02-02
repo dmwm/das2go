@@ -118,6 +118,7 @@ func Server(configFile string) {
 	utils.UrlRetry = config.Config.UrlRetry
 	utils.DASMAPS = config.Config.DasMaps
 	utils.TIMEOUT = config.Config.Timeout
+	utils.RucioTokenCurl = config.Config.RucioTokenCurl
 	logs.Info(config.Config.String())
 	// init CMS Authentication module
 	if config.Config.Hkey != "" {
