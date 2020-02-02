@@ -83,7 +83,7 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	req, _ := http.NewRequest("GET", rurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
-	req.Header.Add("X-Rucio-Account", Rucio.Account())
+	req.Header.Add("X-Rucio-Account", "das")
 	req.Header.Add("User-Agent", "dasgoserver-rucio")
 	req.Header.Add("Connection", "keep-alive")
 	if VERBOSE > 1 {
@@ -134,7 +134,7 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	// I need to replace expire with time provided by Rucio auth server
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	proxy := os.Getenv("X509_USER_PROXY")
-	account := fmt.Sprintf("X-Rucio-Account:%s", RucioAuth.Account())
+	account := fmt.Sprintf("X-Rucio-Account:%s", "das")
 	agent := RucioAuth.Agent()
 	cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
 	fmt.Println(cmd)
