@@ -150,6 +150,7 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 		if strings.Contains(strings.ToLower(v), "x-rucio-auth-token:") {
 			arr := strings.Split(v, "X-Rucio-Auth-Token: ")
 			token = strings.Replace(arr[len(arr)-1], "\n", "", -1)
+			token = strings.Replace(token, "\r", "", -1)
 			return token, expire, nil
 		}
 	}
