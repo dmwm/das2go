@@ -36,8 +36,9 @@ var TotalPostRequests uint64
 
 // ServerSettings controls server parameters
 type ServerSettings struct {
-	Level        int    `json:"level"`        // verbosity level
-	LogFormatter string `json:"logFormatter"` // logrus formatter
+	Level          int    `json:"level"`          // verbosity level
+	LogFormatter   string `json:"logFormatter"`   // logrus formatter
+	RucioTokenCurl bool   `json:"rucioTokenCurl"` // use curl method to obtain Rucio Token
 }
 
 // DASKeys provides information about DAS keys used by ServiceHandler
@@ -598,9 +599,12 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		logs.SetFormatter(&logs.TextFormatter{})
 	}
+	// change RucioTokenCurl with whatever is supplied in server settings POST request
+	utils.RucioTokenCurl = s.RucioTokenCurl
 	logs.WithFields(logs.Fields{
-		"Verbose level": utils.VERBOSE,
-		"Log formatter": s.LogFormatter,
+		"Verbose level":    utils.VERBOSE,
+		"Log formatter":    s.LogFormatter,
+		"Rucio token curl": s.RucioTokenCurl,
 	}).Info("update server settings")
 	w.WriteHeader(http.StatusOK)
 	return
