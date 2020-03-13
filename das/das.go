@@ -67,6 +67,10 @@ func getApiParams(dasmap mongo.DASRecord) (string, string, string, string) {
 // FormUrlCall forms appropriate URL from given dasquery and dasmap, the final URL
 // contains all parameters
 func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
+
+	// defer function profiler
+	defer utils.MeasureTime("das/FormUrlCall")()
+
 	vals := url.Values{}
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
@@ -308,6 +312,10 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 // FormRESTUrl forms appropriate URL from given dasquery and dasmap, the final URL
 // contains all parameters
 func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
+
+	// defer function profiler
+	defer utils.MeasureTime("das/FormRESTUrl")()
+
 	spec := dasquery.Spec
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
@@ -369,6 +377,9 @@ type DASRecords []mongo.DASRecord
 func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []string) {
 	// defer function will propagate panic message to higher level
 	//     defer utils.ErrPropagate("processLocalApis")
+
+	// defer function profiler
+	defer utils.MeasureTime("das/processLocalApis")()
 
 	localApiMap := services.LocalAPIMap()
 	for _, dmap := range dmaps {
@@ -449,6 +460,9 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps, pkeys []string) {
 	// defer function will propagate panic message to higher level
 	//     defer utils.ErrPropagate("processUrls")
+
+	// defer function profiler
+	defer utils.MeasureTime("das/processURLs")()
 
 	out := make(chan utils.ResponseType)
 	defer close(out)
@@ -543,6 +557,10 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 // pkeys, urls and localApis to use for given dasquery, das maps and selected Services
 // The selectedServices is only used in dasgoclient to speed up the process.
 func ProcessLogic(dasquery dasql.DASQuery, maps []mongo.DASRecord, selectedServices []string) ([]string, []string, map[string]string, []mongo.DASRecord) {
+
+	// defer function profiler
+	defer utils.MeasureTime("das/ProcessLogic")()
+
 	var srvs, pkeys []string
 	urls := make(map[string]string)
 	var localApis []mongo.DASRecord
@@ -654,6 +672,9 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	// defer function will propagate panic message to higher level
 	//     defer utils.ErrPropagate("Process")
 
+	// defer function profiler
+	defer utils.MeasureTime("das/Process")()
+
 	// find out list of APIs/CMS services which can process this query request
 	maps := dmaps.FindServices(dasquery)
 
@@ -752,6 +773,10 @@ func modSpec(spec bson.M, filter string) {
 
 // GetData for given pid (DAS Query qhash)
 func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mongo.DASRecord) {
+
+	// defer function profiler
+	defer utils.MeasureTime("das/GetData")()
+
 	var emptyData, data []mongo.DASRecord
 	pid := dasquery.Qhash
 	filters := dasquery.Filters
@@ -807,6 +832,10 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 // when we call site query we need to distinguish the case when
 // to show original site
 func PostProcessing(dasquery dasql.DASQuery, data []mongo.DASRecord) []mongo.DASRecord {
+
+	// defer function profiler
+	defer utils.MeasureTime("das/PostProcessing")()
+
 	// site4dataset use case
 	fields := dasquery.Fields
 	if utils.InList("site", fields) {
@@ -860,6 +889,10 @@ func PostProcessing(dasquery dasql.DASQuery, data []mongo.DASRecord) []mongo.DAS
 // helper function to aggregate results over provided aggregators
 // we'll use go routine to do this in parallel
 func aggregateAll(data []mongo.DASRecord, aggrs [][]string) []mongo.DASRecord {
+
+	// defer function profiler
+	defer utils.MeasureTime("das/aggregateAll")()
+
 	var out []mongo.DASRecord
 	ch := make(chan mongo.DASRecord)
 	for _, agg := range aggrs {
