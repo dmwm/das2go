@@ -197,6 +197,10 @@ var _Mongo MongoConnection
 
 // Insert records into MongoDB
 func Insert(dbname, collname string, records []DASRecord) {
+
+	// defer function profiler
+	defer utils.MeasureTime("mongo/Insert")()
+
 	s := _Mongo.Connect()
 	defer s.Close()
 	c := s.DB(dbname).C(collname)
@@ -209,6 +213,10 @@ func Insert(dbname, collname string, records []DASRecord) {
 
 // Get records from MongoDB
 func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
+
+	// defer function profiler
+	defer utils.MeasureTime("mongo/Get")()
+
 	out := []DASRecord{}
 	s := _Mongo.Connect()
 	defer s.Close()
@@ -229,6 +237,10 @@ func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 
 // GetSorted records from MongoDB sorted by given key
 func GetSorted(dbname, collname string, spec bson.M, skeys []string) []DASRecord {
+
+	// defer function profiler
+	defer utils.MeasureTime("mongo/GetSorted")()
+
 	out := []DASRecord{}
 	s := _Mongo.Connect()
 	defer s.Close()
@@ -261,6 +273,10 @@ func sel(q ...string) (r bson.M) {
 
 // GetFilteredSorted get records from MongoDB filtered and sorted by given key
 func GetFilteredSorted(dbname, collname string, spec bson.M, fields, skeys []string, idx, limit int) []DASRecord {
+
+	// defer function profiler
+	defer utils.MeasureTime("mongo/GetFiltered/Sorted")()
+
 	out := []DASRecord{}
 	s := _Mongo.Connect()
 	defer s.Close()
@@ -288,6 +304,10 @@ func GetFilteredSorted(dbname, collname string, spec bson.M, fields, skeys []str
 
 // Update inplace for given spec
 func Update(dbname, collname string, spec, newdata bson.M) {
+
+	// defer function profiler
+	defer utils.MeasureTime("mongo/Update")()
+
 	s := _Mongo.Connect()
 	defer s.Close()
 	c := s.DB(dbname).C(collname)
@@ -304,6 +324,10 @@ func Update(dbname, collname string, spec, newdata bson.M) {
 
 // Count gets number records from MongoDB
 func Count(dbname, collname string, spec bson.M) int {
+
+	// defer function profiler
+	defer utils.MeasureTime("mongo/Count")()
+
 	s := _Mongo.Connect()
 	defer s.Close()
 	c := s.DB(dbname).C(collname)
@@ -320,6 +344,10 @@ func Count(dbname, collname string, spec bson.M) int {
 
 // Remove records from MongoDB
 func Remove(dbname, collname string, spec bson.M) {
+
+	// defer function profiler
+	defer utils.MeasureTime("mongo/Remove")()
+
 	s := _Mongo.Connect()
 	defer s.Close()
 	c := s.DB(dbname).C(collname)
