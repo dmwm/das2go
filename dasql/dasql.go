@@ -235,6 +235,10 @@ func parseLastValue(val string) []string {
 
 // Parse method provides DAS query parser
 func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
+
+	// defer function profiler
+	defer utils.MeasureTime("dasql/Parse")()
+
 	time0 := time.Now().Unix() - 1 // we'll use this time to check DASQuery readiness
 	var qlerr, posLine string
 	var rec DASQuery
