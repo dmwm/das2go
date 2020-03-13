@@ -39,6 +39,7 @@ type ServerSettings struct {
 	Level          int    `json:"level"`          // verbosity level
 	LogFormatter   string `json:"logFormatter"`   // logrus formatter
 	RucioTokenCurl bool   `json:"rucioTokenCurl"` // use curl method to obtain Rucio Token
+	ProfileFile    string `json:"profileFile"`    // send profile data to a given file
 }
 
 // DASKeys provides information about DAS keys used by ServiceHandler
@@ -145,6 +146,9 @@ func dasZero(base string) string {
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
 	// defer function will propagate panic message to higher level
 	defer utils.ErrPropagate("processRequest")
+
+	// defer function profiler
+	defer utils.MeasureTime("web/handlers/processRequest")()
 
 	response := make(map[string]interface{})
 	if das.CheckDataReadiness(pid) { // data exists in cache and ready for retrieval
@@ -428,6 +432,9 @@ func ServicesHandler(w http.ResponseWriter, r *http.Request) {
 // RequestHandler is used by web server to handle incoming requests
 func RequestHandler(w http.ResponseWriter, r *http.Request) {
 
+	// defer function profiler
+	defer utils.MeasureTime("web/handlers/RequestHandler")()
+
 	if v, err := strconv.Atoi(r.FormValue("verbose")); err == nil {
 		logs.Info("verbose level=%d", v)
 		utils.VERBOSE = v
@@ -599,12 +606,19 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		logs.SetFormatter(&logs.TextFormatter{})
 	}
+	// change function profiler if necessary
+	if s.ProfileFile != "" {
+		utils.InitFunctionProfiler(s.ProfileFile)
+	} else {
+		utils.Profiler = nil
+	}
 	// change RucioTokenCurl with whatever is supplied in server settings POST request
 	utils.RucioTokenCurl = s.RucioTokenCurl
 	logs.WithFields(logs.Fields{
 		"Verbose level":    utils.VERBOSE,
 		"Log formatter":    s.LogFormatter,
 		"Rucio token curl": s.RucioTokenCurl,
+		"Profile file":     s.ProfileFile,
 	}).Info("update server settings")
 	w.WriteHeader(http.StatusOK)
 	return
