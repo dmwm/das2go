@@ -40,6 +40,7 @@ type Configuration struct {
 	Frontend       string   `json:"frontend"`       // frontend URI to use
 	LogFormatter   string   `json:"logFormatter"`   // LogFormatter type
 	RucioTokenCurl bool     `json:"rucioTokenCurl"` // use curl method to obtain Rucio Token
+	ProfileFile    string   `json:"profileFile"`    // send profile data to a given file
 }
 
 // Config variable represents configuration object
