@@ -332,7 +332,10 @@ func dataset4siteRelease(dasquery dasql.DASQuery) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	var urls, datasets []string
 	api := "blockReplicas"
-	node := phedexNode(spec["site"].(string))
+	var node string
+	if spec["site"] != nil {
+		node = phedexNode(spec["site"].(string))
+	}
 	for _, dataset := range dataset4release(dasquery) {
 		furl := fmt.Sprintf("%s/%s?dataset=%s&%s", PhedexUrl(), api, dataset, node)
 		if !utils.InList(furl, urls) {
@@ -340,6 +343,9 @@ func dataset4siteRelease(dasquery dasql.DASQuery) []mongo.DASRecord {
 		}
 	}
 	for _, rec := range processUrls("phedex", api, urls) {
+		if rec["name"] == nil {
+			continue
+		}
 		block := rec["name"].(string)
 		dataset := strings.Split(block, "#")[0]
 		if !utils.InList(dataset, datasets) {
