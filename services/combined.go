@@ -48,6 +48,9 @@ func (LocalAPIs) Child4SiteReleaseDataset(dasquery dasql.DASQuery) []mongo.DASRe
 	api = "releaseversions"
 	var dbsUrls []string
 	for _, rec := range records {
+		if rec["child_dataset"] == nil {
+			continue
+		}
 		dataset := rec["child_dataset"].(string)
 		furl = fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
 		if !utils.InList(furl, dbsUrls) {
@@ -57,6 +60,9 @@ func (LocalAPIs) Child4SiteReleaseDataset(dasquery dasql.DASQuery) []mongo.DASRe
 	var datasets []string
 	// collect children datasets
 	for _, rec := range processUrls("dbs3", api, dbsUrls) {
+		if rec["url"] == nil {
+			continue
+		}
 		url := rec["url"].(string)
 		furl = fmt.Sprintf("%s/%s?dataset=", DBSUrl(inst), api)
 		dataset := strings.Trim(url, furl)
