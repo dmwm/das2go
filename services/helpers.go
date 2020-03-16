@@ -294,6 +294,9 @@ func dataset4release(dasquery dasql.DASQuery) []string {
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
+		if rec["name"] == nil {
+			continue
+		}
 		dataset := rec["name"].(string)
 		if !utils.InList(dataset, out) {
 			out = append(out, dataset)
