@@ -22,6 +22,7 @@ import (
 	"os"
 	"os/user"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -40,6 +41,39 @@ var TotalPostCalls uint64
 
 // CLIENT_VERSION represents client version
 var CLIENT_VERSION string
+
+// TLSCertsRenewInterval controls interval to re-read TLS certs (in seconds)
+var TLSCertsRenewInterval time.Duration
+
+// TLSCerts holds TLS certificates for the server
+type TLSCertsManager struct {
+	Certs  []tls.Certificate
+	Expire time.Time
+}
+
+// GetCerts return fresh copy of certificates
+func (t *TLSCertsManager) GetCerts() ([]tls.Certificate, error) {
+	var lock = sync.Mutex{}
+	lock.Lock()
+	defer lock.Unlock()
+	// we'll use existing certs if our window is not expired
+	if t.Certs == nil || time.Since(t.Expire) > TLSCertsRenewInterval {
+		logs.WithFields(logs.Fields{
+			"Expire": t.Expire,
+		}).Debug("Read new certs")
+		t.Expire = time.Now()
+		certs, err := tlsCerts()
+		if err == nil {
+			t.Certs = certs
+		} else {
+			panic(err.Error())
+		}
+	}
+	return t.Certs, nil
+}
+
+// global TLSCerts manager
+var tlsManager TLSCertsManager
 
 // client X509 certificates
 func tlsCerts() ([]tls.Certificate, error) {
@@ -92,7 +126,8 @@ func tlsCerts() ([]tls.Certificate, error) {
 // HttpClient is HTTP client for urlfetch server
 func HttpClient() *http.Client {
 	// get X509 certs
-	certs, err := tlsCerts()
+	//     certs, err := tlsCerts()
+	certs, err := tlsManager.GetCerts()
 	if err != nil {
 		panic(err.Error())
 	}
@@ -325,10 +360,12 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 	var resp, r ResponseType
 	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
-		logs.WithFields(logs.Fields{
-			"url":   rurl,
-			"error": resp.Error,
-		}).Warn("fail to fetch data")
+		if WEBSERVER == 1 && VERBOSE > 0 {
+			logs.WithFields(logs.Fields{
+				"url":   rurl,
+				"error": resp.Error,
+			}).Warn("fail to fetch data")
+		}
 		for i := 1; i <= UrlRetry; i++ {
 			sleep := time.Duration(i) * time.Second
 			time.Sleep(sleep)
@@ -336,20 +373,24 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 			if r.Error == nil {
 				break
 			}
-			logs.WithFields(logs.Fields{
-				"url":   rurl,
-				"retry": i,
-				"error": resp.Error,
-			}).Warn("fetch data retry")
+			if WEBSERVER == 1 && VERBOSE > 0 {
+				logs.WithFields(logs.Fields{
+					"url":   rurl,
+					"retry": i,
+					"error": resp.Error,
+				}).Warn("fetch data retry")
+			}
 		}
 		resp = r
 	}
 	if resp.Error != nil {
-		logs.WithFields(logs.Fields{
-			"url":     rurl,
-			"retries": UrlRetry,
-			"error":   resp.Error,
-		}).Error("fail to fetch data")
+		if WEBSERVER == 1 && VERBOSE > 0 {
+			logs.WithFields(logs.Fields{
+				"url":     rurl,
+				"retries": UrlRetry,
+				"error":   resp.Error,
+			}).Error("fail to fetch data")
+		}
 	}
 	ch <- resp
 }
