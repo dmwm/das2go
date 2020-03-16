@@ -8,6 +8,9 @@ import (
 	"github.com/dmwm/das2go/config"
 )
 
+// global map of templates
+var DASTemplateMap map[string]*template.Template
+
 // consume list of templates and release their full path counterparts
 func fileNames(tdir string, filenames ...string) []string {
 	flist := []string{}
@@ -19,19 +22,28 @@ func fileNames(tdir string, filenames ...string) []string {
 
 // parse template with given data
 func parseTmpl(tdir, tmpl string, data interface{}) string {
-	buf := new(bytes.Buffer)
-	filenames := fileNames(tdir, tmpl)
-	funcMap := template.FuncMap{
-		// The name "oddFunc" is what the function will be called in the template text.
-		"oddFunc": func(i int) bool {
-			if i%2 == 0 {
-				return true
-			}
-			return false
-		},
+	if DASTemplateMap == nil {
+		DASTemplateMap = make(map[string]*template.Template)
 	}
-	t := template.Must(template.New(tmpl).Funcs(funcMap).ParseFiles(filenames...))
-	err := t.Execute(buf, data)
+	buf := new(bytes.Buffer)
+	var err error
+	if t, ok := DASTemplateMap[tmpl]; ok {
+		err = t.Execute(buf, data)
+	} else {
+		filenames := fileNames(tdir, tmpl)
+		funcMap := template.FuncMap{
+			// The name "oddFunc" is what the function will be called in the template text.
+			"oddFunc": func(i int) bool {
+				if i%2 == 0 {
+					return true
+				}
+				return false
+			},
+		}
+		t := template.Must(template.New(tmpl).Funcs(funcMap).ParseFiles(filenames...))
+		DASTemplateMap[tmpl] = t
+		err = t.Execute(buf, data)
+	}
 	if err != nil {
 		panic(err)
 	}
