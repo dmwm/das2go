@@ -60,6 +60,9 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 		return out
 	} else if api == "physicsgroup" {
 		for _, rec := range records {
+			if rec["physics_group_name"] == nil {
+				continue
+			}
 			rec["name"] = rec["physics_group_name"]
 			delete(rec, "physics_group_name")
 			out = append(out, rec)
@@ -68,6 +71,9 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 	} else if api == "site4dataset" || api == "site4block" {
 		var sites []string
 		for _, rec := range records {
+			if rec["origin_site_name"] == nil {
+				continue
+			}
 			r := mongo.DASRecord{"name": rec["origin_site_name"], "dataset": rec["dataset"], "kind": "original placement"}
 			site := rec["origin_site_name"].(string)
 			if !utils.InList(site, sites) {

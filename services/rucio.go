@@ -73,17 +73,19 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 	for _, rec := range records {
 		if api == "rses" {
 			if val, ok := specs["site"]; ok {
-				rse := rec["rse"].(string)
-				site := fmt.Sprintf("%s", val)
-				if strings.Contains(site, "*") {
-					site = strings.Replace(site, "*", ".*", -1)
-				} else {
-					site = fmt.Sprintf("%s.*", site)
-				}
-				matched, _ := regexp.MatchString(site, rse)
-				if matched {
-					rec["name"] = rse
-					out = append(out, rec)
+				if rec["rse"] != nil {
+					rse := rec["rse"].(string)
+					site := fmt.Sprintf("%s", val)
+					if strings.Contains(site, "*") {
+						site = strings.Replace(site, "*", ".*", -1)
+					} else {
+						site = fmt.Sprintf("%s.*", site)
+					}
+					matched, _ := regexp.MatchString(site, rse)
+					if matched {
+						rec["name"] = rse
+						out = append(out, rec)
+					}
 				}
 			}
 		} else if api == "site4dataset" || api == "site4block" || api == "site4file" {
@@ -97,13 +99,15 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 		} else if api == "file4dataset_site" || api == "file4block_site" {
 			if val, ok := specs["site"]; ok {
 				site := fmt.Sprintf("%s", val)
-				states := rec["states"].(map[string]interface{})
-				var sites []string
-				for k, _ := range states {
-					sites = append(sites, k)
-				}
-				if utils.InList(site, sites) {
-					out = append(out, rec)
+				if rec["states"] != nil {
+					states := rec["states"].(map[string]interface{})
+					var sites []string
+					for k, _ := range states {
+						sites = append(sites, k)
+					}
+					if utils.InList(site, sites) {
+						out = append(out, rec)
+					}
 				}
 			}
 		} else {
