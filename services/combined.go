@@ -69,7 +69,13 @@ func (LocalAPIs) Child4SiteReleaseDataset(dasquery dasql.DASQuery) []mongo.DASRe
 		if !strings.HasPrefix(dataset, "/") {
 			dataset = fmt.Sprintf("/%s", dataset)
 		}
+		if rec["release_version"] == nil {
+			continue
+		}
 		for _, rel := range rec["release_version"].([]interface{}) {
+			if rel == nil {
+				continue
+			}
 			if rel.(string) == release {
 				datasets = append(datasets, dataset)
 			}
@@ -88,6 +94,9 @@ func (LocalAPIs) Child4SiteReleaseDataset(dasquery dasql.DASQuery) []mongo.DASRe
 	var datasetsAtSite []string
 	// filter children on given site
 	for _, rec := range processUrls("phedex", api, phedexUrls) {
+		if rec["name"] == nil {
+			continue
+		}
 		block := rec["name"].(string)
 		dataset := strings.Split(block, "#")[0]
 		if !utils.InList(dataset, datasetsAtSite) {
@@ -129,6 +138,9 @@ func (LocalAPIs) Site4Block(dasquery dasql.DASQuery) []mongo.DASRecord {
 	resp := utils.FetchResponse(furl, "") // "" specify optional args
 	records := PhedexUnmarshal(api, resp.Data)
 	for _, rec := range records {
+		if rec["replica"] == nil {
+			continue
+		}
 		replicas := rec["replica"].([]interface{})
 		rec := make(mongo.DASRecord)
 		for _, val := range replicas {
@@ -174,6 +186,9 @@ func (LocalAPIs) Site4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	var bComplete, nfiles, nblks, bfiles int64
 	bfiles = 0
 	for _, rec := range records {
+		if rec["files"] == nil || rec["replica"] == nil {
+			continue
+		}
 		bfiles += rec2num(rec["files"])
 		replicas := rec["replica"].([]interface{})
 		for _, val := range replicas {
@@ -271,6 +286,9 @@ func filterFiles(files []string, site string) []string {
 		urls = append(urls, furl)
 	}
 	for _, rec := range processUrls("phedex", api, urls) {
+		if rec["name"] == nil {
+			continue
+		}
 		fname := rec["name"].(string)
 		out = append(out, fname)
 	}
