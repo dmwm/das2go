@@ -515,6 +515,36 @@ das_map : [
     {"das_key": "group", "rec_key":"group.name", "api_arg":"physics_group_name"},
 ]
 ---
+urn : lumi4dataset
+# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "local_api"
+format : JSON
+expire : 3600
+params : {"dataset":"required", "run_num": "optional"}
+lookup : lumi
+das_map : [
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
+urn : lumi4block
+# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "local_api"
+format : JSON
+expire : 3600
+params : {"block_name":"required", "run_num": "optional"}
+lookup : lumi
+das_map : [
+    {"das_key":"run", "rec_key":"run.run_number", "api_arg":"run_num",
+     "pattern": "^\\d+$|.*\\[\\s*\\d+\\s*[,\\s*\\d+\\s*]*\\].*|{.*\\d+.*\\d+}"},
+    {"das_key":"lumi", "rec_key":"lumi.number", "api_arg":"lumi"},
+    {"das_key":"block", "rec_key":"block.name", "api_arg":"block_name",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
+]
+---
 urn : run_lumi4dataset
 # url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"

@@ -140,6 +140,18 @@ func (LocalAPIs) Dataset4Block(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return out
 }
 
+// Lumi4Dataset finds lumi for given dataset
+func (LocalAPIs) Lumi4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
+	keys := []string{"lumi_section_num"}
+	return fileRunLumi(dasquery, keys)
+}
+
+// Lumi4Block finds lumi for given block
+func (LocalAPIs) Lumi4Block(dasquery dasql.DASQuery) []mongo.DASRecord {
+	keys := []string{"lumi_section_num"}
+	return fileRunLumi(dasquery, keys)
+}
+
 // RunLumi4Dataset finds run, lumi for given dataset
 func (LocalAPIs) RunLumi4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	keys := []string{"run_num", "lumi_section_num"}

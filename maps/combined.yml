@@ -85,17 +85,6 @@ das_map : [
      "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
 ]
 ---
-urn : lumi4dataset
-url : "combined plugin"
-format : JSON
-expire : 10800
-params : {"dataset":"required"}
-lookup : lumi
-das_map : [
-    {"das_key":"lumi", "rec_key":"lumi.runlumis"},
-    {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
-]
----
 urn : files4dataset_runs_site
 url : "combined plugin"
 format : JSON

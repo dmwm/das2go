@@ -15,6 +15,8 @@ func LocalAPIMap() map[string]string {
 	localAPIMap["combined_files4dataset_runs_site"] = "Files4DatasetRunsSite"
 	localAPIMap["combined_files4block_runs_site"] = "Files4BlockRunsSite"
 	localAPIMap["dbs3_dataset4block"] = "Dataset4Block"
+	localAPIMap["dbs3_lumi4dataset"] = "Lumi4Dataset"
+	localAPIMap["dbs3_lumi4block"] = "Lumi4Block"
 	localAPIMap["dbs3_run_lumi4dataset"] = "RunLumi4Dataset"
 	localAPIMap["dbs3_run_lumi_evts4dataset"] = "RunLumiEvents4Dataset"
 	localAPIMap["dbs3_run_lumi4block"] = "RunLumi4Block"
@@ -58,6 +60,7 @@ func DASLocalAPIs() []string {
 		"run_lumi_evts4dataset", "file_lumi_evts4dataset",
 		"file_lumi4dataset", "file_lumi4block", "run_lumi4dataset", "run_lumi4block",
 		"block_run_lumi4dataset", "file4dataset_run_lumi", "blocks4tier_dates",
+		"lumi4dataset", "lumi4block",
 		"lumi4block_run", "datasetlist", "configs"}
 	return out
 }

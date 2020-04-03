@@ -269,13 +269,6 @@ func (LocalAPIs) Site4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 	return out
 }
 
-// Lumi4Dataset returns lumi info for given dataset
-func (LocalAPIs) Lumi4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
-	var out []mongo.DASRecord
-	out = append(out, mongo.DASErrorRecord("combined_lumi4dataset API is not implemented", utils.CombinedErrorName, utils.CombinedError))
-	return out
-}
-
 // helper function to filter files which belong to given site
 func filterFiles(files []string, site string) []string {
 	var out, urls []string
