@@ -205,7 +205,13 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 						vals.Add("endTime", utils.ConddbTime(eval))
 						useArgs = append(useArgs, arg)
 					} else {
-						vals.Add(arg, val)
+						if vvv, ok := vals[arg]; ok {
+							if !utils.InList(val, vvv) {
+								vals.Add(arg, val)
+							}
+						} else {
+							vals.Add(arg, val)
+						}
 					}
 					useArgs = append(useArgs, arg)
 				}
