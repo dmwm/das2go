@@ -80,7 +80,7 @@ func (r *RucioAuthModule) Url() string {
 		if v != "" {
 			r.url = fmt.Sprintf("%s/auth/x509", v)
 		} else {
-			r.url = "https://cms-rucio-auth-int.cern.ch/auth/x509"
+			r.url = "https://cms-rucio-auth.cern.ch/auth/x509"
 		}
 	}
 	return r.url

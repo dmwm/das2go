@@ -69,7 +69,7 @@ func CricUrl(api string) string {
 }
 func RucioUrl(api string) string {
 	v := utils.GetEnv("RUCIO_URL")
-	surl := "http://cms-rucio-int.cern.ch"
+	surl := "http://cms-rucio.cern.ch"
 	if v != "" {
 		return fmt.Sprintf("%s/%s/", v, api)
 	}
