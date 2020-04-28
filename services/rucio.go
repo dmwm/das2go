@@ -89,10 +89,12 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 				}
 			}
 		} else if api == "site4dataset" || api == "site4block" || api == "site4file" {
-			states := rec["states"].(map[string]interface{})
-			for k, _ := range states {
-				rec["name"] = k
-				out = append(out, rec)
+			if rec["states"] != nil {
+				states := rec["states"].(map[string]interface{})
+				for k, _ := range states {
+					rec["name"] = k
+					out = append(out, rec)
+				}
 			}
 		} else if api == "rules4dataset" || api == "rules4block" || api == "rules4file" {
 			out = append(out, rec)
