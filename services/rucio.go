@@ -98,6 +98,8 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 			}
 		} else if api == "rules4dataset" || api == "rules4block" || api == "rules4file" {
 			out = append(out, rec)
+		} else if api == "block4dataset" {
+			out = append(out, rec)
 		} else if api == "file4dataset_site" || api == "file4block_site" {
 			if val, ok := specs["site"]; ok {
 				site := fmt.Sprintf("%s", val)
