@@ -3,7 +3,7 @@ system : rucio
 format : JSON
 ---
 urn : dataset4site
-url : "http://cms-ruciot.cern.ch/replicas/rse"
+url : "http://cms-rucio.cern.ch/replicas/rse"
 expire : 3600
 params : {"se":"optional", "node":"optional"}
 lookup : dataset
