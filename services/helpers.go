@@ -67,13 +67,12 @@ func CricUrl(api string) string {
 	}
 	return fmt.Sprintf("%s/api/accounts/user/query", surl)
 }
-func RucioUrl(api string) string {
+func RucioUrl() string {
 	v := utils.GetEnv("RUCIO_URL")
-	surl := "http://cms-rucio.cern.ch"
 	if v != "" {
-		return fmt.Sprintf("%s/%s/", v, api)
+		return v
 	}
-	return fmt.Sprintf("%s/%s/", surl, api)
+	return "http://cms-rucio.cern.ch"
 }
 
 // helper function to find file,run,lumis for given dataset or block
