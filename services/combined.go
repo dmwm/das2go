@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/url"
 	"strings"
+	"time"
 
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
@@ -157,6 +158,193 @@ func (LocalAPIs) Site4Block(dasquery dasql.DASQuery) []mongo.DASRecord {
 			rec["site"] = []mongo.DASRecord{{"name": node, "se": se}}
 			out = append(out, rec)
 		}
+	}
+	return out
+}
+
+// Site4DatasetPct returns site info for given dataset
+func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
+	spec := dasquery.Spec
+	inst := dasquery.Instance
+	// DBS part, find total number of blocks and files for given dataset
+	dataset := spec["dataset"].(string)
+	api := "filesummaries"
+	furl := fmt.Sprintf("%s/%s?dataset=%s&validFileOnly=1", DBSUrl(inst), api, dataset)
+	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	records := DBSUnmarshal(api, resp.Data)
+	var totblocks, totfiles int64
+	if len(records) == 0 {
+		return []mongo.DASRecord{}
+	}
+	totblocks = rec2num(records[0]["num_block"])
+	totfiles = rec2num(records[0]["num_file"])
+
+	// to proceed with Rucio we need to know all blocks for a given dataset
+	// we obtain this list from DBS
+	api = "blocks"
+	furl = fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
+	resp = utils.FetchResponse(furl, "") // "" specify optional args
+	records = DBSUnmarshal(api, resp.Data)
+	var blocks []string
+	for _, rec := range records {
+		brec := rec["block_name"]
+		if brec != nil {
+			blk := rec["block_name"].(string)
+			blocks = append(blocks, blk)
+		}
+	}
+	// Example of rucio api outputs
+	/*
+		https://cms-rucio.cern.ch/replicas/cms/$block/datasets
+		{"accessed_at": null, "name": "/MinBias_TuneCP1_13TeV-pythia8/RunIISummer19UL17SIM-106X_mc2017_realistic_v6-v2/GEN-SIM#2923941b-47fe-42cd-8c9e-9376498cdce1", "rse": "T2_CH_CERN", "created_at": "Wed, 12 Feb 2020 07:08:03 UTC", "bytes": 715362614479, "state": "AVAILABLE", "updated_at": "Wed, 12 Feb 2020 07:10:01 UTC", "available_length": 211, "length": 211, "scope": "cms", "available_bytes": 715362614479, "rse_id": "f7d61f9d3a6e48159421a20a1a17389d"}
+
+		https://cms-rucio.cern.ch/replicas/cms/$block
+		or
+		https://cms-rucio.cern.ch/replicas/cms/$dataset
+		{"adler32": "af3a4456", "name": "/store/mc/RunIISummer19UL17SIM/MinBias_TuneCP1_13TeV-pythia8/GEN-SIM/106X_mc2017_realistic_v6-v2/270001/FF66BC86-5E96-D346-B282-1018282E300E.root", "rses": {"T2_CH_CERN": ["gsiftp://eoscmsftp.cern.ch:2811/eos/cms/store/mc/RunIISummer19UL17SIM/MinBias_TuneCP1_13TeV-pythia8/GEN-SIM/106X_mc2017_realistic_v6-v2/270001/FF66BC86-5E96-D346-B282-1018282E300E.root"]}, "bytes": 3531471567, "states": {"T2_CH_CERN": "AVAILABLE"}, "pfns": {"gsiftp://eoscmsftp.cern.ch:2811/eos/cms/store/mc/RunIISummer19UL17SIM/MinBias_TuneCP1_13TeV-pythia8/GEN-SIM/106X_mc2017_realistic_v6-v2/270001/FF66BC86-5E96-D346-B282-1018282E300E.root": {"domain": "wan", "rse": "T2_CH_CERN", "priority": 1, "volatile": false, "client_extract": false, "type": "DISK", "rse_id": "f7d61f9d3a6e48159421a20a1a17389d"}}, "scope": "cms", "md5": null}
+
+	*/
+
+	// Rucio part I: we obtain list of file replicas for our dataset
+	// the following rucio api gives list of file records
+	// https://cms-rucio.cern.ch/replicas/cms/$dataset
+	// we create siteFileInfo dict which keeps number of files per site
+	api = "site4dataset"
+	furl = fmt.Sprintf("%s/replicas/cms/%s", RucioUrl(), url.QueryEscape(dataset))
+	resp = utils.FetchResponse(furl, "") // "" specify optional args
+	records = RucioUnmarshal(dasquery, api, resp.Data)
+	siteInfo := make(mongo.DASRecord)
+	siteFileInfo := make(map[string]int64)
+	siteKindInfo := make(map[string]string)
+	for _, rec := range records {
+		if rec["rses"] == nil {
+			continue
+		}
+		for rses, _ := range rec["rses"].(map[string]interface{}) {
+			if v, ok := siteFileInfo[rses]; ok {
+				siteFileInfo[rses] = v + 1
+			} else {
+				siteFileInfo[rses] = 1
+			}
+		}
+		if rec["pfns"] != nil {
+			switch record := rec["pfns"].(type) {
+			case map[string]interface{}:
+				for _, v := range record {
+					switch s := v.(type) {
+					case map[string]interface{}:
+						if s["rse"] != nil {
+							rse := s["rse"].(string)
+							siteKindInfo[rse] = fmt.Sprintf("%v", s["type"])
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// Rucio part II: we obtain information about blocks concurrently
+	// the following rucio api gives list of block records at a site
+	// https://cms-rucio.cern.ch/replicas/cms/$block/datasets
+	// we create siteFileInfo dict which keeps number of files per site
+	chout := make(chan utils.ResponseType)
+	umap := map[string]int{}
+	for _, blk := range blocks {
+		furl = fmt.Sprintf("%s/replicas/cms/%s/datasets", RucioUrl(), url.QueryEscape(blk))
+		umap[furl] = 1 // keep track of processed urls below
+		go utils.Fetch(furl, "", chout)
+	}
+	api = "site4dataset"
+	siteBlockInfo := make(map[string]int64)
+	exit := false
+	var bfiles int64 // count number of available files in all blocks on a site
+	for {
+		select {
+		case r := <-chout:
+			records = RucioUnmarshal(dasquery, "full_record", r.Data)
+			for _, rec := range records {
+				if rec["rse"] == nil {
+					continue
+				}
+				rse := rec["rse"].(string)
+				if v, ok := siteBlockInfo[rse]; ok {
+					siteBlockInfo[rse] = v + 1
+				} else {
+					siteBlockInfo[rse] = 1
+				}
+				if rec["available_length"] != nil {
+					vvv := rec["available_length"]
+					switch v := vvv.(type) {
+					case float64:
+						bfiles += int64(v)
+					}
+				}
+			}
+			// remove from umap, indicate that we processed it
+			delete(umap, r.Url) // remove Url from map
+		default:
+			if len(umap) == 0 { // no more requests, merge data records
+				exit = true
+			}
+			time.Sleep(time.Duration(10) * time.Millisecond) // wait for response
+		}
+		if exit {
+			break
+		}
+	}
+	defer close(chout)
+	// construct siteInfo dict from siteFileInfo and siteBlockInfo
+	// siteInfo[node] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "block_complete": bComplete, "se": se, "kind": _phedexNodes.NodeType(node)}
+	var kind string
+	var bComplete, nfiles, nblks int64
+	for se, _ := range siteFileInfo {
+		bComplete = 0
+		nfiles = 0
+		nblks = 0
+		nfiles = 0
+		kind = ""
+		if v, ok := siteFileInfo[se]; ok {
+			nfiles = v
+		}
+		if v, ok := siteBlockInfo[se]; ok {
+			nblks = v
+		}
+		if _, ok := siteKindInfo[se]; ok {
+			kind = siteKindInfo[se]
+		}
+		siteInfo[se] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "kind": kind, "se": se, "block_complete": bComplete}
+	}
+
+	var pfiles, pblks string
+	var out []mongo.DASRecord
+	for key, val := range siteInfo {
+		row := val.(mongo.DASRecord)
+		nfiles := rec2num(row["files"])
+		if totfiles > 0 {
+			pfiles = fmt.Sprintf("%5.2f%%", 100*float64(nfiles)/float64(totfiles))
+		} else {
+			pfiles = "N/A"
+			pblks = "N/A"
+		}
+		if totblocks > 0 {
+			nblks := rec2num(row["blocks"])
+			pblks = fmt.Sprintf("%5.2f%%", 100*float64(nblks)/float64(totblocks))
+		} else {
+			pfiles = "N/A"
+			pblks = "N/A"
+		}
+		ratio := float64(rec2num(row["block_complete"])) / float64(rec2num(row["blocks"]))
+		bc := fmt.Sprintf("%5.2f%%", 100*ratio)
+		rf := fmt.Sprintf("%5.2f%%", 100*float64(nfiles)/float64(bfiles))
+		if utils.VERBOSE > 0 {
+			fmt.Println("### site", key, "nfiles", nfiles, "bfiles", bfiles)
+		}
+		// put into file das record, internal type must be list
+		rec := make(mongo.DASRecord)
+		rec["site"] = []mongo.DASRecord{{"name": key,
+			"dataset_fraction": pfiles, "block_fraction": pblks, "block_completion": bc,
+			"se": row["se"].(string), "replica_fraction": rf, "kind": row["kind"].(string)}}
+		out = append(out, rec)
 	}
 	return out
 }
