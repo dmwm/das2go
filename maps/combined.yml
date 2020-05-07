@@ -63,6 +63,17 @@ das_map : [
 #     {"das_key":"site", "rec_key":"site.se", "api_arg":"site", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
 # ]
 # ---
+urn : site4dataset_pct
+url : "combined plugin"
+expire : 10800
+params : {"dataset":"required"}
+lookup : site
+das_map : [
+    {"das_key":"site", "rec_key":"site.name", "pattern":"^T[0-3]_"},
+    {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset",
+     "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
+]
+---
 urn : site4dataset
 url : "combined plugin"
 expire : 10800
