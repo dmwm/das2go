@@ -146,7 +146,7 @@ func Server(configFile string) {
 	logs.Info("PhedexUrl: ", services.PhedexUrl())
 	logs.Info("SitedbUrl: ", services.SitedbUrl())
 	logs.Info("CricUrl w/ site API: ", services.CricUrl("site"))
-	logs.Info("RucioUrl w/ replicas API: ", services.RucioUrl("replicas"))
+	logs.Info("RucioUrl: ", services.RucioUrl())
 	logs.Info("RucioAuthUrl: ", utils.RucioAuth.Url())
 
 	// DAS templates
