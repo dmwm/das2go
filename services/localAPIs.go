@@ -11,6 +11,7 @@ func LocalAPIMap() map[string]string {
 	localAPIMap["combined_child4site_release_dataset"] = "Child4SiteReleaseDataset"
 	localAPIMap["combined_site4block"] = "Site4Block"
 	localAPIMap["combined_site4dataset"] = "Site4Dataset"
+	localAPIMap["combined_site4dataset_pct"] = "Site4DatasetPct"
 	localAPIMap["combined_lumi4dataset"] = "Lumi4Dataset"
 	localAPIMap["combined_files4dataset_runs_site"] = "Files4DatasetRunsSite"
 	localAPIMap["combined_files4block_runs_site"] = "Files4BlockRunsSite"
