@@ -193,17 +193,6 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 			blocks = append(blocks, blk)
 		}
 	}
-	// Example of rucio api outputs
-	/*
-		https://cms-rucio.cern.ch/replicas/cms/$block/datasets
-		{"accessed_at": null, "name": "/MinBias_TuneCP1_13TeV-pythia8/RunIISummer19UL17SIM-106X_mc2017_realistic_v6-v2/GEN-SIM#2923941b-47fe-42cd-8c9e-9376498cdce1", "rse": "T2_CH_CERN", "created_at": "Wed, 12 Feb 2020 07:08:03 UTC", "bytes": 715362614479, "state": "AVAILABLE", "updated_at": "Wed, 12 Feb 2020 07:10:01 UTC", "available_length": 211, "length": 211, "scope": "cms", "available_bytes": 715362614479, "rse_id": "f7d61f9d3a6e48159421a20a1a17389d"}
-
-		https://cms-rucio.cern.ch/replicas/cms/$block
-		or
-		https://cms-rucio.cern.ch/replicas/cms/$dataset
-		{"adler32": "af3a4456", "name": "/store/mc/RunIISummer19UL17SIM/MinBias_TuneCP1_13TeV-pythia8/GEN-SIM/106X_mc2017_realistic_v6-v2/270001/FF66BC86-5E96-D346-B282-1018282E300E.root", "rses": {"T2_CH_CERN": ["gsiftp://eoscmsftp.cern.ch:2811/eos/cms/store/mc/RunIISummer19UL17SIM/MinBias_TuneCP1_13TeV-pythia8/GEN-SIM/106X_mc2017_realistic_v6-v2/270001/FF66BC86-5E96-D346-B282-1018282E300E.root"]}, "bytes": 3531471567, "states": {"T2_CH_CERN": "AVAILABLE"}, "pfns": {"gsiftp://eoscmsftp.cern.ch:2811/eos/cms/store/mc/RunIISummer19UL17SIM/MinBias_TuneCP1_13TeV-pythia8/GEN-SIM/106X_mc2017_realistic_v6-v2/270001/FF66BC86-5E96-D346-B282-1018282E300E.root": {"domain": "wan", "rse": "T2_CH_CERN", "priority": 1, "volatile": false, "client_extract": false, "type": "DISK", "rse_id": "f7d61f9d3a6e48159421a20a1a17389d"}}, "scope": "cms", "md5": null}
-
-	*/
 
 	// Rucio part I: we obtain list of file replicas for our dataset
 	// the following rucio api gives list of file records
@@ -256,6 +245,7 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 	}
 	api = "site4dataset"
 	siteBlockInfo := make(map[string]int64)
+	siteBlockCompleteInfo := make(map[string]int64)
 	exit := false
 	var bfiles int64 // count number of available files in all blocks on a site
 	for {
@@ -272,12 +262,32 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 				} else {
 					siteBlockInfo[rse] = 1
 				}
+				var aLength, length int64
 				if rec["available_length"] != nil {
 					vvv := rec["available_length"]
 					switch v := vvv.(type) {
 					case float64:
 						bfiles += int64(v)
+						aLength = int64(v)
 					}
+				}
+				if rec["length"] != nil {
+					vvv := rec["length"]
+					switch v := vvv.(type) {
+					case float64:
+						length = int64(v)
+					}
+				}
+				var bComplete int64
+				if aLength == length {
+					bComplete = 1
+				} else {
+					bComplete = 0
+				}
+				if v, ok := siteBlockCompleteInfo[rse]; ok {
+					siteBlockCompleteInfo[rse] = v + bComplete
+				} else {
+					siteBlockCompleteInfo[rse] = bComplete
 				}
 			}
 			// remove from umap, indicate that we processed it
@@ -311,6 +321,9 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 		}
 		if _, ok := siteKindInfo[se]; ok {
 			kind = siteKindInfo[se]
+		}
+		if v, ok := siteBlockCompleteInfo[se]; ok {
+			bComplete = v
 		}
 		siteInfo[se] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "kind": kind, "se": se, "block_complete": bComplete}
 	}
