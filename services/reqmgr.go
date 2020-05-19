@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 	"time"
 
@@ -147,23 +148,30 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
 func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	var inputOut, outputOut, ids, urls []string
 	var rurl string
-	exit := false
-	rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/_design/ReqMgr/_view/byoutputdataset?key=\"%s\"&include_docs=true&stale=update_after", base, dataset)
-	urls = append(urls, rurl)
-	rurl = fmt.Sprintf("%s/couchdb/reqmgr_workload_cache/_design/ReqMgr/_view/byinputdataset?key=\"%s\"&include_docs=true&stale=update_after", base, dataset)
-	urls = append(urls, rurl)
-	rurl = fmt.Sprintf("%s/couchdb/wmstats/_design/WMStats/_view/requestByOutputDataset?key=\"%s\"&include_docs=true&stale=update_after", base, dataset)
-	urls = append(urls, rurl)
-	rurl = fmt.Sprintf("%s/couchdb/wmstats/_design/WMStats/_view/requestByInputDataset?key=\"%s\"&include_docs=true&stale=update_after", base, dataset)
-	urls = append(urls, rurl)
 	ch := make(chan utils.ResponseType)
-	defer close(ch)
 	idict := make(map[string][]string)
+
+	// check that given dataset pass dataset pattern
+	matched, err := regexp.MatchString("/[\\w-]+/[\\w-]+/[A-Z-]+", dataset)
+	if err != nil || !matched {
+		logs.WithFields(logs.Fields{
+			"Error":   err,
+			"dataset": dataset,
+		}).Error("Unable to validate")
+		return []string{}, idict
+	}
+
+	rurl = fmt.Sprintf("%s/reqmgr2/data/request?outputdataset=%s", base, dataset)
+	urls = append(urls, rurl)
+	rurl = fmt.Sprintf("%s/reqmgr2/data/request?inputdataset=%s", base, dataset)
+	urls = append(urls, rurl)
+	urls = append(urls, rurl)
 	umap := map[string]int{}
 	for _, u := range urls {
 		umap[u] = 1 // keep track of processed urls below
 		go utils.Fetch(u, "", ch)
 	}
+	exit := false
 	for {
 		select {
 		case r := <-ch:
@@ -177,25 +185,27 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 			}
 			err := json.Unmarshal(r.Data, &data)
 			if err == nil {
-				values := data["rows"]
-				if values != nil {
-					rows := values.([]interface{})
+				result := data["result"]
+				if result != nil {
+					rows := result.([]interface{})
 					for _, rec := range rows {
 						row := rec.(map[string]interface{})
-						doc := row["doc"].(map[string]interface{})
-						for kkk, vvv := range doc {
-							if strings.Contains(kkk, "ConfigCacheID") {
-								switch val := vvv.(type) {
-								case string:
-									if len(val) == 32 {
-										if view == "input" && !utils.InList(val, inputOut) {
-											inputOut = append(inputOut, val)
-										}
-										if view == "output" && !utils.InList(val, outputOut) {
-											outputOut = append(outputOut, val)
-										}
-										if !utils.InList(val, ids) {
-											ids = append(ids, val)
+						for _, d := range row {
+							data := d.(map[string]interface{})
+							for kkk, vvv := range data {
+								if strings.Contains(kkk, "ConfigCacheID") {
+									switch val := vvv.(type) {
+									case string:
+										if len(val) == 32 {
+											if view == "input" && !utils.InList(val, inputOut) {
+												inputOut = append(inputOut, val)
+											}
+											if view == "output" && !utils.InList(val, outputOut) {
+												outputOut = append(outputOut, val)
+											}
+											if !utils.InList(val, ids) {
+												ids = append(ids, val)
+											}
 										}
 									}
 								}
@@ -217,6 +227,8 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 			break
 		}
 	}
+	// close our http channel
+	close(ch)
 	return utils.List2Set(ids), idict
 }
 
