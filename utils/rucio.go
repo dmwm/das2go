@@ -93,8 +93,12 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	req, _ := http.NewRequest("GET", rurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
-	req.Header.Add("X-Rucio-Account", RucioAuth.Account())
-	req.Header.Add("User-Agent", RucioAuth.Agent())
+	if WEBSERVER > 0 {
+		req.Header.Add("X-Rucio-Account", RucioAuth.Account())
+		req.Header.Add("User-Agent", RucioAuth.Agent())
+	} else {
+		req.Header.Add("User-Agent", "dasgoclient")
+	}
 	req.Header.Add("Connection", "keep-alive")
 	if VERBOSE > 1 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
@@ -146,7 +150,11 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	proxy := os.Getenv("X509_USER_PROXY")
 	account := fmt.Sprintf("X-Rucio-Account: %s", RucioAuth.Account())
 	agent := RucioAuth.Agent()
-	cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
+	if WEBSERVER > 0 {
+		cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
+	} else {
+		cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -A %s %s", proxy, proxy, agent, rurl)
+	}
 	fmt.Println(cmd)
 	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	if err != nil {
