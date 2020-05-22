@@ -150,10 +150,9 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	proxy := os.Getenv("X509_USER_PROXY")
 	account := fmt.Sprintf("X-Rucio-Account: %s", RucioAuth.Account())
 	agent := RucioAuth.Agent()
-	if WEBSERVER > 0 {
-		cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
-	} else {
-		cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -A %s %s", proxy, proxy, agent, rurl)
+	cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
+	if WEBSERVER == 0 {
+		cmd = fmt.Sprintf("curl -q -I --key %s --cert %s -A %s %s", proxy, proxy, agent, rurl)
 	}
 	fmt.Println(cmd)
 	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
