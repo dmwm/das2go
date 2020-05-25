@@ -278,7 +278,9 @@ func FetchResponse(rurl, args string) ResponseType {
 			}
 			req.Header.Add("Accept", "application/x-json-stream")
 			req.Header.Add("Connection", "Keep-Alive")
-			req.Header.Add("X-Rucio-Account", RucioAuth.Account())
+			if WEBSERVER > 0 {
+				req.Header.Add("X-Rucio-Account", RucioAuth.Account())
+			}
 		}
 		atomic.AddUint64(&TotalGetCalls, 1)
 	}
