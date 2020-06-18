@@ -64,6 +64,22 @@ func getApiParams(dasmap mongo.DASRecord) (string, string, string, string) {
 	return dasKey, recKey, apiArg, pattern
 }
 
+// helper function to fix DBS instance in provided base string
+func fixDBSinstance(dbsInst, base string) string {
+	if dbsInst != "" && len(dbsInst) > 0 && dbsInst != "prod/global" {
+		// we only have prod, int, dev DBSes
+		// all DAS DBS maps contain only URLs with global DBS instance
+		// therefore we'll replace xxx/global to provided dbsInst
+		defInstances := []string{"prod/global", "int/global", "dev/global"}
+		for _, i := range defInstances {
+			if strings.Contains(base, i) {
+				base = strings.Replace(base, i, dbsInst, -1)
+			}
+		}
+	}
+	return base
+}
+
 // FormUrlCall forms appropriate URL from given dasquery and dasmap, the final URL
 // contains all parameters
 func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
@@ -78,10 +94,8 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	system, _ := dasmap["system"].(string)
 	// Adjust DBS URL wrt dbs instance name from query
 	if system == "dbs" || system == "dbs3" {
-		dbsInst := dasquery.Instance
-		if len(dbsInst) > 0 && dbsInst != "prod/global" {
-			base = strings.Replace(base, "prod/global", dbsInst, -1)
-		}
+		// adjust dbs instance in our base url
+		base = fixDBSinstance(dasquery.Instance, base)
 		// adjust APIs with 'run between' clause
 		if utils.InList("run", skeys) {
 			val := spec["run"]
@@ -495,9 +509,8 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 				// here we check that request Url match DAS map one either by splitting
 				// base from parameters or making a match for REST based urls
 				stm := dasmaps.GetString(dmap, "system")
-				inst := dasquery.Instance
-				if inst != "prod/global" && stm == "dbs3" {
-					surl = strings.Replace(surl, "prod/global", inst, -1)
+				if stm == "dbs3" {
+					surl = fixDBSinstance(dasquery.Instance, surl)
 				}
 				if strings.Split(r.Url, "?")[0] == surl || strings.HasPrefix(r.Url, surl) || r.Url == surl {
 					urn = dasmaps.GetString(dmap, "urn")
