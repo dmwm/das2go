@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -39,6 +40,23 @@ type DASMaps struct {
 	daskeys       []string
 	systemApis    map[string][]string
 	daskeysMaps   []DASKeysMap
+}
+
+// helper function to get DBS instance from DBS maps
+func (m *DASMaps) DBSInstance() string {
+	rec := m.FindApiRecord("dbs3", "datasets")
+	if rec == nil {
+		log.Fatalf("Unable to find dbs3 datasets DAS map record")
+	}
+	u, ok := rec["url"]
+	if !ok {
+		log.Fatalf("unable to find url in DAS record: %+v\n", rec)
+	}
+	// example of url "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+	v := u.(string)
+	arr := strings.Split(v, "dbs/")
+	inst := strings.Split(arr[1], "/DBSReader")
+	return inst[0]
 }
 
 // FindApiRecord finds DAS API record
