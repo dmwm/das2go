@@ -292,8 +292,8 @@ func FetchResponse(rurl, args string) ResponseType {
 	if VERBOSE > 2 {
 		dump1, err1 := httputil.DumpRequestOut(req, true)
 		logs.WithFields(logs.Fields{
-			"header":  req.Header,
-			"request": req,
+			"request": fmt.Sprintf("%+v", req),
+			"rurl":    rurl,
 			"dump":    string(dump1),
 			"error":   err1,
 		}).Info("http request")
