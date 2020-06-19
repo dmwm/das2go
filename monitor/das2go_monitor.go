@@ -43,7 +43,7 @@ func checkProcess(pat string) bool {
 	cmd := fmt.Sprintf("ps auxw | grep \"%s\" | grep -v grep", pat)
 	out, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		log.Printf("ERROR: unable to find process patter %v, error %v\n", pat, erro)
+		log.Printf("ERROR: unable to find process patter %v, error %v\n", pat, err)
 		return false
 	}
 	matched, _ := regexp.MatchString(pat, fmt.Sprintf("%s", out))
