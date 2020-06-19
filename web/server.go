@@ -17,6 +17,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"os"
 	"time"
@@ -113,6 +114,13 @@ func Server(configFile string) {
 	if err != nil {
 		logs.WithFields(logs.Fields{"Time": time.Now(), "Config": configFile}).Error("Unable to parse")
 	}
+	// log time, filename, and line number
+	if config.Config.Verbose > 0 {
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	} else {
+		log.SetFlags(log.LstdFlags)
+	}
+
 	utils.VERBOSE = config.Config.Verbose
 	utils.UrlQueueLimit = config.Config.UrlQueueLimit
 	utils.UrlRetry = config.Config.UrlRetry
