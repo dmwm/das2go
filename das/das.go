@@ -66,7 +66,7 @@ func getApiParams(dasmap mongo.DASRecord) (string, string, string, string) {
 
 // helper function to fix DBS instance in provided base string
 func fixDBSinstance(dbsInst, base string) string {
-	if dbsInst != "" && len(dbsInst) > 0 && dbsInst != "prod/global" {
+	if strings.Contains(base, "http") && dbsInst != "" && len(dbsInst) > 0 && dbsInst != "prod/global" {
 		// we only have prod, int, dev DBSes
 		// all DAS DBS maps contain only URLs with global DBS instance
 		// therefore we'll replace xxx/global to provided dbsInst
