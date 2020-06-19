@@ -451,8 +451,11 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	pid := r.FormValue("pid")
 	ajax := r.FormValue("ajax")
 	hash := r.FormValue("hash")
-	inst := r.FormValue("instance")
 	view := r.FormValue("view")
+	inst := r.FormValue("instance")
+	if inst == "" {
+		inst = _dasmaps.DBSInstance()
+	}
 	if hash != "" {
 		dasquery, err, _ := dasql.Parse(query, inst, _dasmaps.DASKeys())
 		msg := fmt.Sprintf("%s, spec=%v, filters=%v, aggregators=%v, err=%s", dasquery, dasquery.Spec, dasquery.Filters, dasquery.Aggregators, err)
