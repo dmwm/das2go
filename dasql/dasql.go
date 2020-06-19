@@ -358,14 +358,10 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 	fields = cleanFields
 	filters, aggregators, qlerror, pLine := parsePipe(relax(query), pipe)
 
-	// VK 20200618: if requests come from CLI they may not contain
-	// DBS instance, I commented out this default assignment since we should be
-	// able to tests different DBS instances in testbed clusters and we should not
-	// assign prod/global as default one
-	// default DBS instance
-	//     if inst == "" {
-	//         inst = "prod/global"
-	//     }
+	// default DBS instance in case of CLI call
+	if inst == "" && utils.WEBSERVER == 0 {
+		inst = "prod/global"
+	}
 	// remove instance from spec
 	instance := spec["instance"]
 	if instance != nil {
