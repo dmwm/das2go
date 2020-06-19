@@ -10,13 +10,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 )
 
 // helper function to load SiteDB data stream
@@ -36,11 +36,7 @@ func loadSiteDBData(api string, data []byte) []mongo.DASRecord {
 	if err != nil {
 		msg := fmt.Sprintf("SiteDB unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 		if utils.VERBOSE > 0 {
-			logs.WithFields(logs.Fields{
-				"Error": err,
-				"Api":   api,
-				"data":  string(data),
-			}).Error("SiteDB unable to unmarshal the data")
+			log.Printf("ERROR: SiteDB unable to unmarshal, data %+v, api %v, error %v\n", string(data), api, err)
 		}
 		out = append(out, mongo.DASErrorRecord(msg, utils.SiteDBErrorName, utils.SiteDBError))
 		return out
@@ -76,10 +72,7 @@ func getSiteDBData(api string) []mongo.DASRecord {
 		records := loadSiteDBData(api, response.Data)
 		return records
 	}
-	logs.WithFields(logs.Fields{
-		"api":   api,
-		"Error": response.Error,
-	}).Error("siteDB")
+	log.Printf("ERROR: siteDB, api %v, error %v\n", api, response.Error)
 	var out []mongo.DASRecord
 	return out
 }

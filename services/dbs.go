@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"strconv"
 	"strings"
@@ -17,7 +18,6 @@ import (
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 )
 
 // helper function to load DBS data stream
@@ -36,11 +36,7 @@ func loadDBSData(api string, data []byte) []mongo.DASRecord {
 	if err != nil {
 		msg := fmt.Sprintf("DBS unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 		if utils.VERBOSE > 0 {
-			logs.WithFields(logs.Fields{
-				"Error": err,
-				"Api":   api,
-				"data":  string(data),
-			}).Error("DBS unable to unmarshal the data")
+			log.Printf("ERROR: DBS unable to unmarshal, data %+v, api %v, error %v\n", string(data), api, err)
 		}
 		out = append(out, mongo.DASErrorRecord(msg, utils.DBSErrorName, utils.DBSError))
 	}
@@ -244,11 +240,7 @@ func (LocalAPIs) BlockRunLumi4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord
 			} else if key == "block_name" {
 				rurl, err := url.QueryUnescape(rec["url"].(string))
 				if err != nil {
-					logs.WithFields(logs.Fields{
-						"Error":  err,
-						"Url":    rurl,
-						"Record": rec,
-					}).Error("unable to parse url ")
+					log.Printf("ERROR: DBS unable to parse url, url %+v, record %v, error %v\n", rurl, err, err)
 					return out
 				}
 				arr := strings.Split(rurl, "block_name=")
@@ -371,10 +363,7 @@ func (LocalAPIs) DatasetList(dasquery dasql.DASQuery) []mongo.DASRecord {
 	}
 	args, err := json.Marshal(spec)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Spec":  spec,
-			"Error": err,
-		}).Error("DBS datasetlist unable to unmarshal spec")
+		log.Printf("ERROR: DBS dataset list unable to unmarshal spec %+v, error %v\n", spec, err)
 		return []mongo.DASRecord{}
 	}
 	resp := utils.FetchResponse(furl, string(args)) // POST request

@@ -19,7 +19,6 @@ import (
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -373,7 +372,6 @@ func MapInList(a mongo.DASRecord, list []mongo.DASRecord) bool {
 
 // FindServices look-up DAS services for given set fields and spec pair, return DAS maps associated with found services
 func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
-	inst := dasquery.Instance
 	fields := dasquery.Fields
 	spec := dasquery.Spec
 	system := dasquery.System
@@ -435,13 +433,7 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 		akeys := getAllArgs(rec)
 		if utils.VERBOSE > 1 {
 			if utils.WEBSERVER > 0 {
-				logs.WithFields(logs.Fields{
-					"System":        rec["system"],
-					"urn":           rec["urn"],
-					"lookup keys":   lkeys,
-					"required keys": rkeys,
-					"all api keys":  akeys,
-				}).Info("DAS map lookup")
+				log.Printf("DAS map lookup, system %s, urn %s, lookup %v, required keys %v, all keys %v\n", rec["system"].(string), rec["urn"].(string), lkeys, rkeys, akeys)
 			} else {
 				fmt.Printf("DAS map lookup, system %s, urn %s, lookup %v, required keys %v, all keys %v\n", rec["system"].(string), rec["urn"].(string), lkeys, rkeys, akeys)
 			}
@@ -461,15 +453,8 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 		allMatches := specKeysMatches[rec["urn"].(string)]
 		if utils.EqualLists(lkeys, fields) && utils.CheckEntries(rkeys, keys) && utils.CheckEntries(keys, akeys) && !MapInList(rec, out) && len(allMatches) >= len(keys) {
 			if utils.VERBOSE > 0 && utils.WEBSERVER > 0 {
-				logs.WithFields(logs.Fields{
-					"System":        rec["system"],
-					"urn":           rec["urn"],
-					"url":           rec["url"],
-					"spec keys":     keys,
-					"required keys": rkeys,
-					"all api keys":  akeys,
-					"instance":      inst,
-				}).Info(utils.Color(utils.GREEN, "DAS match"))
+				msg := fmt.Sprintf("DAS match: system=%s urn=%s url=%s spec keys=%s requested keys=%s all api keys %s", rec["system"], rec["urn"], rec["url"], keys, rkeys, akeys)
+				log.Println(msg)
 			}
 			if utils.VERBOSE > 1 && utils.WEBSERVER == 0 {
 				// used by dasgoclient, keep fmt.Println
@@ -481,7 +466,7 @@ func (m *DASMaps) FindServices(dasquery dasql.DASQuery) []mongo.DASRecord {
 			urn := rec["urn"].(string)
 			if urn == "site4dataset" && system == "dbs3" && strings.Contains(dasquery.Instance, "global") {
 				if utils.VERBOSE > 0 && utils.WEBSERVER > 0 {
-					logs.Info(utils.Color(utils.CYAN, "DAS match but skip (special case)"))
+					log.Println("DAS match but skip (special case)")
 				}
 				if utils.VERBOSE > 1 && utils.WEBSERVER > 0 {
 					msg := utils.Color(utils.CYAN, "DAS match but skip (special case)")
@@ -528,17 +513,11 @@ func (m *DASMaps) LoadMapsFromFile() {
 			// write data to local area
 			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)
 			if err != nil {
-				logs.WithFields(logs.Fields{
-					"Time":  time.Now(),
-					"Error": err,
-				}).Error("Unable to write DAS maps")
+				log.Printf("ERROR: unable to write DAS maps, time %v, error %v\n", time.Now(), err)
 				return
 			}
 		} else {
-			logs.WithFields(logs.Fields{
-				"Time":  time.Now(),
-				"Error": resp.Error,
-			}).Error("Unable to get DAS maps from github")
+			log.Printf("ERROR: unable to write DAS maps, time %v, error %v\n", time.Now(), resp.Error)
 			return
 		}
 	}
@@ -547,11 +526,7 @@ func (m *DASMaps) LoadMapsFromFile() {
 	}
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Time":  time.Now(),
-			"File":  fname,
-			"Error": err,
-		}).Error("Unable to read DAS maps")
+		log.Printf("ERROR: unable to read DAS maps, time %v, file %v, error %v\n", time.Now(), fname, err)
 		return
 	}
 	records := string(data)
@@ -598,7 +573,7 @@ func (m *DASMaps) ChangeUrl(old, pat string) {
 func GetString(dmap mongo.DASRecord, key string) string {
 	val, ok := dmap[key].(string)
 	if !ok {
-		logs.Fatal("GetString, unable to extract key ", key, " from DAS map: ", dmap)
+		log.Println("GetString, unable to extract key ", key, " from DAS map: ", dmap)
 	}
 	return val
 }
@@ -613,7 +588,7 @@ func GetInt(dmap mongo.DASRecord, key string) int {
 		if err == nil {
 			return val
 		}
-		logs.Fatal("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
+		log.Println("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
 	}
 	return 0
 }
@@ -630,7 +605,7 @@ func GetFloat(dmap mongo.DASRecord, key string) float64 {
 		if err == nil {
 			return val
 		}
-		logs.Fatal("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
+		log.Println("GetInt, unable to convert key ", key, " from DAS map: ", dmap, " too integer")
 	}
 	return 0
 }

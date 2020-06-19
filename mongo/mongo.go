@@ -18,7 +18,6 @@ import (
 
 	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -86,11 +85,7 @@ func GetValue(rec DASRecord, key string) interface{} {
 	if len(keys) > 1 {
 		value, ok := rec[keys[0]]
 		if !ok {
-			logs.WithFields(logs.Fields{
-				"Time":         time.Now(),
-				"Mongo record": rec,
-				"key":          key,
-			}).Warn("Unable to find key value in DASRecord")
+			log.Printf("unable to find key-value, record %+v, key\n", rec, key)
 			return ""
 		}
 		switch v := value.(type) {
@@ -110,14 +105,7 @@ func GetValue(rec DASRecord, key string) interface{} {
 				return ""
 			}
 		default:
-			logs.WithFields(logs.Fields{
-				"Time":         time.Now(),
-				"Type":         fmt.Sprintf("%T", v),
-				"DAS record":   v,
-				"Mongo record": rec,
-				"key":          key,
-				"keys":         keys,
-			}).Error("Unknown type")
+			log.Printf("ERROR: unknown type %T, das record %+v, mongo record %+v, key %v, keys %v\n", v, v, rec, key, keys)
 			return ""
 		}
 		if len(keys) == 2 {
@@ -228,9 +216,7 @@ func Get(dbname, collname string, spec bson.M, idx, limit int) []DASRecord {
 		err = c.Find(spec).Skip(idx).All(&out)
 	}
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-		}).Error("Unable to get records")
+		log.Println("ERROR: unable to get records", err)
 	}
 	return out
 }
@@ -247,15 +233,11 @@ func GetSorted(dbname, collname string, spec bson.M, skeys []string) []DASRecord
 	c := s.DB(dbname).C(collname)
 	err := c.Find(spec).Sort(skeys...).All(&out)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-		}).Warn("Unable to sort records")
+		log.Println("unable to sort recrds", err)
 		// try to fetch all unsorted data
 		err = c.Find(spec).All(&out)
 		if err != nil {
-			logs.WithFields(logs.Fields{
-				"Error": err,
-			}).Error("Unable to find records")
+			log.Println("ERROR: unable to find records", err)
 			out = append(out, DASErrorRecord(fmt.Sprintf("%v", err), utils.MongoDBErrorName, utils.MongoDBError))
 		}
 	}
@@ -297,7 +279,7 @@ func GetFilteredSorted(dbname, collname string, spec bson.M, fields, skeys []str
 		}
 	}
 	if err != nil {
-		logs.WithFields(logs.Fields{"Time": time.Now(), "Error": err}).Error("Unable to fetch from MongoDB")
+		log.Println("ERROR: unable to fetch from MOngoDB", time.Now(), err)
 	}
 	return out
 }
@@ -313,12 +295,7 @@ func Update(dbname, collname string, spec, newdata bson.M) {
 	c := s.DB(dbname).C(collname)
 	err := c.Update(spec, newdata)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Time":  time.Now(),
-			"Error": err,
-			"Spec":  spec,
-			"data":  newdata,
-		}).Error("Unable to update record")
+		log.Printf("ERROR: unable to update record, spec %v, data %+v, error %v\n", spec, newdata, err)
 	}
 }
 
@@ -333,11 +310,7 @@ func Count(dbname, collname string, spec bson.M) int {
 	c := s.DB(dbname).C(collname)
 	nrec, err := c.Find(spec).Count()
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Time":  time.Now(),
-			"Error": err,
-			"Spec":  spec,
-		}).Error("Unable to count records")
+		log.Printf("ERROR: unable to count records, spec %+v, error %v\n", spec, err)
 	}
 	return nrec
 }
@@ -353,11 +326,7 @@ func Remove(dbname, collname string, spec bson.M) {
 	c := s.DB(dbname).C(collname)
 	_, err := c.RemoveAll(spec)
 	if err != nil && err != mgo.ErrNotFound {
-		logs.WithFields(logs.Fields{
-			"Time":  time.Now(),
-			"Error": err,
-			"Spec":  spec,
-		}).Error("Unable to remove records")
+		log.Printf("ERROR: untable to remove records, spec %+v, error %v\n", spec, err)
 	}
 }
 
@@ -366,11 +335,7 @@ func LoadJsonData(data []byte) DASRecord {
 	r := make(DASRecord)
 	err := json.Unmarshal(data, &r)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Time":  time.Now(),
-			"Error": err,
-			"Data":  string(data),
-		}).Error("Unable to unmarshal records")
+		log.Printf("ERROR: unable to unmarshal records, data %v, error %v\n", string(data), err)
 	}
 	return r
 }
@@ -389,11 +354,7 @@ func CreateIndexes(dbname, collname string, keys []string) {
 		}
 		err := c.EnsureIndex(index)
 		if err != nil {
-			logs.WithFields(logs.Fields{
-				"Time":  time.Now(),
-				"Error": err,
-				"Index": index,
-			}).Error("Unable to ensure index")
+			log.Printf("ERROR: unable to ensure index, index %v, error %v\n", index, err)
 		}
 	}
 }

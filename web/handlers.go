@@ -7,6 +7,7 @@ package web
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"runtime"
@@ -25,7 +26,6 @@ import (
 	"github.com/shirou/gopsutil/load"
 	"github.com/shirou/gopsutil/mem"
 	"github.com/shirou/gopsutil/process"
-	logs "github.com/sirupsen/logrus"
 )
 
 // TotalGetRequests counts total number of GET requests received by the server
@@ -37,7 +37,6 @@ var TotalPostRequests uint64
 // ServerSettings controls server parameters
 type ServerSettings struct {
 	Level          int    `json:"level"`          // verbosity level
-	LogFormatter   string `json:"logFormatter"`   // logrus formatter
 	RucioTokenCurl bool   `json:"rucioTokenCurl"` // use curl method to obtain Rucio Token
 	ProfileFile    string `json:"profileFile"`    // send profile data to a given file
 }
@@ -161,21 +160,12 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 		response["pid"] = pid
 		response["data"] = data
 		response["procTime"] = procTime
-		logs.WithFields(logs.Fields{
-			"DASQuery":    dasquery,
-			"PID":         pid,
-			"Unix":        time.Now().Unix(),
-			"ProcessTime": procTime,
-		}).Info("ready")
+		log.Printf("DAS query %v, pid %v, process time %v\n", dasquery, pid, procTime)
 	} else if das.CheckData(pid) { // data exists in cache but still processing
 		response["status"] = "processing"
 		response["pid"] = pid
 	} else { // no data in cache (even client supplied the pid), process it
-		logs.WithFields(logs.Fields{
-			"DASQuery": dasquery,
-			"PID":      pid,
-			"Unix":     time.Now().Unix(),
-		}).Info("requested")
+		log.Printf("DAS request query %v, pid %v\n", dasquery, pid)
 		go das.Process(dasquery, _dasmaps)
 		response["status"] = "requested"
 		response["pid"] = pid
@@ -215,9 +205,7 @@ func auth(r *http.Request) bool {
 	userDN := UserDN(r)
 	match := utils.InList(userDN, _userDNs.DNs)
 	if !match {
-		logs.WithFields(logs.Fields{
-			"User DN": userDN,
-		}).Error("Auth userDN not found in SiteDB")
+		log.Println("ERROR: Auth userDN not found in SiteDB", userDN)
 	}
 	return match
 }
@@ -436,7 +424,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	defer utils.MeasureTime("web/handlers/RequestHandler")()
 
 	if v, err := strconv.Atoi(r.FormValue("verbose")); err == nil {
-		logs.Info("verbose level=%d", v)
+		log.Println("verbose level", v)
 		utils.VERBOSE = v
 	}
 	// Example to parse all args
@@ -485,10 +473,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	// defer function will be fired when following processRequest will panic
 	defer func() {
 		if err := recover(); err != nil {
-			logs.WithFields(logs.Fields{
-				"Error": err,
-				"Stack": utils.Stack(),
-			}).Error("web server error")
+			log.Printf("ERROR: web server stack %v, error %v\n", utils.Stack(), err)
 			response := make(map[string]interface{})
 			accept := r.Header["Accept"][0]
 			if !strings.Contains(strings.ToLower(accept), "json") {
@@ -595,20 +580,11 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 	var s = ServerSettings{}
 	err := json.NewDecoder(r.Body).Decode(&s)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-		}).Error("VerboseHandler unable to marshal", err)
+		log.Println("ERROR: VerboseHandler unable to marshal", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 	utils.VERBOSE = s.Level
-	if s.LogFormatter == "json" {
-		logs.SetFormatter(&logs.JSONFormatter{})
-	} else if s.LogFormatter == "text" {
-		logs.SetFormatter(&logs.TextFormatter{})
-	} else {
-		logs.SetFormatter(&logs.TextFormatter{})
-	}
 	// change function profiler if necessary
 	if s.ProfileFile != "" {
 		utils.InitFunctionProfiler(s.ProfileFile)
@@ -617,12 +593,7 @@ func SettingsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	// change RucioTokenCurl with whatever is supplied in server settings POST request
 	utils.RucioTokenCurl = s.RucioTokenCurl
-	logs.WithFields(logs.Fields{
-		"Verbose level":    utils.VERBOSE,
-		"Log formatter":    s.LogFormatter,
-		"Rucio token curl": s.RucioTokenCurl,
-		"Profile file":     s.ProfileFile,
-	}).Info("update server settings")
+	log.Printf("Set, verbose %v, rucio %v, profile %v\n", utils.VERBOSE, s.RucioTokenCurl, s.ProfileFile)
 	w.WriteHeader(http.StatusOK)
 	return
 }

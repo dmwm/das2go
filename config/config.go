@@ -10,8 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-
-	logs "github.com/sirupsen/logrus"
+	"log"
 )
 
 // Configuration stores DAS configuration parameters
@@ -38,7 +37,6 @@ type Configuration struct {
 	UpdateDNs             int      `json:"updateDNs"`      // interval in minutes to update user DNs
 	Timeout               int      `json:"timeout"`        // query time out
 	Frontend              string   `json:"frontend"`       // frontend URI to use
-	LogFormatter          string   `json:"logFormatter"`   // LogFormatter type
 	RucioTokenCurl        bool     `json:"rucioTokenCurl"` // use curl method to obtain Rucio Token
 	ProfileFile           string   `json:"profileFile"`    // send profile data to a given file
 	TLSCertsRenewInterval int      `json:"tlsCertsRenewInterval"`
@@ -49,23 +47,23 @@ var Config Configuration
 
 // String returns string representation of DAS Config
 func (c *Configuration) String() string {
-	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s yui=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s timeout=%d frontend=%s logFormatter=%s>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.YuiRoot, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey, c.Timeout, c.Frontend, c.LogFormatter)
+	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s yui=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s timeout=%d frontend=%s>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.YuiRoot, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey, c.Timeout, c.Frontend)
 }
 
 // ParseConfig parse given config file
 func ParseConfig(configFile string) error {
 	data, err := ioutil.ReadFile(configFile)
 	if err != nil {
-		logs.WithFields(logs.Fields{"configFile": configFile}).Fatal("Unable to read", err)
+		log.Printf("Unable to read: file %s, error %v\n", configFile, err)
 		return err
 	}
 	err = json.Unmarshal(data, &Config)
 	if err != nil {
-		logs.WithFields(logs.Fields{"configFile": configFile}).Fatal("Unable to parse", err)
+		log.Printf("Unable to parse: file %s, error %v\n", configFile, err)
 		return err
 	}
 	if Config.Frontend == "" {
-		logs.WithFields(logs.Fields{"configFile": configFile}).Fatal("The frontend record is not set", err)
+		log.Printf("The frontend record is not set: file %s, error %v\n", configFile, err)
 		return errors.New("No frontend record found in config")
 	}
 	if Config.TLSCertsRenewInterval == 0 {

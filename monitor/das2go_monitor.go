@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"os"
 	"os/exec"
@@ -14,8 +15,6 @@ import (
 
 	_ "expvar"         // to be used for monitoring, see https://github.com/divan/expvarmon
 	_ "net/http/pprof" // profiler, see https://golang.org/pkg/net/http/pprof/
-
-	logs "github.com/sirupsen/logrus"
 )
 
 func checkHttpEndpoint(endpoint, pat string) bool {
@@ -24,26 +23,17 @@ func checkHttpEndpoint(endpoint, pat string) bool {
 	resp, err := client.Get(endpoint)
 
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-			"Url":   endpoint,
-		}).Error("Unable to fetch data")
+		log.Printf("ERROR: unable to fetch data, url %v, error %v\n", endpoint, err)
 		return false
 	}
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error":  err,
-			"Status": resp.Status,
-		}).Error("Unable to read response body")
+		log.Printf("ERROR: unable to read response body, status %v, error %v\n", resp.Status, err)
 		return false
 	}
 	matched, _ := regexp.MatchString(pat, string(data))
 	if !matched {
-		logs.WithFields(logs.Fields{
-			"Error":   err,
-			"Pattern": pat,
-		}).Error("Unable to read response body with pattern")
+		log.Printf("ERROR: unabel to read response body with pattern %v, error %v\n", pat, err)
 		return false
 	}
 	return true
@@ -53,10 +43,7 @@ func checkProcess(pat string) bool {
 	cmd := fmt.Sprintf("ps auxw | grep \"%s\" | grep -v grep", pat)
 	out, err := exec.Command("sh", "-c", cmd).Output()
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error":   err,
-			"Pattern": pat,
-		}).Error("Unable to find process pattern")
+		log.Printf("ERROR: unable to find process patter %v, error %v\n", pat, erro)
 		return false
 	}
 	matched, _ := regexp.MatchString(pat, fmt.Sprintf("%s", out))
@@ -74,9 +61,7 @@ func start(config string, pw *io.PipeWriter) {
 	cmd.Stderr = pw
 	err := cmd.Run()
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-		}).Error("unable to start DAS server")
+		log.Printf("ERROR: unable to start DAS server, error %v\n", err)
 		return
 	}
 }
@@ -87,9 +72,7 @@ func monitor(port int64, config string) {
 	defer pw.Close()
 	go func() {
 		if _, err := io.Copy(os.Stdout, pr); err != nil {
-			logs.WithFields(logs.Fields{
-				"Error": err,
-			}).Error("Unable to pipe das2go output")
+			log.Println("ERROR: unable to pipe das2go output", err)
 			return
 		}
 	}()
@@ -97,10 +80,7 @@ func monitor(port int64, config string) {
 	// check local server
 	status := checkProcess(pat)
 	if !status {
-		logs.WithFields(logs.Fields{
-			"pattern": pat,
-			"status":  status,
-		}).Info("DAS server is not running, starting ...")
+		log.Printf("DAS server is not running, pattern %v, status %v\n", pat, status)
 		start(config, pw)
 	}
 	// check running process, it should respond on localhost
@@ -109,11 +89,7 @@ func monitor(port int64, config string) {
 	for {
 		status = checkHttpEndpoint(endpoint, pat)
 		if !status {
-			logs.WithFields(logs.Fields{
-				"endpoint": endpoint,
-				"pattern":  pat,
-				"status":   status,
-			}).Warn("DAS HTTP endpoint failure, re-starting ...")
+			log.Printf("DAS HTTP endpoint failure, endpoint %v, pattern %v, status %v, restarting ...\n", endpoint, pat, status)
 			start(config, pw)
 		}
 		sleep := time.Duration(10) * time.Second
@@ -128,18 +104,12 @@ func main() {
 	// parse DAS config file and find our on which port it is running
 	data, e := ioutil.ReadFile(config)
 	if e != nil {
-		logs.WithFields(logs.Fields{
-			"Config": config,
-		}).Error("Unable to open")
-		os.Exit(1)
+		log.Fatalf("unable to open %s\n", config)
 	}
 	var c map[string]interface{}
 	e = json.Unmarshal(data, &c)
 	if e != nil {
-		logs.WithFields(logs.Fields{
-			"Config": c,
-		}).Error("Unable to unmarshal")
-		os.Exit(1)
+		log.Fatalf("unabel to unmarshal %s\n", config)
 	}
 	port := int64(c["port"].(float64))
 	go monitor(port, config)

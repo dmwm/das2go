@@ -11,14 +11,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
-
-	logs "github.com/sirupsen/logrus"
 )
 
 // global variable for this module which we're going to use across many modules
@@ -45,10 +44,7 @@ func Stack() string {
 // ErrPropagate error helper function which can be used in defer ErrPropagate()
 func ErrPropagate(api string) {
 	if err := recover(); err != nil {
-		logs.WithFields(logs.Fields{
-			"api":   api,
-			"error": Stack(),
-		}).Error("DAS ERROR")
+		log.Printf("ERROR: api %v, error %v\n", api, Stack())
 		panic(fmt.Sprintf("%s:%s", api, err))
 	}
 }
@@ -61,10 +57,7 @@ func ErrPropagate(api string) {
 // }()
 func ErrPropagate2Channel(api string, ch chan interface{}) {
 	if err := recover(); err != nil {
-		logs.WithFields(logs.Fields{
-			"api":   api,
-			"error": Stack(),
-		}).Error("DAS ERROR")
+		log.Printf("ERROR: api %v, error %v\n", api, Stack())
 		ch <- fmt.Sprintf("%s:%s", api, err)
 	}
 }
@@ -167,10 +160,7 @@ func UnixTime(ts string) int64 {
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error":     err,
-			"Timestamp": ts,
-		}).Error("Unable to parse")
+		log.Printf("ERROR: unable to parse ts %v error %v\n", ts, err)
 		return 0
 	}
 	return int64(t.Unix())
@@ -197,10 +187,7 @@ func RunRegistryTime(ts string) string {
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error":     err,
-			"Timestamp": ts,
-		}).Error("Unable to parse")
+		log.Printf("ERROR: unable to parse ts %v error %v\n", ts, err)
 		return "N/A"
 	}
 	return t.Format(runRegistryTime)
@@ -219,10 +206,7 @@ func DashboardTime(ts string) string {
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error":     err,
-			"Timestamp": ts,
-		}).Error("Unable to parse")
+		log.Printf("ERROR: unable to parse ts %v error %v\n", ts, err)
 		return "N/A"
 	}
 	return t.Format(dashboardTime)
@@ -241,10 +225,7 @@ func ConddbTime(ts string) string {
 	const layout = "20060102"
 	t, err := time.Parse(layout, ts)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error":     err,
-			"Timestamp": ts,
-		}).Error("Unable to parse")
+		log.Printf("ERROR: unable to parse ts %v error %v\n", ts, err)
 		return "N/A"
 	}
 	return t.Format(conddbTime)
@@ -517,24 +498,17 @@ func LoadExamples(ename, home string) string {
 			// write data to local area
 			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)
 			if err != nil {
-				logs.WithFields(logs.Fields{
-					"Error": err,
-				}).Error("Unable to write DAS example file")
+				log.Println("ERROR: unable to write DAS example file", err)
 				return ""
 			}
 		} else {
-			logs.WithFields(logs.Fields{
-				"Error": resp.Error,
-			}).Error("Unable to get DAS example file from github")
+			log.Println("ERROR: unable to get DAS example file from github", resp.Error)
 			return ""
 		}
 	}
 	data, err := ioutil.ReadFile(fname)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-			"File":  fname,
-		}).Error("Unable to read DAS example file")
+		log.Printf("ERROR: unable to read DAS example file %v, error %v\n", fname, err)
 		return ""
 	}
 	return string(data)

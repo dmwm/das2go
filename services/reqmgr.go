@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 	"time"
@@ -17,7 +18,6 @@ import (
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 )
 
 // helper function to load ReqMgr data stream
@@ -37,11 +37,7 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 		if err != nil {
 			msg := fmt.Sprintf("ReqMgr unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 			if utils.VERBOSE > 0 {
-				logs.WithFields(logs.Fields{
-					"Error": err,
-					"Api":   api,
-					"data":  string(data),
-				}).Error("ReqMgr unable to unmarshal the data")
+				log.Printf("ERROR: ReqMgr unable to unmarshal, data %+v, api %v, error %v\n", string(data), api, err)
 			}
 			out = append(out, mongo.DASErrorRecord(msg, utils.ReqMgrErrorName, utils.ReqMgrError))
 		}
@@ -52,11 +48,7 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 		if err != nil {
 			msg := fmt.Sprintf("ReqMgr unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 			if utils.VERBOSE > 0 {
-				logs.WithFields(logs.Fields{
-					"Error": err,
-					"Api":   api,
-					"data":  string(data),
-				}).Error("ReqMgr unable to unmarshal the data")
+				log.Printf("ERROR: ReqMgr unable to unmarshal, data %+v, api %v, error %v\n", string(data), api, err)
 			}
 			out = append(out, mongo.DASErrorRecord(msg, utils.ReqMgrErrorName, utils.ReqMgrError))
 		}
@@ -70,11 +62,7 @@ func loadReqMgrData(api string, data []byte) []mongo.DASRecord {
 		if err != nil {
 			msg := fmt.Sprintf("ReqMgr unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 			if utils.VERBOSE > 0 {
-				logs.WithFields(logs.Fields{
-					"Error": err,
-					"Api":   api,
-					"data":  string(data),
-				}).Error("ReqMgr unable to unmarshal the data")
+				log.Printf("ERROR: ReqMgr unable to unmarshal, data %+v, api %v, error %v\n", string(data), api, err)
 			}
 			out = append(out, mongo.DASErrorRecord(msg, utils.ReqMgrErrorName, utils.ReqMgrError))
 		}
@@ -154,10 +142,7 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	// check that given dataset pass dataset pattern
 	matched, err := regexp.MatchString("/[\\w-]+/[\\w-]+/[A-Z-]+", dataset)
 	if err != nil || !matched {
-		logs.WithFields(logs.Fields{
-			"Error":   err,
-			"dataset": dataset,
-		}).Error("Unable to validate")
+		log.Printf("ERROR: unabel to validate dataset %v, error %v\n", dataset, err)
 		return []string{}, idict
 	}
 

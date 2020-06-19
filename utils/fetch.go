@@ -26,7 +26,6 @@ import (
 	"sync/atomic"
 	"time"
 
-	logs "github.com/sirupsen/logrus"
 	"github.com/vkuznet/x509proxy"
 )
 
@@ -58,10 +57,8 @@ func (t *TLSCertsManager) GetCerts() ([]tls.Certificate, error) {
 	defer lock.Unlock()
 	// we'll use existing certs if our window is not expired
 	if t.Certs == nil || time.Since(t.Expire) > TLSCertsRenewInterval {
-		logs.WithFields(logs.Fields{
-			"Expire": t.Expire,
-		}).Debug("Read new certs")
 		t.Expire = time.Now()
+		log.Println("read new certs, expire", t.Expire)
 		certs, err := tlsCerts()
 		if err == nil {
 			t.Certs = certs
@@ -90,11 +87,7 @@ func tlsCerts() ([]tls.Certificate, error) {
 		}
 	}
 	if WEBSERVER == 1 && VERBOSE > 0 {
-		logs.WithFields(logs.Fields{
-			"X509_USER_PROXY": uproxy,
-			"X509_USER_KEY":   uckey,
-			"X509_USER_CERT":  ucert,
-		}).Info("tlsCerts")
+		log.Printf("tls certs, X509_USER_PROXY=%v, X509_USER_KEY=%v, X509_USER_CERT=%v\n", uproxy, uckey, ucert)
 	}
 
 	if uproxy == "" && uckey == "" { // user doesn't have neither proxy or user certs
@@ -107,7 +100,7 @@ func tlsCerts() ([]tls.Certificate, error) {
 			return nil, fmt.Errorf("failed to parse X509 proxy: %v", err)
 		}
 		if WEBSERVER == 1 && VERBOSE > 0 {
-			logs.WithFields(logs.Fields{"X509_USER_PROXY": uproxy}).Info("use proxy")
+			log.Println("use proxy", uproxy)
 		}
 		certs := []tls.Certificate{x509cert}
 		return certs, nil
@@ -117,7 +110,7 @@ func tlsCerts() ([]tls.Certificate, error) {
 		return nil, fmt.Errorf("failed to parse user X509 certificate: %v", err)
 	}
 	if WEBSERVER == 1 && VERBOSE > 0 {
-		logs.WithFields(logs.Fields{"X509_USER_KEY": uckey, "X509_USER_CERT": ucert}).Info("use key/cert")
+		log.Println("user key", uckey, "cert", ucert)
 	}
 	certs := []tls.Certificate{x509cert}
 	return certs, nil
@@ -248,10 +241,7 @@ func FetchResponse(rurl, args string) ResponseType {
 	atomic.AddInt32(&UrlQueueSize, 1)
 	defer atomic.AddInt32(&UrlQueueSize, -1) // decrement UrlQueueSize since we done with this request
 	if VERBOSE > 1 {
-		logs.WithFields(logs.Fields{
-			"UrlQueueSize":  UrlQueueSize,
-			"UrlQueueLimit": UrlQueueLimit,
-		}).Debug("http request")
+		log.Printf("http request, UrlQueueSize %v, UrlQueueLimit %v\n", UrlQueueSize, UrlQueueLimit)
 	}
 	var response ResponseType
 	response.Url = rurl
@@ -290,23 +280,15 @@ func FetchResponse(rurl, args string) ResponseType {
 		req.Header.Set("User-Agent", "dasgoserver")
 	}
 	if VERBOSE > 2 {
-		dump1, err1 := httputil.DumpRequestOut(req, true)
-		logs.WithFields(logs.Fields{
-			"request": fmt.Sprintf("%+v", req),
-			"rurl":    rurl,
-			"dump":    string(dump1),
-			"error":   err1,
-		}).Info("http request")
+		dump, err := httputil.DumpRequestOut(req, true)
+		log.Printf("http request %+v, rurl %v, dump %v, error %v\n", req, rurl, string(dump), err)
 	}
 	client := HttpClient()
 	resp, err := client.Do(req)
 	if VERBOSE > 2 {
 		if resp != nil {
-			dump2, err2 := httputil.DumpResponse(resp, true)
-			logs.WithFields(logs.Fields{
-				"dump":  string(dump2),
-				"error": err2,
-			}).Info("http response")
+			dump, err := httputil.DumpResponse(resp, true)
+			log.Printf("http response rurl %v, dump %v, error %v\n", rurl, string(dump), err)
 		}
 	}
 	if err != nil {
@@ -323,21 +305,14 @@ func FetchResponse(rurl, args string) ResponseType {
 			if WEBSERVER == 0 {
 				fmt.Println(Color(CYAN, "DAS GET"), ColorUrl(rurl), time.Now().Sub(startTime))
 			} else {
-				logs.WithFields(logs.Fields{
-					"url":  ColorUrl(rurl),
-					"time": time.Now().Sub(startTime),
-				}).Info("DAS GET")
+				log.Printf("DAS GET %s %v\n", rurl, time.Now().Sub(startTime))
 			}
 		} else {
 			if WEBSERVER == 0 {
 				a := fmt.Sprintf("args=%s", args)
 				fmt.Println(Color(PURPLE, "DAS POST"), ColorUrl(rurl), a, time.Now().Sub(startTime))
 			} else {
-				logs.WithFields(logs.Fields{
-					"url":  ColorUrl(rurl),
-					"args": args,
-					"time": time.Now().Sub(startTime),
-				}).Info("DAS POST")
+				log.Printf("DAS POST %s args %v, %v\n", rurl, args, time.Now().Sub(startTime))
 			}
 		}
 	}
@@ -363,10 +338,7 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 	resp = FetchResponse(rurl, args)
 	if resp.Error != nil {
 		if WEBSERVER == 1 && VERBOSE > 0 {
-			logs.WithFields(logs.Fields{
-				"url":   rurl,
-				"error": resp.Error,
-			}).Warn("fail to fetch data")
+			log.Printf("fail to fetch data %s, error %v\n", rurl, resp.Error)
 		}
 		for i := 1; i <= UrlRetry; i++ {
 			sleep := time.Duration(i) * time.Second
@@ -376,22 +348,14 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 				break
 			}
 			if WEBSERVER == 1 && VERBOSE > 0 {
-				logs.WithFields(logs.Fields{
-					"url":   rurl,
-					"retry": i,
-					"error": resp.Error,
-				}).Warn("fetch data retry")
+				log.Printf("fetch retry, url %s, retry %v, error %v\n", rurl, i, resp.Error)
 			}
 		}
 		resp = r
 	}
 	if resp.Error != nil {
 		if WEBSERVER == 1 && VERBOSE > 0 {
-			logs.WithFields(logs.Fields{
-				"url":     rurl,
-				"retries": UrlRetry,
-				"error":   resp.Error,
-			}).Error("fail to fetch data")
+			log.Printf("ERROR: fail to fetch %s, retries %v, error %v\n", rurl, UrlRetry, resp.Error)
 		}
 	}
 	ch <- resp
@@ -403,10 +367,7 @@ func validateUrl(rurl string) bool {
 		if PatternUrl.MatchString(rurl) {
 			return true
 		}
-		//         fmt.Println("ERROR invalid URL:", ColorUrl(rurl))
-		logs.WithFields(logs.Fields{
-			"url": ColorUrl(rurl),
-		}).Error("invalid URL")
+		log.Println("ERROR, invalid URL", rurl)
 	}
 	return false
 }

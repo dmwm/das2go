@@ -10,11 +10,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"log"
 	"strings"
 
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 )
 
 // helper function to load McM data stream
@@ -45,11 +45,7 @@ func loadMcMData(api string, data []byte) []mongo.DASRecord {
 	if err != nil {
 		msg := fmt.Sprintf("McM unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 		if utils.VERBOSE > 0 {
-			logs.WithFields(logs.Fields{
-				"Error": err,
-				"Api":   api,
-				"data":  string(data),
-			}).Error("McM unable to unmarshal the data")
+			log.Printf("ERROR: McM unable to unmarshal, data %+v, api %v, error %v\n", string(data), api, err)
 		}
 		out = append(out, mongo.DASErrorRecord(msg, utils.McMErrorName, utils.McMError))
 		return out

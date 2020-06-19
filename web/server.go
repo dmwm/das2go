@@ -28,7 +28,6 @@ import (
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/services"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 
 	_ "expvar"         // to be used for monitoring, see https://github.com/divan/expvarmon
 	_ "net/http/pprof" // profiler, see https://golang.org/pkg/net/http/pprof/
@@ -59,17 +58,13 @@ func userDNs() []string {
 	rurl := "https://cmsweb.cern.ch/sitedb/data/prod/people"
 	resp := utils.FetchResponse(rurl, "")
 	if resp.Error != nil {
-		logs.WithFields(logs.Fields{
-			"Error": resp.Error,
-		}).Error("Unable to fetch SiteDB records", resp.Error)
+		log.Println("ERROR: unable to fetch SiteDB records", resp.Error)
 		return out
 	}
 	var rec map[string]interface{}
 	err := json.Unmarshal(resp.Data, &rec)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-		}).Error("Unable to unmarshal response", err)
+		log.Println("ERROR: unable to unmarshal repsonse", err)
 		return out
 	}
 	desc := rec["desc"].(map[string]interface{})
@@ -104,21 +99,10 @@ func daskeysDescription() string {
 // Server is proxy server. It defines /fetch public interface
 func Server(configFile string) {
 	err := config.ParseConfig(configFile)
-	if config.Config.LogFormatter == "json" {
-		logs.SetFormatter(&logs.JSONFormatter{})
-	} else if config.Config.LogFormatter == "text" {
-		logs.SetFormatter(&logs.TextFormatter{})
-	} else {
-		logs.SetFormatter(&logs.JSONFormatter{})
-	}
-	if err != nil {
-		logs.WithFields(logs.Fields{"Time": time.Now(), "Config": configFile}).Error("Unable to parse")
-	}
 	// log time, filename, and line number
-	if config.Config.Verbose > 0 {
-		log.SetFlags(log.LstdFlags | log.Lshortfile)
-	} else {
-		log.SetFlags(log.LstdFlags)
+	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	if err != nil {
+		log.Println("ERROR: unabel to parse config file", configFile)
 	}
 
 	utils.VERBOSE = config.Config.Verbose
@@ -129,7 +113,7 @@ func Server(configFile string) {
 	interval := time.Duration(config.Config.TLSCertsRenewInterval)
 	utils.TLSCertsRenewInterval = time.Duration(interval * time.Second)
 	utils.RucioTokenCurl = config.Config.RucioTokenCurl
-	logs.Info(config.Config.String())
+	log.Println(config.Config.String())
 	// init CMS Authentication module
 	if config.Config.Hkey != "" {
 		_cmsAuth.Init(config.Config.Hkey)
@@ -141,21 +125,21 @@ func Server(configFile string) {
 
 	// load DAS Maps if necessary
 	if len(_dasmaps.Services()) == 0 {
-		logs.Info("Load DAS maps")
+		log.Println("Load DAS maps")
 		_dasmaps.LoadMaps("mapping", "db")
 		if len(config.Config.Services) > 0 {
 			_dasmaps.AssignServices(config.Config.Services)
 		}
-		logs.Info("DAS services ", _dasmaps.Services())
-		logs.Info("DAS keys ", _dasmaps.DASKeys())
+		log.Println("DAS services ", _dasmaps.Services())
+		log.Println("DAS keys ", _dasmaps.DASKeys())
 	}
 	// list URLs we're going to use
-	logs.Info("DBSUrl: ", services.DBSUrl(config.Config.DbsInstances[0]))
-	logs.Info("PhedexUrl: ", services.PhedexUrl())
-	logs.Info("SitedbUrl: ", services.SitedbUrl())
-	logs.Info("CricUrl w/ site API: ", services.CricUrl("site"))
-	logs.Info("RucioUrl: ", services.RucioUrl())
-	logs.Info("RucioAuthUrl: ", utils.RucioAuth.Url())
+	log.Println("DBSUrl: ", services.DBSUrl(config.Config.DbsInstances[0]))
+	log.Println("PhedexUrl: ", services.PhedexUrl())
+	log.Println("SitedbUrl: ", services.SitedbUrl())
+	log.Println("CricUrl w/ site API: ", services.CricUrl("site"))
+	log.Println("RucioUrl: ", services.RucioUrl())
+	log.Println("RucioAuthUrl: ", utils.RucioAuth.Url())
 
 	// DAS templates
 	tmplData := make(map[string]interface{})
@@ -207,7 +191,7 @@ func Server(configFile string) {
 					interval = 60
 				}
 				d := time.Duration(interval) * time.Minute
-				logs.WithFields(logs.Fields{"Time": time.Now(), "Duration": d}).Info("userDNs are updated")
+				log.Println("userDNs are updated", d)
 				time.Sleep(d) // sleep for next iteration
 				_userDNs = UserDNs{DNs: userDNs(), Time: time.Now()}
 			}
@@ -219,18 +203,16 @@ func Server(configFile string) {
 				ClientAuth: tls.RequestClientCert,
 			},
 		}
-		logs.WithFields(logs.Fields{"Addr": addr}).Info("Starting HTTPs server")
+		log.Println("starting HTTPs server", addr)
 		err = server.ListenAndServeTLS(config.Config.ServerCrt, config.Config.ServerKey)
 	} else {
 		// Start server without user certificates
 		_auth = false
-		logs.WithFields(logs.Fields{"Addr": addr}).Info("Starting HTTP server")
+		log.Println("starting HTTP server", addr)
 		err = http.ListenAndServe(addr, nil)
 	}
 
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-		}).Fatal("ListenAndServe: ")
+		log.Fatalf("LinstenAndServer: %v\n", err)
 	}
 }

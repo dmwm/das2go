@@ -9,6 +9,7 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/url"
 	"strings"
 	"time"
@@ -17,7 +18,6 @@ import (
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 )
 
 func DBSUrl(inst string) string {
@@ -157,10 +157,7 @@ func runArgs(dasquery dasql.DASQuery) string {
 		case string:
 			runsArgs = fmt.Sprintf("%s&run_num=%s", runsArgs, value)
 		default:
-			logs.WithFields(logs.Fields{
-				"Runs": runs,
-				"Type": fmt.Sprintf("%T", runs),
-			}).Error("Unknown type")
+			log.Printf("ERROR: unknown type %T, runs %v\n", runs, runs)
 			return runsArgs
 		}
 	}
@@ -317,9 +314,7 @@ func phedexNode(site string) string {
 	} else if seMatch {
 		node = fmt.Sprintf("se=%s", site)
 	} else {
-		logs.WithFields(logs.Fields{
-			"Site": site,
-		}).Error("unable to match site name")
+		log.Println("ERROR: unable to match site name", site)
 		return ""
 	}
 	return node

@@ -3,14 +3,13 @@ package utils
 import (
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"os"
 	"os/exec"
 	"strings"
 	"time"
-
-	logs "github.com/sirupsen/logrus"
 )
 
 // DAS RucioAuth module
@@ -101,39 +100,26 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	}
 	req.Header.Add("Connection", "keep-alive")
 	if VERBOSE > 1 {
-		dump1, err1 := httputil.DumpRequestOut(req, true)
-		logs.WithFields(logs.Fields{
-			"url":    rurl,
-			"header": req.Header,
-			"dump":   string(dump1),
-			"error":  err1,
-		}).Info("http request")
+		dump, err := httputil.DumpRequestOut(req, true)
+		log.Printf("http request %+v, rurl %v, dump %v, error %v\n", req, rurl, string(dump), err)
 	}
 	client := HttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		if VERBOSE > 0 {
-			logs.WithFields(logs.Fields{
-				"Error": err,
-			}).Error("unable to Http client")
+			log.Println("ERROR: unabel to perform request", err)
 		}
 		return "", 0, err
 	}
 	if VERBOSE > 1 {
-		dump2, err2 := httputil.DumpResponse(resp, true)
-		logs.WithFields(logs.Fields{
-			"url":   rurl,
-			"dump":  string(dump2),
-			"error": err2,
-		}).Info("http response")
+		dump, err := httputil.DumpResponse(resp, true)
+		log.Printf("http response rurl %v, dump %v, error %v\n", rurl, string(dump), err)
 	}
 	defer resp.Body.Close()
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		if VERBOSE > 0 {
-			logs.WithFields(logs.Fields{
-				"Error": err,
-			}).Error("unable to close the response body")
+			log.Println("ERROR: unable to read response body", err)
 		}
 		return "", 0, err
 	}
@@ -157,9 +143,7 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	fmt.Println(cmd)
 	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Error": err,
-		}).Error("unable to execute")
+		log.Println("ERROR: unable to execute command", cmd, "error", err)
 		return "", 0, err
 	}
 	var token string

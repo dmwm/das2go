@@ -11,12 +11,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"strconv"
 	"strings"
 	"time"
 
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -117,11 +117,7 @@ func posLine(query string, idx int) string {
 }
 func qlError(query string, idx int, msg string) (string, string) {
 	fullmsg := fmt.Sprintf("DAS QL ERROR, query=%v, idx=%v, msg=%v", query, idx, msg)
-	logs.WithFields(logs.Fields{
-		"Query": query,
-		"idx":   idx,
-		"msg":   msg,
-	}).Error("DAS QL error")
+	log.Println("ERROR", fullmsg)
 	return fullmsg, posLine(query, idx)
 }
 func parseArray(rquery string, odx int, oper string, val string) ([]string, int, string, string) {
@@ -204,10 +200,7 @@ func parseLastValue(val string) []string {
 	var t0 int64
 	v, e := strconv.ParseInt(val[:len(val)-1], 10, 64) // parse string into int64
 	if e != nil {
-		logs.WithFields(logs.Fields{
-			"Value": val[:len(val)-1],
-			"Error": e,
-		}).Error("Unable to parse int")
+		log.Printf("ERROR: unable to parse, value %v, error %v\n", val[:len(val)-1], e)
 		return out
 	}
 	if strings.HasSuffix(val, "h") {
@@ -223,9 +216,7 @@ func parseLastValue(val string) []string {
 	} else if strings.HasSuffix(val, "y") {
 		t0 = time.Now().Unix() - v*365*24*60*60
 	} else {
-		logs.WithFields(logs.Fields{
-			"Value": val,
-		}).Error("Unsupported value for last operator")
+		log.Printf("ERROR: unsupported value for last operator, value %v\n", val)
 		return out
 	}
 	out = append(out, fmt.Sprintf("%d", t0))
@@ -285,12 +276,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 			nnval = nan
 		}
 		if utils.VERBOSE > 2 {
-			logs.WithFields(logs.Fields{
-				"idx":   idx,
-				"val":   val,
-				"nval":  nval,
-				"nnval": nnval,
-			}).Debug("process")
+			log.Printf("process, idx %v, val %v, nval %v, nnval %v\n", idx, val, nval, nnval)
 		}
 		if nval != nan && (nval == "," || utils.InList(nval, daskeys) == true) {
 			if utils.InList(val, daskeys) {

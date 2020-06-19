@@ -9,10 +9,10 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 )
 
 // helper function to load Dashboard data stream
@@ -23,11 +23,7 @@ func loadDashboardData(api string, data []byte) []mongo.DASRecord {
 	if err != nil {
 		msg := fmt.Sprintf("Dashboard unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(data), err)
 		if utils.VERBOSE > 0 {
-			logs.WithFields(logs.Fields{
-				"Error": err,
-				"Api":   api,
-				"data":  string(data),
-			}).Error("Dashboard unable to unmarshal the data")
+			log.Printf("ERROR: Dashboard unable to unmarshal, data %+v, api %v, error %v\n", string(data), api, err)
 		}
 		out = append(out, mongo.DASErrorRecord(msg, utils.DashboardErrorName, utils.DashboardError))
 	}

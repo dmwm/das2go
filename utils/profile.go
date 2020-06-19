@@ -3,11 +3,10 @@ package utils
 import (
 	"bufio"
 	"fmt"
+	"log"
 	"os"
 	"strings"
 	"time"
-
-	logs "github.com/sirupsen/logrus"
 )
 
 // global variable
@@ -17,10 +16,7 @@ func InitFunctionProfiler(fname string) {
 	// extract path from given file name
 	path, err := os.Getwd()
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"err": err,
-			"dir": path,
-		}).Error("failed to get local working directory")
+		log.Printf("ERROR: fail to read from %v, error %v\n", path, err)
 		return
 	}
 	if fname == "" {
@@ -32,27 +28,19 @@ func InitFunctionProfiler(fname string) {
 	}
 	// create the log directory
 	if err := os.MkdirAll(path, 0755); err != nil {
-		logs.WithFields(logs.Fields{
-			"err": err,
-			"dir": path,
-		}).Error("failed to make the directory")
+		log.Printf("ERROR: fail to make %s, error %v\n", path, err)
 		return
 	}
 	// open the log file
 	fname = fmt.Sprintf("%s/%s", path, fname)
 	file, err := os.OpenFile(fname, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"err":  err,
-			"file": fname,
-		}).Error("failed to open file")
+		log.Printf("ERROR: fail to open %s, error %v\n", fname, err)
 		return
 	}
 	Profiler = bufio.NewWriter(file)
 	if WEBSERVER != 0 {
-		logs.WithFields(logs.Fields{
-			"file": fname,
-		}).Info("DAS profiler")
+		log.Println("DAS profiler", fname)
 	}
 }
 

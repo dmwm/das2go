@@ -7,6 +7,7 @@ package das
 
 import (
 	"fmt"
+	"log"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -19,7 +20,6 @@ import (
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/services"
 	"github.com/dmwm/das2go/utils"
-	logs "github.com/sirupsen/logrus"
 	"gopkg.in/mgo.v2/bson"
 )
 
@@ -172,7 +172,7 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 		base = strings.Replace(base, "xml", "json", -1)
 	}
 	if !ok {
-		logs.Fatal("Unable to extract url from DAS map ", dasmap)
+		log.Println("Unable to extract url from DAS map", dasmap)
 	}
 	dasmaps := dasmaps.GetDASMaps(dasmap["das_map"])
 	var useArgs []string
@@ -340,7 +340,7 @@ func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	skeys := utils.MapKeys(spec)
 	base, ok := dasmap["url"].(string)
 	if !ok {
-		logs.Fatal("Unable to extract url from DAS map ", dasmap)
+		log.Println("Unable to extract url from DAS map", dasmap)
 	}
 	if !strings.HasPrefix(base, "http") {
 		return "local_api"
@@ -378,11 +378,7 @@ func FormRESTUrl(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 					return base
 				}
 			default:
-				logs.WithFields(logs.Fields{
-					"Type": fmt.Sprintf("%T", spec[dkey]),
-					"Key":  dkey,
-					"Map":  dmap,
-				}).Error("Invalid type for DAS key")
+				log.Printf("ERROR: invalid type for DAS key, type %T, key %v, map %v\n", spec[dkey], dkey, dmap)
 				return ""
 			}
 		}
@@ -409,10 +405,7 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		api := fmt.Sprintf("%s_%s", system, urn)
 		apiFunc := localApiMap[api]
 		if utils.VERBOSE > 0 {
-			logs.WithFields(logs.Fields{
-				"Api":      api,
-				"Function": apiFunc,
-			}).Info("DAS look-up")
+			log.Printf("DAS look-up: api %s, func %s\n", api, apiFunc)
 		}
 		// we use reflection to look-up api from our services/localapis.go functions
 		// for details on reflection see
@@ -423,16 +416,7 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 		vals := m.Call(args)[0]                            // return value
 		records := vals.Interface().([]mongo.DASRecord)    // cast reflect value to its type
 		if utils.VERBOSE > 1 {
-			logs.WithFields(logs.Fields{
-				"urn":     urn,
-				"System":  system,
-				"Expire":  expire,
-				"dmap":    dmap,
-				"api":     api,
-				"func":    apiFunc,
-				"method":  m,
-				"records": len(records),
-			}).Info("local apis")
+			log.Printf("local apis, urn %v, system %v, expire %v, dmap %v, api %v, func %v, method %v, records %v\n", urn, system, expire, dmap, api, apiFunc, m, len(records))
 		}
 
 		records = services.AdjustRecords(dasquery, system, urn, records, expire, pkeys)
@@ -710,9 +694,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 
 	if len(srvs) == 0 {
 		if utils.WEBSERVER > 0 {
-			logs.WithFields(logs.Fields{
-				"Query": dasquery.String(),
-			}).Warn("unable to find any CMS service to fullfil this request")
+			log.Printf("unable to find any CMS service to fullfil this request, query: %s\n", dasquery.String())
 		} else {
 			fmt.Println("DAS WARNING", dasquery, "unable to find any CMS service to fullfil this request")
 		}
@@ -725,11 +707,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	}
 	dasrecord := services.CreateDASRecord(dasquery, srvs, pkeys)
 	if utils.VERBOSE > 0 {
-		logs.WithFields(logs.Fields{
-			"Record":   dasrecord,
-			"Services": srvs,
-			"pkeys":    pkeys,
-		}).Info("CreateDASRecord")
+		log.Printf("services.CreateDASrecord, record %v, services %v, pkeys %v\n", dasrecord, srvs, pkeys)
 	}
 	var records []mongo.DASRecord
 	records = append(records, dasrecord)
@@ -1034,10 +1012,7 @@ func TimeStamp(dasquery dasql.DASQuery) int64 {
 	recs := mongo.Get("das", "cache", spec, 0, 1)
 	ts, err := mongo.GetInt64Value(recs[0], "das.ts")
 	if err != nil {
-		logs.WithFields(logs.Fields{
-			"Query": dasquery.String(),
-			"Spec":  spec,
-		}).Error("unable to find das record")
+		log.Printf("ERROR: unable to find das record, query: %v, spec %v\n", dasquery.String, spec)
 		return 0
 	}
 	return ts
