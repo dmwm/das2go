@@ -446,6 +446,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if hash != "" {
 		dasquery, err, _ := dasql.Parse(query, inst, _dasmaps.DASKeys())
+		log.Println("DAS INPUT", query, inst, dasquery)
 		msg := fmt.Sprintf("%s, spec=%v, filters=%v, aggregators=%v, err=%s", dasquery, dasquery.Spec, dasquery.Filters, dasquery.Aggregators, err)
 		w.Write([]byte(msg))
 		return
@@ -499,6 +500,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 	dasquery, err2, pLine := dasql.Parse(query, inst, _dasmaps.DASKeys())
+	log.Println("DAS INPUT", query, inst, dasquery)
 	if err2 != "" {
 		w.Write([]byte(dasError(query, err2, pLine)))
 		return

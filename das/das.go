@@ -707,7 +707,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	}
 	dasrecord := services.CreateDASRecord(dasquery, srvs, pkeys)
 	if utils.VERBOSE > 0 {
-		log.Printf("services.CreateDASrecord, record %v, services %v, pkeys %v\n", dasrecord, srvs, pkeys)
+		log.Printf("services.CreateDASRecord, record %v, services %v, pkeys %v\n", dasrecord, srvs, pkeys)
 	}
 	var records []mongo.DASRecord
 	records = append(records, dasrecord)
