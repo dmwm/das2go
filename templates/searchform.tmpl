@@ -32,14 +32,6 @@ dbs instance
 </td>
 <td class="right">
 &nbsp;
-autocompletion
-<select id="ac_enable" onchange="ac_select_change();">
-<option class="sand" value="true">enable</option>
-<option class="sand" value="false">disable</option>
-</select>
-</td>
-<td class="right">
-&nbsp;
 <input type="submit" value="Search" class="btn borders" />
 <input type="button" class="btn borders" onclick="javascript:ac_init();clear_input()" value="Reset" />
 </td>
@@ -47,10 +39,6 @@ autocompletion
 </table>
 <div class="autocomplete">
 <input type="text" name="input" id="input" style="width:100%;" />
-<!--
-<input type="text" name="input" id="input" style="width:100%;" onchange="javascript:processRequest()" />
--->
-<div id="ac_container"></div>
 </div>
 <span>
 <a href="javascript:FlipTag('das_keys_desc');"><b>Show DAS keys description</b></a>
@@ -67,78 +55,11 @@ function dbs_inst() {
    var doc = document.getElementById('instance');
    return doc.value;
 }
-
-ac = null;
-ac_datasrc = null;
-
-function set_autocomplete(enable) {
-	if (enable) {
-        YAHOO.util.Cookie.set("autocomplete", "true");
-		ac_datasrc = new YAHOO.util.XHRDataSource("{{.Base}}/autocomplete");
-		ac_datasrc.responseType = YAHOO.util.XHRDataSource.TYPE_JSARRAY;
-		ac_datasrc.responseSchema = { fields: ["value", "css", "info"]};
-		ac = new YAHOO.widget.AutoComplete("input", "ac_container", ac_datasrc);
-		ac.animVert = false;
-		ac.animHoriz = false;
-		ac.maxResultsDisplayed = 10;
-		ac.minQueryLength = 1;
-		ac.queryDelay = 0.1;
-		ac.autoHighlight = false;
-		ac.forceSelection = false;
-		ac.typeAhead = false;
-		ac.useShadow = true;
-		ac.resultTypeList = false;
-		ac.formatResult = function(oResultData, sQuery, sResultMatch) {
-			var markup = ["<div style='position:relative;padding:0'>",
-						  "<div class='", oResultData.css, 
-						  "'></div><div><span class='ac-suggest'>",
-						  sResultMatch, "</span><span class='ac-extra'>", 
-						  oResultData.info, "</span></div></div>"];
-			return (markup.join(" "));
-		};
-		ac.applyLocalFilter = false;
-		ac.queryMatchContains = false;
-                ac.generateRequest = function(sQuery) {
-                    return '?dbs_instance='+dbs_inst()+'&query='+sQuery;
-                };
-	} else {
-                YAHOO.util.Cookie.set("autocomplete", "false");
-		if (! (ac === undefined || ac === null)) {
-			ac.destroy();
-			ac = null;
-			ac_datasrc = null;
-		}
-	}
-};
-
-function ac_select_change() {
-    var enable = ($("ac_enable").value == "true");
-    set_autocomplete(enable);
-};
 function clear_input() {
     // clear input field
     var doc = document.getElementById('input');
     doc.value = "";
 }
-function ac_init() {
-    // get cookie for autocomplete and follow its value
-    var ac_cookie = (YAHOO.util.Cookie.get("autocomplete") == "true");
-    var doc = document.getElementById("ac_enable");
-    doc.options.length=0;
-    if  (ac_cookie) {
-        doc.options[0] = new Option("enable", "true", false, false);
-        doc.options[1] = new Option("disable", "false", false, false);
-        doc.options[0].className = "sand";
-        doc.options[1].className = "sand";
-    } else {
-        doc.options[0] = new Option("disable", "false", false, false);
-        doc.options[1] = new Option("enable", "true", false, false);
-        doc.options[0].className = "sand";
-        doc.options[1].className = "sand";
-    }
-    set_autocomplete(ac_cookie);
-};
-ac_init();
 //]]>
 </script>
 <!-- end of das_searchform.tmpl -->

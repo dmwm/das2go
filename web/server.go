@@ -170,7 +170,6 @@ func Server(configFile string) {
 	http.Handle(base+"/css/", http.StripPrefix(base+"/css/", http.FileServer(http.Dir(config.Config.Styles))))
 	http.Handle(base+"/js/", http.StripPrefix(base+"/js/", http.FileServer(http.Dir(config.Config.Jscripts))))
 	http.Handle(base+"/images/", http.StripPrefix(base+"/images/", http.FileServer(http.Dir(config.Config.Images))))
-	http.Handle(base+"/yui/", http.StripPrefix(base+"/yui/", http.FileServer(http.Dir(config.Config.YuiRoot))))
 	//     http.Handle(base+"/debug/pprof/", http.StripPrefix(base, http.RedirectHandler("/debug/pprof/", http.StatusTemporaryRedirect)))
 	http.HandleFunc(fmt.Sprintf("%s/", config.Config.Base), AuthHandler)
 

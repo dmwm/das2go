@@ -24,7 +24,6 @@ type Configuration struct {
 	Jscripts              string   `json:"jscripts"`       // location of DAS JavaScript files
 	Images                string   `json:"images"`         // location of DAS images
 	Styles                string   `json:"styles"`         // location of DAS CSS styles
-	YuiRoot               string   `json:"yuiRoot"`        // location of YUI ROOT
 	Hkey                  string   `json:"hkey"`           // DAS HKEY file
 	Base                  string   `json:"base"`           // DAS base path
 	DbsInstances          []string `json:"dbsInstances"`   // list of DBS instances
@@ -47,7 +46,7 @@ var Config Configuration
 
 // String returns string representation of DAS Config
 func (c *Configuration) String() string {
-	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s yui=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s timeout=%d frontend=%s>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.YuiRoot, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey, c.Timeout, c.Frontend)
+	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s timeout=%d frontend=%s>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey, c.Timeout, c.Frontend)
 }
 
 // ParseConfig parse given config file
