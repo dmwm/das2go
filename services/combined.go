@@ -203,18 +203,20 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 	resp = utils.FetchResponse(furl, "") // "" specify optional args
 	records = RucioUnmarshal(dasquery, api, resp.Data)
 	siteInfo := make(mongo.DASRecord)
-	siteFileInfo := make(map[string]int64)
+	sFileInfo := make(map[string][]interface{})
 	siteKindInfo := make(map[string]string)
 	for _, rec := range records {
 		if rec["rses"] == nil {
 			continue
 		}
-		for rses, _ := range rec["rses"].(map[string]interface{}) {
-			if v, ok := siteFileInfo[rses]; ok {
-				siteFileInfo[rses] = v + 1
-			} else {
-				siteFileInfo[rses] = 1
+		for rse, ientries := range rec["rses"].(map[string]interface{}) {
+			entries := ientries.([]interface{})
+			if v, ok := sFileInfo[rse]; ok {
+				for _, entry := range v {
+					entries = append(entries, entry)
+				}
 			}
+			sFileInfo[rse] = entries
 		}
 		if rec["pfns"] != nil {
 			switch record := rec["pfns"].(type) {
@@ -230,6 +232,15 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 				}
 			}
 		}
+	}
+	siteFileInfo := make(map[string]int64)
+	for k, rseFiles := range sFileInfo {
+		rec := make(map[string]int)
+		for _, entry := range rseFiles {
+			key := entry.(string)
+			rec[key] = 1
+		}
+		siteFileInfo[k] = int64(len(rec))
 	}
 
 	// Rucio part II: we obtain information about blocks concurrently
@@ -247,7 +258,7 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 	siteBlockInfo := make(map[string]int64)
 	siteBlockCompleteInfo := make(map[string]int64)
 	exit := false
-	var bfiles int64 // count number of available files in all blocks on a site
+	//     var bfiles int64 // count number of available files in all blocks on a site
 	for {
 		select {
 		case r := <-chout:
@@ -267,7 +278,7 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 					vvv := rec["available_length"]
 					switch v := vvv.(type) {
 					case float64:
-						bfiles += int64(v)
+						//                         bfiles += int64(v)
 						aLength = int64(v)
 					}
 				}
@@ -348,9 +359,10 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 		}
 		ratio := float64(rec2num(row["block_complete"])) / float64(rec2num(row["blocks"]))
 		bc := fmt.Sprintf("%5.2f%%", 100*ratio)
-		rf := fmt.Sprintf("%5.2f%%", 100*float64(nfiles)/float64(bfiles))
+		//         rf := fmt.Sprintf("%5.2f%%", 100*float64(nfiles)/float64(bfiles))
+		rf := fmt.Sprintf("%5.2f%%", 100*float64(nfiles)/float64(nblks))
 		if utils.VERBOSE > 0 {
-			fmt.Println("### site", key, "nfiles", nfiles, "bfiles", bfiles)
+			fmt.Println("### site", key, "nfiles", nfiles, "nblocks", nblks)
 		}
 		// put into file das record, internal type must be list
 		rec := make(mongo.DASRecord)
