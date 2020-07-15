@@ -58,7 +58,9 @@ func (t *TLSCertsManager) GetCerts() ([]tls.Certificate, error) {
 	// we'll use existing certs if our window is not expired
 	if t.Certs == nil || time.Since(t.Expire) > TLSCertsRenewInterval {
 		t.Expire = time.Now()
-		log.Println("read new certs, expire", t.Expire)
+		if WEBSERVER > 0 {
+			log.Println("read new certs, expire", t.Expire)
+		}
 		certs, err := tlsCerts()
 		if err == nil {
 			t.Certs = certs
