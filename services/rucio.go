@@ -83,9 +83,15 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 		} else if api == "site4dataset" || api == "site4block" || api == "site4file" {
 			if rec["states"] != nil {
 				states := rec["states"].(map[string]interface{})
-				for k, _ := range states {
-					rec["name"] = k
-					out = append(out, rec)
+				for rse, _ := range states {
+					// we need to create a new map record since we'll reassign
+					// rse name as a main key
+					newrec := make(map[string]interface{})
+					for k, v := range rec {
+						newrec[k] = v
+					}
+					newrec["name"] = rse
+					out = append(out, newrec)
 				}
 			}
 		} else if api == "rules4dataset" || api == "rules4block" || api == "rules4file" {
