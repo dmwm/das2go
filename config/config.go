@@ -39,6 +39,7 @@ type Configuration struct {
 	RucioTokenCurl        bool     `json:"rucioTokenCurl"` // use curl method to obtain Rucio Token
 	ProfileFile           string   `json:"profileFile"`    // send profile data to a given file
 	TLSCertsRenewInterval int      `json:"tlsCertsRenewInterval"`
+	LogFile               string   `json:"logFile"` // log file name
 }
 
 // Config variable represents configuration object

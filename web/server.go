@@ -19,6 +19,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"time"
 
@@ -31,6 +32,8 @@ import (
 
 	_ "expvar"         // to be used for monitoring, see https://github.com/divan/expvarmon
 	_ "net/http/pprof" // profiler, see https://golang.org/pkg/net/http/pprof/
+
+	rotatelogs "github.com/lestrrat-go/file-rotatelogs"
 )
 
 // Config describes DAS server configuration
@@ -96,11 +99,41 @@ func daskeysDescription() string {
 	return desc
 }
 
+// helper function to produce UTC time prefixed output
+func utcMsg(data []byte) string {
+	//     return fmt.Sprintf("[" + time.Now().String() + "] " + string(data))
+	s := string(data)
+	v, e := url.QueryUnescape(s)
+	if e == nil {
+		return fmt.Sprintf("[" + time.Now().String() + "] " + v)
+	}
+	return fmt.Sprintf("[" + time.Now().String() + "] " + s)
+}
+
+// custom rotate logger
+type rotateLogWriter struct {
+	RotateLogs *rotatelogs.RotateLogs
+}
+
+func (w rotateLogWriter) Write(data []byte) (int, error) {
+	return w.RotateLogs.Write([]byte(utcMsg(data)))
+}
+
 // Server is proxy server. It defines /fetch public interface
 func Server(configFile string) {
 	err := config.ParseConfig(configFile)
-	// log time, filename, and line number
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	if config.Config.LogFile != "" {
+		rl, err := rotatelogs.New(config.Config.LogFile + "-%Y%m%d")
+		if err == nil {
+			rotlogs := rotateLogWriter{RotateLogs: rl}
+			log.SetOutput(rotlogs)
+		} else {
+			log.SetFlags(log.LstdFlags | log.Lshortfile)
+		}
+	} else {
+		// log time, filename, and line number
+		log.SetFlags(log.LstdFlags | log.Lshortfile)
+	}
 	if err != nil {
 		log.Println("ERROR: unabel to parse config file", configFile)
 	}
