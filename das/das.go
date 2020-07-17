@@ -391,6 +391,9 @@ type DASRecords []mongo.DASRecord
 
 // helper function to process given set of URLs associted with dasquery
 func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []string) {
+	if utils.WEBSERVER > 0 && utils.VERBOSE > 0 {
+		log.Println("processLocalApis", dmaps)
+	}
 	// defer function will propagate panic message to higher level
 	//     defer utils.ErrPropagate("processLocalApis")
 
@@ -462,6 +465,9 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 
 // helper function to process given set of URLs associted with dasquery
 func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.DASRecord, dmaps dasmaps.DASMaps, pkeys []string) {
+	if utils.WEBSERVER > 0 && utils.VERBOSE > 0 {
+		log.Println("processURLs", urls)
+	}
 	// defer function will propagate panic message to higher level
 	//     defer utils.ErrPropagate("processUrls")
 
@@ -691,6 +697,10 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	// but for das2go we don't need to use selectedServices, here we'll pass empty list
 	var selectedServices []string
 	srvs, pkeys, urls, localApis := ProcessLogic(dasquery, maps, selectedServices)
+
+	if utils.WEBSERVER > 0 && utils.VERBOSE > 0 {
+		log.Println("ProcessLogic, services", srvs, "pkeys", pkeys, "urls", urls, "localApis", localApis)
+	}
 
 	if len(srvs) == 0 {
 		if utils.WEBSERVER > 0 {
