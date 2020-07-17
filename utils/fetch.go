@@ -59,7 +59,7 @@ func (t *TLSCertsManager) GetCerts() ([]tls.Certificate, error) {
 	if t.Certs == nil || time.Since(t.Expire) > TLSCertsRenewInterval {
 		t.Expire = time.Now()
 		if WEBSERVER > 0 {
-			log.Println("read new certs, expire", t.Expire)
+			log.Println("read new certs, expire", t.Expire, "config.TLSCertsRenewInterval", TLSCertsRenewInterval)
 		}
 		certs, err := tlsCerts()
 		if err == nil {
@@ -125,9 +125,6 @@ func HttpClient() *http.Client {
 	certs, err := tlsManager.GetCerts()
 	if err != nil {
 		panic(err.Error())
-	}
-	if WEBSERVER > 0 && VERBOSE > 0 {
-		log.Println("Create TLSClientconfig: #certificates", len(certs))
 	}
 	timeout := time.Duration(TIMEOUT) * time.Second
 	if len(certs) == 0 {
