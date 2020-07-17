@@ -451,12 +451,12 @@ func (LocalAPIs) Site4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
 			siteInfo[node] = mongo.DASRecord{"files": nfiles, "blocks": nblks, "block_complete": bComplete, "se": se, "kind": _phedexNodes.NodeType(node)}
 		}
 	}
-	if utils.VERBOSE > 0 {
-		fmt.Println("### bfiles", bfiles)
-		for s, v := range siteInfo {
-			fmt.Println("### site", s, v)
-		}
-	}
+	//     if utils.VERBOSE > 0 {
+	//         fmt.Println("### bfiles", bfiles)
+	//         for s, v := range siteInfo {
+	//             fmt.Println("### site", s, v)
+	//         }
+	//     }
 	var pfiles, pblks string
 	var out []mongo.DASRecord
 	for key, val := range siteInfo {
