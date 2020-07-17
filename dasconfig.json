@@ -3,7 +3,7 @@
     "uri":"mongodb://localhost:8230",
     "base": "/das",
     "port": 8217,
-    "services": ["combined","conddb","dashboard","dbs3","mcm","phedex","reqmgr2","runregistry","sitedb2","cric","rucio"],
+    "services": ["combined","conddb","dashboard","dbs3","mcm","phedex","reqmgr2","runregistry","cric","rucio"],
     "urlQueueLimit": 1000,
     "urlRetry": 3,
     "templates": "/Users/vk/Work/Languages/Go/gopath/src/github.com/dmwm/das2go/templates",
@@ -20,5 +20,6 @@
     "hkey": "",
     "updateDNs": 60,
     "timeout": 180,
+    "logFile": "/tmp/das.log",
     "verbose": 1
 }
