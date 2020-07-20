@@ -105,9 +105,9 @@ func utcMsg(data []byte) string {
 	s := string(data)
 	v, e := url.QueryUnescape(s)
 	if e == nil {
-		return fmt.Sprintf("[" + time.Now().String() + "] " + v)
+		return v
 	}
-	return fmt.Sprintf("[" + time.Now().String() + "] " + s)
+	return s
 }
 
 // custom rotate logger
@@ -123,7 +123,12 @@ func (w rotateLogWriter) Write(data []byte) (int, error) {
 func Server(configFile string) {
 	err := config.ParseConfig(configFile)
 	if config.Config.LogFile != "" {
-		rl, err := rotatelogs.New(config.Config.LogFile + "-%Y%m%d")
+		logName := config.Config.LogFile + "-%Y%m%d"
+		hostname, err := os.Hostname()
+		if err == nil {
+			logName = config.Config.LogFile + "-" + hostname + "-%Y%m%d"
+		}
+		rl, err := rotatelogs.New(logName)
 		if err == nil {
 			rotlogs := rotateLogWriter{RotateLogs: rl}
 			log.SetOutput(rotlogs)
