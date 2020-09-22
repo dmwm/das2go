@@ -160,6 +160,10 @@ func Server(configFile string) {
 	if config.Config.ProfileFile != "" {
 		utils.InitFunctionProfiler(config.Config.ProfileFile)
 	}
+	// enable DNS resolver
+	if config.Config.UseDNSCache {
+		utils.UseDNSCache = true
+	}
 
 	// load DAS Maps if necessary
 	if len(_dasmaps.Services()) == 0 {

@@ -38,6 +38,8 @@ github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=
 github.com/stretchr/testify v1.2.2/go.mod h1:a8OnRcib4nhh0OaRAV+Yts87kKdq0PP7pXfy6kDkUVs=
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
+github.com/vkuznet/dcr v0.0.0-20200922173840-46cf19c474b3 h1:+OR49j+jxUFyz5V1g6n5+8aW6T98IdRV+oBURga5qrs=
+github.com/vkuznet/dcr v0.0.0-20200922173840-46cf19c474b3/go.mod h1:qrpJaX0+aN8cSkjRRHifnzCBhMk79FkuEM2biRIWjtI=
 github.com/vkuznet/x509proxy v0.0.0-20181123153303-c93f6cae8511 h1:AYbsLVX9dFKIJdwZb9gXJ7u35STiIN210MgaAsn7Fnc=
 github.com/vkuznet/x509proxy v0.0.0-20181123153303-c93f6cae8511/go.mod h1:NAAjkgXJvSqlZOl0GOrt3aVv8Sr9CQ/j1q0/sNWd6SU=
 golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=

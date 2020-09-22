@@ -26,6 +26,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/vkuznet/dcr"
 	"github.com/vkuznet/x509proxy"
 )
 
@@ -40,6 +41,12 @@ var TotalPostCalls uint64
 
 // CLIENT_VERSION represents client version
 var CLIENT_VERSION string
+
+// DNSCacheMgr manager
+var DNSCacheMgr *dcr.DNSManager
+
+// UseDNSCache defines if we use DNS Cache resolver
+var UseDNSCache bool
 
 // TLSCertsRenewInterval controls interval to re-read TLS certs (in seconds)
 var TLSCertsRenewInterval time.Duration
@@ -247,6 +254,12 @@ func FetchResponse(rurl, args string) ResponseType {
 	if validateUrl(rurl) == false {
 		response.Error = errors.New("Invalid URL")
 		return response
+	}
+	if UseDNSCache {
+		if DNSCacheMgr == nil {
+			DNSCacheMgr = dcr.NewDNSManager(300) // 300 seconds TTL
+		}
+		rurl = DNSCacheMgr.Resolve(rurl)
 	}
 	var req *http.Request
 	if len(args) > 0 {

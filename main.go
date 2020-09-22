@@ -15,10 +15,13 @@ import (
 	"github.com/dmwm/das2go/web"
 )
 
+// git version of our code
+var version string
+
 func info() string {
 	goVersion := runtime.Version()
 	tstamp := time.Now()
-	return fmt.Sprintf("git={{VERSION}} go=%s date=%s", goVersion, tstamp)
+	return fmt.Sprintf("das2go git=%s go=%s date=%s", version, goVersion, tstamp)
 }
 
 func main() {
