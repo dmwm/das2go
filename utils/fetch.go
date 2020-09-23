@@ -260,7 +260,9 @@ func FetchResponse(rurl, args string) ResponseType {
 			DNSCacheMgr = dcr.NewDNSManager(300) // 300 seconds TTL
 			log.Printf("init DNSCacheMgr %+v\n", DNSCacheMgr)
 		}
-		rurl = DNSCacheMgr.Resolve(rurl)
+		if strings.Contains(rurl, "cmsweb") {
+			rurl = DNSCacheMgr.Resolve(rurl)
+		}
 	}
 	var req *http.Request
 	if len(args) > 0 {
