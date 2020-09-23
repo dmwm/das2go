@@ -258,6 +258,7 @@ func FetchResponse(rurl, args string) ResponseType {
 	if UseDNSCache {
 		if DNSCacheMgr == nil {
 			DNSCacheMgr = dcr.NewDNSManager(300) // 300 seconds TTL
+			log.Printf("init DNSCacheMgr %+v\n", DNSCacheMgr)
 		}
 		rurl = DNSCacheMgr.Resolve(rurl)
 	}

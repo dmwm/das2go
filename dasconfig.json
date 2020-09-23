@@ -21,5 +21,6 @@
     "updateDNs": 60,
     "timeout": 180,
     "logFile": "/tmp/das.log",
+    "UseDNSCache": true,
     "verbose": 1
 }

@@ -163,6 +163,7 @@ func Server(configFile string) {
 	// enable DNS resolver
 	if config.Config.UseDNSCache {
 		utils.UseDNSCache = true
+		log.Println("UseDNSCache", utils.UseDNSCache)
 	}
 
 	// load DAS Maps if necessary

@@ -48,7 +48,7 @@ var Config Configuration
 
 // String returns string representation of DAS Config
 func (c *Configuration) String() string {
-	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s timeout=%d frontend=%s>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey, c.Timeout, c.Frontend)
+	return fmt.Sprintf("<Config port=%d uri=%s services=%v queueLimit=%d retry=%d templates=%s js=%s images=%s css=%s hkey=%s base=%s dbs=%v views=%v maps=%s examples=%s updateDNs=%d crt=%s key=%s timeout=%d frontend=%s useDNScache=%v>", c.Port, c.Uri, c.Services, c.UrlQueueLimit, c.UrlRetry, c.Templates, c.Jscripts, c.Images, c.Styles, c.Hkey, c.Base, c.DbsInstances, c.Views, c.DasMaps, c.DasExamples, c.UpdateDNs, c.ServerCrt, c.ServerKey, c.Timeout, c.Frontend, c.UseDNSCache)
 }
 
 // ParseConfig parse given config file
