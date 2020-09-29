@@ -7,6 +7,7 @@ package web
 import (
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"log"
 	"net/http"
 	"os"
@@ -435,12 +436,13 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	*/
-	query := r.FormValue("input")
-	pid := r.FormValue("pid")
-	ajax := r.FormValue("ajax")
-	hash := r.FormValue("hash")
-	view := r.FormValue("view")
-	inst := r.FormValue("instance")
+	// use template.HTMLEscapeString() to prevent from XSS atacks
+	query := template.HTMLEscapeString(r.FormValue("input"))
+	pid := template.HTMLEscapeString(r.FormValue("pid"))
+	ajax := template.HTMLEscapeString(r.FormValue("ajax"))
+	hash := template.HTMLEscapeString(r.FormValue("hash"))
+	view := template.HTMLEscapeString(r.FormValue("view"))
+	inst := template.HTMLEscapeString(r.FormValue("instance"))
 	if inst == "" {
 		inst = _dasmaps.DBSInstance()
 	}
