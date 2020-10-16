@@ -290,7 +290,6 @@ site : [
          "site=osg-se.cac.cornell.edu",
          ]
         },
-        {"das":"site.dataset_fraction", "ui":"Dataset presence"},
         {"das":"site.block_fraction", "ui":"Block presence"},
         {"das":"site.block_completion", "ui":"Block completion"},
         {"das":"site.replica_fraction", "ui":"File-replica presence"},
