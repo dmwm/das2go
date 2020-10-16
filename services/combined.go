@@ -226,6 +226,89 @@ func rucioInfo(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord, m
 		furl = fmt.Sprintf("%s/replicas/cms/%s/datasets", RucioUrl(), url.QueryEscape(blkName))
 		umap[furl] = 1 // keep track of processed urls below
 		go utils.Fetch(furl, "", chout)
+	}
+
+	// collect results from block URL calls
+	sDict := make(map[string]string)
+	exit := false
+	for {
+		select {
+		case r := <-chout:
+			records := RucioUnmarshal(dasquery, "full_record", r.Data)
+			// get block name from r.URL
+			blkName := getBlockNameFromUrl(r.Url)
+			for _, rec := range records {
+				bRecord := blocks[blkName]
+				// collect block replicas info
+				// {"accessed_at": null, "name": "blk_name", "rse": "T2_US_Purdue", "created_at": "Thu, 07 May 2020 08:49:50 UTC", "bytes": 4594317, "state": "AVAILABLE", "updated_at": "Tue, 30 Jun 2020 19:05:27 UTC", "available_length": 1, "length": 1, "scope": "cms", "available_bytes": 4594317, "rse_id": "be0c1696016e4297a1573425d4a9b0a6"}
+				rse := rec["rse"].(string)
+				kind := kindType(rse)
+				sDict[rse] = kind
+				// replicas dict contains rse, available_length, length
+				aLength := rec["available_length"].(float64)
+				length := rec["length"].(float64)
+				replica := Replica{Site: rse, ALength: aLength, Length: length, Kind: kind}
+				replicas := bRecord.Replicas
+				replicas = append(replicas, replica)
+				bRecord.Replicas = replicas
+				blocks[blkName] = bRecord
+			}
+			// remove from umap, indicate that we processed it
+			delete(umap, r.Url) // remove Url from map
+		default:
+			if len(umap) == 0 { // no more requests, merge data records
+				exit = true
+			}
+			time.Sleep(time.Duration(1) * time.Millisecond) // wait for response
+		}
+		if exit {
+			break
+		}
+	}
+	// construct siteInfo dict
+	siteInfo := make(mongo.DASRecord)
+	for se, kind := range sDict {
+		blockCount := 0
+		blockPresent := 0
+		blockComplete := 0
+		blockFileCount := 0
+		availableFileCount := 0
+		for _, b := range blocks {
+			blockCount += 1
+			for _, r := range b.Replicas {
+				if se != r.Site {
+					continue
+				}
+				blockPresent += 1
+				if r.ALength == r.Length {
+					blockComplete += 1
+				}
+				blockFileCount += int(r.Length)
+				availableFileCount += int(r.ALength)
+			}
+		}
+		rec := mongo.DASRecord{"files": 0, "blocks": int64(blockCount), "block_present": int64(blockPresent), "block_complete": int64(blockComplete), "block_file_count": int64(blockFileCount), "available_file_count": int64(availableFileCount), "kind": kind, "se": se}
+		siteInfo[se] = rec
+	}
+	return siteInfo, blocks
+
+}
+
+func rucioInfoMID(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord, map[string]Block) {
+	// our output
+	blocks := make(map[string]Block)
+
+	// loop for every block and request replicas and files info
+	var furl string
+	chout := make(chan utils.ResponseType)
+	umap := map[string]int{}
+	for _, blkName := range blockNames {
+		blocks[blkName] = Block{Name: blkName}
+
+		// http://cms-rucio.cern.ch/replicas/cms/{block['name']}/datasets
+		furl = fmt.Sprintf("%s/replicas/cms/%s/datasets", RucioUrl(), url.QueryEscape(blkName))
+		umap[furl] = 1 // keep track of processed urls below
+		go utils.Fetch(furl, "", chout)
 
 		// http://cms-rucio.cern.ch/dids/cms/{block['name']}/dids
 		furl = fmt.Sprintf("%s/dids/cms/%s/dids", RucioUrl(), url.QueryEscape(blkName))
