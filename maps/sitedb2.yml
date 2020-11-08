@@ -3,7 +3,7 @@ system: sitedb2
 format: JSON
 ---
 urn : site_names
-url : "https://cmsweb.cern.ch/sitedb/data/prod/site-names"
+url : "https://cmsweb.cern.ch:8443/sitedb/data/prod/site-names"
 expire : 3600
 params : {"name":"optional"}
 lookup : site
@@ -16,7 +16,7 @@ das_map : [
 # but in order to leverage the work we pass artificial match
 # input parameter which is correctly handled by sitedb2_service.py module
 urn : groups
-url : "https://cmsweb.cern.ch/sitedb/data/prod/groups"
+url : "https://cmsweb.cern.ch:8443/sitedb/data/prod/groups"
 expire : 3600
 params : {"match":"optional"}
 lookup : group
@@ -25,7 +25,7 @@ das_map : [
 ]
 ---
 urn : group_responsibilities
-url : "https://cmsweb.cern.ch/sitedb/data/prod/group-responsibilities"
+url : "https://cmsweb.cern.ch:8443/sitedb/data/prod/group-responsibilities"
 expire : 3600
 params : {"match":"optional"}
 lookup : group
@@ -34,7 +34,7 @@ das_map : [
 ]
 ---
 urn : people_via_email
-url : "https://cmsweb.cern.ch/sitedb/data/prod/people"
+url : "https://cmsweb.cern.ch:8443/sitedb/data/prod/people"
 expire : 3600
 params : {"match":"optional"}
 lookup : user
@@ -44,7 +44,7 @@ das_map : [
 ]
 ---
 urn : people_via_name
-url : "https://cmsweb.cern.ch/sitedb/data/prod/people"
+url : "https://cmsweb.cern.ch:8443/sitedb/data/prod/people"
 expire : 3600
 params : {"match":"optional"}
 lookup : user
@@ -53,7 +53,7 @@ das_map : [
 ]
 ---
 urn : roles
-url : "https://cmsweb.cern.ch/sitedb/data/prod/roles"
+url : "https://cmsweb.cern.ch:8443/sitedb/data/prod/roles"
 expire : 3600
 params : {"match":"optional"}
 lookup : role
@@ -69,7 +69,7 @@ notations : [
 ---
 input_values: [
   {"input": "site.name",
-   "url": "https://cmsweb.cern.ch/sitedb/data/prod/site-names",
+   "url": "https://cmsweb.cern.ch:8443/sitedb/data/prod/site-names",
    "jsonpath_selector": "$.result[*][2]",
    "test": "T1*"},
 ]

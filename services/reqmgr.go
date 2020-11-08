@@ -227,7 +227,7 @@ func (LocalAPIs) Configs(dasquery dasql.DASQuery) []mongo.DASRecord {
 
 func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
-	base := "https://cmsweb.cern.ch"
+	base := "https://cmsweb.cern.ch:8443"
 	// find ReqMgr Ids for given dataset
 	dataset := spec["dataset"].(string)
 	ids, idict := findReqMgrIds(base, dataset)

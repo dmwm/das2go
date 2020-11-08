@@ -3,7 +3,7 @@ system : phedex
 format : XML
 ---
 urn : blockReplicas
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/blockReplicas"
 expire : 3600
 params : {"se":"*", "block":"*", "node":"*", "dataset":"*"}
 lookup : block
@@ -15,7 +15,7 @@ das_map : [
 ]
 ---
 urn : dataset4site
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockreplicasummary"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/blockreplicasummary"
 expire : 3600
 params : {"node":"required", "dataset":"optional"}
 lookup: dataset
@@ -25,7 +25,7 @@ das_map : [
 ]
 ---
 urn : dataset4site_group
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockreplicas"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/blockreplicas"
 expire : 3600
 params : {"node":"required", "dataset":"optional", "group":"required"}
 lookup: dataset
@@ -36,7 +36,7 @@ das_map : [
 ]
 ---
 urn : dataset4se
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockreplicasummary"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/blockreplicasummary"
 expire : 3600
 params : {"se":"required", "dataset":"optional"}
 lookup : dataset
@@ -46,7 +46,7 @@ das_map : [
 ]
 ---
 urn : dataset4se_group
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockreplicas"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/blockreplicas"
 expire : 3600
 params : {"se":"required", "dataset":"optional", "group":"optional"}
 lookup : dataset
@@ -57,7 +57,7 @@ das_map : [
 ]
 ---
 urn : site4dataset
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/blockReplicas"
 expire : 3600
 params : {"dataset":"required"}
 lookup : site
@@ -67,7 +67,7 @@ das_map : [
 ]
 ---
 urn : site4block
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/blockReplicas"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/blockReplicas"
 expire : 3600
 params : {"block":"required"}
 lookup : site
@@ -77,7 +77,7 @@ das_map : [
 ]
 ---
 urn : site4file
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/fileReplicas"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/fileReplicas"
 expire : 3600
 params : {"lfn":"required"}
 lookup : site
@@ -87,7 +87,7 @@ das_map : [
 ]
 ---
 urn : fileReplicas
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/fileReplicas"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/fileReplicas"
 expire : 3600
 params : {"se":"*", "block":"required", "node":"*"}
 lookup : file
@@ -99,7 +99,7 @@ das_map : [
 ]
 ---
 urn : fileReplicas4dataset
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/fileReplicas"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/fileReplicas"
 expire : 3600
 params : {"se":"*", "dataset":"required", "node":"*"}
 lookup : file
@@ -111,7 +111,7 @@ das_map : [
 ]
 ---
 urn : fileReplicas4file
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/fileReplicas"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/fileReplicas"
 expire : 3600
 params : {"se":"*", "lfn":"required", "node":"*"}
 lookup : file
@@ -122,7 +122,7 @@ das_map : [
 ]
 ---
 urn : nodes
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/nodes"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/nodes"
 expire : 3600
 params : {"node":"*", "noempty":""}
 lookup : site
@@ -131,21 +131,21 @@ das_map : [
 ]
 ---
 urn : nodeusage
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/nodeusage"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/nodeusage"
 expire : 3600
 params : {"node":"*"}
 lookup : site
 das_map : [{"das_key":"site", "rec_key":"site.name", "api_arg":"node", "pattern":"^T[0-3]_"}]
 ---
 urn : groups
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/groups"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/groups"
 expire : 3600
 params : {"group":"*"}
 lookup : group
 das_map : [{"das_key":"group", "rec_key":"group.name", "api_arg":"group"}]
 ---
 urn : groupusage
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/groupusage"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/groupusage"
 expire : 3600
 params : {"se": "*", "group":"*"}
 lookup : site
@@ -156,7 +156,7 @@ das_map : [
 ]
 ---
 urn : tfc
-url : "https://cmsweb.cern.ch/phedex/datasvc/xml/prod/TFC"
+url : "https://cmsweb.cern.ch:8443/phedex/datasvc/xml/prod/TFC"
 expire : 3600
 params : {"node":"required"}
 lookup : site

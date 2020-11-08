@@ -3,7 +3,7 @@ system : reqmgr2
 format : JSON
 ---
 urn: configs
-# url : "https://cmsweb.cern.ch/couchdb/reqmgr_config_cache"
+# url : "https://cmsweb.cern.ch:8443/couchdb/reqmgr_config_cache"
 url : "local_api"
 expire : 900
 params : {"dataset": "required"}
@@ -15,7 +15,7 @@ das_map : [
 ]
 ---
 urn: datasetByPrepID
-url : "https://cmsweb.cern.ch/reqmgr2/data/request"
+url : "https://cmsweb.cern.ch:8443/reqmgr2/data/request"
 expire : 900
 params : {"prep_id": "required"}
 lookup : dataset

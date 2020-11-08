@@ -6,7 +6,7 @@ instances: ["prod/global", "prod/phys01", "prod/phys02", "prod/phys03", "prod/ca
             "dev/global", "dev/phys01", "dev/phys02", "dev/phys03"]
 ---
 urn: acquisitioneras
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/acquisitioneras/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/acquisitioneras/"
 expire : 900
 params : {"era":"optional"}
 lookup : era
@@ -15,7 +15,7 @@ das_map : [
 ]
 ---
 urn: datatypes
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datatypes/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datatypes/"
 expire : 900
 params : {"dataset":"optional"}
 lookup : datatype
@@ -26,7 +26,7 @@ das_map : [
 ]
 ---
 urn: datatiers
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datatiers"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datatiers"
 expire : 900
 params : {}
 lookup : tier
@@ -35,7 +35,7 @@ das_map : [
 ]
 ---
 urn: datasetaccesstypes
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasetaccesstypes"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datasetaccesstypes"
 expire : 900
 params : {}
 lookup : status
@@ -44,7 +44,7 @@ das_map : [
 ]
 ---
 urn: releaseversions
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/releaseversions/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/releaseversions/"
 expire : 900
 params : {
         "release_version":"optional", "dataset":"optional",
@@ -59,7 +59,7 @@ das_map : [
 ]
 ---
 urn: primarydatasets
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/primarydatasets/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/primarydatasets/"
 expire : 900
 params : {"primary_ds_name":"*"}
 lookup : primary_dataset
@@ -68,7 +68,7 @@ das_map : [
 ]
 ---
 urn: dataset4block
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datasets/"
 url : "local_api"
 expire : 86400
 params : {"block_name":"required"}
@@ -80,7 +80,7 @@ das_map : [
 ]
 ---
 urn: dataset4parent_release
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datasets/"
 expire : 86400
 params : {"parent_dataset":"required", "release_version":"required", "detail":"True"}
 lookup : dataset
@@ -92,7 +92,7 @@ das_map : [
 ]
 ---
 urn: datasets
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datasets/"
 expire : 900
 params : {
         "dataset":"optional",
@@ -130,7 +130,7 @@ das_map : [
 ]
 ---
 urn: datasetlist
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasetlist/"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datasetlist/"
 url : "local_api"
 expire : 900
 params : {
@@ -157,7 +157,7 @@ das_map : [
 ]
 ---
 urn: dataset_info
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datasets/"
 expire : 900
 params : {
         "dataset":"*",
@@ -171,7 +171,7 @@ das_map : [
 ]
 ---
 urn: filesummaries
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filesummaries/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filesummaries/"
 expire : 900
 params : {"dataset":"required", "validFileOnly":"1"}
 lookup : dataset
@@ -182,7 +182,7 @@ das_map : [
 ]
 ---
 urn: summary4dataset_run
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filesummaries/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filesummaries/"
 expire : 900
 params : {"dataset":"required", "run_num":"optional", "validFileOnly":"1"}
 lookup : summary
@@ -195,7 +195,7 @@ das_map : [
 ]
 ---
 urn: summary4block_run
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filesummaries/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filesummaries/"
 expire : 900
 params : {"run_num":"optional", "block_name":"required"}
 lookup : summary
@@ -208,7 +208,7 @@ das_map : [
 ]
 ---
 urn: datasetparents
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasetparents/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datasetparents/"
 expire : 900
 params : {"dataset":"required"}
 lookup : parent
@@ -219,7 +219,7 @@ das_map : [
 ]
 ---
 urn: datasetchildren
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasetchildren/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datasetchildren/"
 expire : 900
 params : {"dataset":"required"}
 lookup : child
@@ -230,7 +230,7 @@ das_map : [
 ]
 ---
 urn: outputconfigs
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/outputconfigs/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/outputconfigs/"
 expire : 900
 params : {"dataset":"required"}
 lookup : config
@@ -241,7 +241,7 @@ das_map : [
 ]
 ---
 urn: site4dataset
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocks/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks/"
 expire : 900
 params : {
         "detail":"True",
@@ -256,7 +256,7 @@ das_map : [
 ]
 ---
 urn: site4block
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocks/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks/"
 expire : 900
 params : {
         "detail":"True",
@@ -271,7 +271,7 @@ das_map : [
 ]
 ---
 urn: blocks
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocks/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks/"
 expire : 900
 params : {
         "block_name":"optional",
@@ -292,7 +292,7 @@ das_map : [
 ]
 ---
 urn: blockorigin
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blockorigin/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blockorigin/"
 expire : 900
 params : {
         "origin_site_name":"required",
@@ -309,7 +309,7 @@ das_map : [
 # need this API
 # ---
 # urn: blocksummaries4dataset
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocksummaries/"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocksummaries/"
 # expire : 900
 # params : {"dataset":"required"}
 # lookup : summary
@@ -320,7 +320,7 @@ das_map : [
 # ]
 # ---
 # urn: blocksummaries4block
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocksummaries/"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocksummaries/"
 # expire : 900
 # params : {"block_name":"required"}
 # lookup : summary
@@ -331,7 +331,7 @@ das_map : [
 # ]
 ---
 urn: blockparents
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blockparents/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blockparents/"
 expire : 900
 params : {"block_name":"required"}
 lookup : parent
@@ -341,7 +341,7 @@ das_map : [
 ]
 ---
 urn: blockchildren
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blockchildren/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blockchildren/"
 expire : 900
 params : {"block_name":"required"}
 lookup : child
@@ -351,7 +351,7 @@ das_map : [
 ]
 ---
 urn: files
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/files/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/files/"
 expire : 900
 params : {
         "logical_file_name":"required",
@@ -367,7 +367,7 @@ das_map : [
 ### NOTE: we don't use run parameter here since it is covered by
 ### file4DatasetRunLumi API
 urn: files_via_dataset
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/files/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/files/"
 expire : 900
 params : {
         "dataset":"required",
@@ -385,7 +385,7 @@ das_map : [
 ]
 ---
 urn: files_via_block
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/files/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/files/"
 expire : 900
 params : {
         "block_name":"required",
@@ -406,7 +406,7 @@ das_map : [
 ]
 ---
 urn: fileparents
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/fileparents/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/fileparents/"
 expire : 900
 params : {"logical_file_name":"required"}
 lookup : parent
@@ -416,7 +416,7 @@ das_map : [
 ]
 ---
 urn: filechildren
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filechildren/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filechildren/"
 expire : 900
 params : {"logical_file_name":"required"}
 lookup : child
@@ -426,7 +426,7 @@ das_map : [
 ]
 ---
 urn: filelumis
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis/"
 expire : 900
 params : {"logical_file_name":"required", "run_num":"optional"}
 lookup : lumi
@@ -438,7 +438,7 @@ das_map : [
 ]
 ---
 urn: file4DatasetRunLumi
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/files/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/files/"
 expire : 900
 params : {"dataset":"required", "run_num":"required", "detail":"True", "status":"optional"}
 lookup : file
@@ -453,7 +453,7 @@ das_map : [
 ]
 ---
 urn: runs
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runs/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/runs/"
 expire : 900
 params : {"run_num":"required"}
 lookup : run
@@ -463,7 +463,7 @@ das_map : [
 ]
 ---
 urn: runsummaries
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runsummaries/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/runsummaries/"
 expire : 900
 params : {"run_num":"required", "dataset":"optional"}
 lookup : lumi
@@ -476,7 +476,7 @@ das_map : [
 ]
 ---
 urn: runs_via_dataset
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runs/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/runs/"
 expire : 900
 params : {"dataset":"required"}
 lookup : run
@@ -487,7 +487,7 @@ das_map : [
 ]
 ---
 urn: runs_via_block
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runs/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/runs/"
 expire : 900
 params : {"block_name":"required"}
 lookup : run
@@ -497,7 +497,7 @@ das_map : [
 ]
 ---
 urn: runs_via_file
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/runs/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/runs/"
 expire : 900
 params : {"logical_file_name":"required"}
 lookup : run
@@ -507,7 +507,7 @@ das_map : [
 ]
 ---
 urn: physicsgroup
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/physicsgroups/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/physicsgroups/"
 expire : 900
 params : {"physics_group_name":"optional"}
 lookup : group
@@ -516,7 +516,7 @@ das_map : [
 ]
 ---
 urn : lumi4dataset
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -531,7 +531,7 @@ das_map : [
 ]
 ---
 urn : lumi4block
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -546,7 +546,7 @@ das_map : [
 ]
 ---
 urn : run_lumi4dataset
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -563,7 +563,7 @@ das_map : [
 # FIXME: this is aggregated API and I should pass block_name since this is what
 # filelumis API expect
 urn : run_lumi4block
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -578,7 +578,7 @@ das_map : [
 ]
 ---
 urn : file_lumi4dataset
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -595,7 +595,7 @@ das_map : [
 ]
 ---
 urn : file_lumi4block
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -612,7 +612,7 @@ das_map : [
 ]
 ---
 urn : file_run4dataset
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 format : JSON
 expire : 3600
 params : {"dataset":"required", "run_num": "optional", "validFileOnly": "optional"}
@@ -627,7 +627,7 @@ das_map : [
 ]
 ---
 urn : file_run4block
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 format : JSON
 expire : 3600
 params : {"block_name":"required", "run_num": "optional", "validFileOnly": "optional"}
@@ -642,7 +642,7 @@ das_map : [
 ]
 ---
 urn : file_run_lumi4dataset
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -659,7 +659,7 @@ das_map : [
 ]
 ---
 urn : file_run_lumi4block
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -676,7 +676,7 @@ das_map : [
 ]
 ---
 urn : block_run_lumi4dataset
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -692,7 +692,7 @@ das_map : [
 ]
 ---
 urn : lumi4block_run
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -708,7 +708,7 @@ das_map : [
 ### apis to look-up lumi,events
 ---
 urn : run_lumi_evts4dataset
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -724,7 +724,7 @@ das_map : [
 ]
 ---
 urn : run_lumi_evts4block
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 format : JSON
 expire : 3600
 params : {"block_name":"required", "run_num": "optional"}
@@ -739,7 +739,7 @@ das_map : [
 ]
 ---
 urn : file_lumi_evts4dataset
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -757,7 +757,7 @@ das_map : [
 ]
 ---
 urn : file_lumi_evts4block
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 format : JSON
 expire : 3600
 params : {"block_name":"required", "run_num": "optional", "ValidFileOnly": "optional"}
@@ -774,7 +774,7 @@ das_map : [
 ]
 ---
 urn : file_run_lumi_evts4dataset
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -792,7 +792,7 @@ das_map : [
 ]
 ---
 urn : file_run_lumi_evts4block
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -810,7 +810,7 @@ das_map : [
 ]
 ---
 urn : block_run_lumi_evts4dataset
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 format : JSON
 expire : 3600
 params : {"dataset":"required", "run_num": "optional"}
@@ -826,7 +826,7 @@ das_map : [
 ]
 ---
 urn : lumi_evts4block_run
-url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 format : JSON
 expire : 3600
 params : {"block_name":"required", "run_num": "optional"}
@@ -841,7 +841,7 @@ das_map : [
 ]
 ---
 urn : file4dataset_run_lumi
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/filelumis"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/filelumis"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -858,7 +858,7 @@ das_map : [
 ]
 ---
 urn : blocks4tier_dates
-# url : "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/blocks"
+# url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks"
 url : "local_api"
 format : JSON
 expire : 3600
@@ -945,37 +945,37 @@ notations : [
 input_values: [
     {
         "input": "tier.name",
-        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datatiers",
+        "url": "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datatiers",
         "jsonpath_selector": "$[*].data_tier_name",
         "test": "*RECO*"
     },
     {
         "input": "datatype.name",
-        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datatypes",
+        "url": "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datatypes",
         "jsonpath_selector": "$[*].data_type",
         "test": "mc"
     },
     {
         "input": "status.name",
-        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasetaccesstypes",
+        "url": "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/datasetaccesstypes",
         "jsonpath_selector": "$[0]['dataset_access_type'][*]",
         "test": "valid"
     },
     {
         "input": "release.name",
-        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/releaseversions",
+        "url": "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/releaseversions",
         "jsonpath_selector": "$[0]['release_version'][*]",
         "test": "CMSSW_4_*"
     },
     {
         "input": "primary_dataset.name",
-        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/primarydatasets",
+        "url": "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/primarydatasets",
         "jsonpath_selector": "$[*].primary_ds_name",
         "test": "RelVal160pre4Z-TT"
     },
     {
         "input": "group.name",
-        "url": "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/physicsgroups",
+        "url": "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/physicsgroups",
         "jsonpath_selector": "$[*].physics_group_name",
         "test": "analysis"
     }
