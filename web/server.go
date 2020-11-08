@@ -14,7 +14,6 @@ package web
 
 import (
 	"crypto/tls"
-	"encoding/json"
 	"fmt"
 	"html/template"
 	"log"
@@ -55,38 +54,26 @@ type UserDNs struct {
 // global variable which we initialize once
 var _userDNs UserDNs
 
-// helper function to get userDNs from sitedb
+// helper function to get userDNs from Cric service
 func userDNs() []string {
 	var out []string
-	rurl := "https://cmsweb.cern.ch/sitedb/data/prod/people"
-	resp := utils.FetchResponse(rurl, "")
-	if resp.Error != nil {
-		log.Println("ERROR: unable to fetch SiteDB records", resp.Error)
-		return out
+	var verbose bool
+	if utils.VERBOSE > 0 {
+		verbose = true
 	}
-	var rec map[string]interface{}
-	err := json.Unmarshal(resp.Data, &rec)
+	cricUrl := fmt.Sprintf("%s?json&preset=roles", services.CricUrl(""))
+	cricRecords, err := cmsauth.GetCricData(cricUrl, verbose)
 	if err != nil {
-		log.Println("ERROR: unable to unmarshal repsonse", err)
+		log.Println("ERROR: unable to obtain cric records, error", err)
 		return out
 	}
-	desc := rec["desc"].(map[string]interface{})
-	headers := desc["columns"].([]interface{})
-	var idx int
-	for i, h := range headers {
-		if h.(string) == "dn" {
-			idx = i
-			break
+	// convert cric records to list of DNs
+	for _, rec := range cricRecords {
+		for _, dn := range rec.DNs {
+			out = append(out, dn)
 		}
 	}
-	values := rec["result"].([]interface{})
-	for _, item := range values {
-		val := item.([]interface{})
-		v := val[idx]
-		if v != nil {
-			out = append(out, v.(string))
-		}
-	}
+	log.Printf("get %d cric DNs\n", len(out))
 	return out
 }
 
@@ -216,15 +203,10 @@ func Server(configFile string) {
 	//     http.Handle(base+"/debug/pprof/", http.StripPrefix(base, http.RedirectHandler("/debug/pprof/", http.StatusTemporaryRedirect)))
 	http.HandleFunc(fmt.Sprintf("%s/", config.Config.Base), AuthHandler)
 
-	// start http(s) server
-	Time0 = time.Now()
-	addr := fmt.Sprintf(":%d", config.Config.Port)
-	_, e1 := os.Stat(config.Config.ServerCrt)
-	_, e2 := os.Stat(config.Config.ServerKey)
-	if e1 == nil && e2 == nil {
-		//start HTTPS server which require user certificates
-		_auth = true
-		// init userDNs and update it periodically
+	// init userDNs and update it periodically
+	_auth = config.Config.AuthDN
+	log.Println("enable user DN authentication", _auth)
+	if _auth {
 		_userDNs = UserDNs{DNs: userDNs(), Time: time.Now()}
 		go func() {
 			for {
@@ -233,12 +215,20 @@ func Server(configFile string) {
 					interval = 60
 				}
 				d := time.Duration(interval) * time.Minute
-				log.Println("userDNs are updated", d)
+				log.Println("userDNs will be updated in", d)
 				time.Sleep(d) // sleep for next iteration
 				_userDNs = UserDNs{DNs: userDNs(), Time: time.Now()}
 			}
 		}()
+	}
 
+	// start http(s) server
+	Time0 = time.Now()
+	addr := fmt.Sprintf(":%d", config.Config.Port)
+	_, e1 := os.Stat(config.Config.ServerCrt)
+	_, e2 := os.Stat(config.Config.ServerKey)
+	if e1 == nil && e2 == nil {
+		//start HTTPS server which require user certificates
 		server := &http.Server{
 			Addr: addr,
 			TLSConfig: &tls.Config{
@@ -249,7 +239,6 @@ func Server(configFile string) {
 		err = server.ListenAndServeTLS(config.Config.ServerCrt, config.Config.ServerKey)
 	} else {
 		// Start server without user certificates
-		_auth = false
 		log.Println("starting HTTP server", addr)
 		err = http.ListenAndServe(addr, nil)
 	}

@@ -206,7 +206,7 @@ func auth(r *http.Request) bool {
 	userDN := UserDN(r)
 	match := utils.InList(userDN, _userDNs.DNs)
 	if !match {
-		log.Println("ERROR: Auth userDN not found in SiteDB", userDN)
+		log.Printf("ERROR: user DN %s not found in Cric DNs records\n", userDN)
 	}
 	return match
 }
