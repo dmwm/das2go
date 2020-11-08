@@ -41,6 +41,7 @@ type Configuration struct {
 	TLSCertsRenewInterval int      `json:"tlsCertsRenewInterval"` // renewal interval for TLS certs
 	LogFile               string   `json:"logFile"`               // log file name
 	UseDNSCache           bool     `json:"useDNSCache"`           // use DNS Cache
+	AuthDN                bool     `json:"authDN"`                // user user DN authentication
 }
 
 // Config variable represents configuration object
