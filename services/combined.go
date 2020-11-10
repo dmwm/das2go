@@ -468,6 +468,11 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 
 // Site4Dataset returns site info for given dataset
 func (LocalAPIs) Site4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord {
+	return []mongo.DASRecord{}
+}
+
+// Site4Dataset_phedex returns site info for given dataset
+func (LocalAPIs) Site4Dataset_phedex(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
 	inst := dasquery.Instance
 	// DBS part, find total number of blocks and files for given dataset
