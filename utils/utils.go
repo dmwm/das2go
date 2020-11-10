@@ -72,7 +72,8 @@ func GoDeferFunc(api string, f func()) {
 	}()
 	err := <-ch
 	if err != nil && err != "ok" {
-		panic(err)
+		msg := fmt.Sprintf("unable to run api='%s', function='%v', error='%v'", api, f, err)
+		panic(msg)
 	}
 }
 
