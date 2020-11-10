@@ -238,15 +238,26 @@ func rucioInfo(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord, m
 			// get block name from r.URL
 			blkName := getBlockNameFromUrl(r.Url)
 			for _, rec := range records {
+				if rec == nil {
+					continue
+				}
 				bRecord := blocks[blkName]
 				// collect block replicas info
 				// {"accessed_at": null, "name": "blk_name", "rse": "T2_US_Purdue", "created_at": "Thu, 07 May 2020 08:49:50 UTC", "bytes": 4594317, "state": "AVAILABLE", "updated_at": "Tue, 30 Jun 2020 19:05:27 UTC", "available_length": 1, "length": 1, "scope": "cms", "available_bytes": 4594317, "rse_id": "be0c1696016e4297a1573425d4a9b0a6"}
-				rse := rec["rse"].(string)
+				var rse string
+				if rec["rse"] != nil {
+					rse = rec["rse"].(string)
+				}
 				kind := kindType(rse)
 				sDict[rse] = kind
 				// replicas dict contains rse, available_length, length
-				aLength := rec["available_length"].(float64)
-				length := rec["length"].(float64)
+				var aLength, length float64
+				if rec["available_length"] != nil {
+					aLength = rec["available_length"].(float64)
+				}
+				if rec["length"] != nil {
+					length = rec["length"].(float64)
+				}
 				replica := Replica{Site: rse, ALength: aLength, Length: length, Kind: kind}
 				replicas := bRecord.Replicas
 				replicas = append(replicas, replica)
