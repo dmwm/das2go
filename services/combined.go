@@ -238,7 +238,6 @@ func rucioInfo(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord, m
 			// get block name from r.URL
 			blkName := getBlockNameFromUrl(r.Url)
 			for _, rec := range records {
-				log.Printf("### rec %+v\n", rec)
 				if rec == nil {
 					continue
 				}
@@ -259,7 +258,6 @@ func rucioInfo(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord, m
 				if rec["length"] != nil {
 					length = rec["length"].(float64)
 				}
-				log.Println("### rse", rse, "available_length", aLength, "length", length)
 				replica := Replica{Site: rse, ALength: aLength, Length: length, Kind: kind}
 				replicas := bRecord.Replicas
 				replicas = append(replicas, replica)
