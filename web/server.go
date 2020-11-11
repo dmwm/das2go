@@ -119,6 +119,7 @@ func Server(configFile string) {
 		if err == nil {
 			rotlogs := rotateLogWriter{RotateLogs: rl}
 			log.SetOutput(rotlogs)
+			log.SetFlags(log.LstdFlags | log.Lshortfile)
 		} else {
 			log.SetFlags(log.LstdFlags | log.Lshortfile)
 		}
