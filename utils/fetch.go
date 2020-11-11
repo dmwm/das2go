@@ -95,7 +95,7 @@ func tlsCerts() ([]tls.Certificate, error) {
 			uproxy = fname
 		}
 	}
-	if WEBSERVER == 1 && VERBOSE > 0 {
+	if WEBSERVER == 1 {
 		log.Printf("tls certs, X509_USER_PROXY=%v, X509_USER_KEY=%v, X509_USER_CERT=%v\n", uproxy, uckey, ucert)
 	}
 
@@ -108,7 +108,7 @@ func tlsCerts() ([]tls.Certificate, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse X509 proxy: %v", err)
 		}
-		if WEBSERVER == 1 && VERBOSE > 0 {
+		if WEBSERVER == 1 {
 			log.Println("use proxy", uproxy)
 		}
 		certs := []tls.Certificate{x509cert}
@@ -118,7 +118,7 @@ func tlsCerts() ([]tls.Certificate, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse user X509 certificate: %v", err)
 	}
-	if WEBSERVER == 1 && VERBOSE > 0 {
+	if WEBSERVER == 1 {
 		log.Println("user key", uckey, "cert", ucert)
 	}
 	certs := []tls.Certificate{x509cert}
