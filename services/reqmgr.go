@@ -136,7 +136,6 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
 func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	var inputOut, outputOut, ids, urls []string
 	var rurl string
-	ch := make(chan utils.ResponseType)
 	idict := make(map[string][]string)
 
 	// check that given dataset pass dataset pattern
@@ -152,6 +151,8 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	urls = append(urls, rurl)
 	urls = append(urls, rurl)
 	umap := map[string]int{}
+	ch := make(chan utils.ResponseType)
+	defer close(ch)
 	for _, u := range urls {
 		umap[u] = 1 // keep track of processed urls below
 		go utils.Fetch(u, "", ch)
@@ -212,8 +213,6 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 			break
 		}
 	}
-	// close our http channel
-	close(ch)
 	return utils.List2Set(ids), idict
 }
 

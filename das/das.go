@@ -908,6 +908,7 @@ func aggregateAll(data []mongo.DASRecord, aggrs [][]string) []mongo.DASRecord {
 
 	var out []mongo.DASRecord
 	ch := make(chan mongo.DASRecord)
+	defer close(ch)
 	for _, agg := range aggrs {
 		fagg := agg[0]
 		fval := agg[1]
@@ -925,7 +926,6 @@ func aggregateAll(data []mongo.DASRecord, aggrs [][]string) []mongo.DASRecord {
 			break
 		}
 	}
-	close(ch)
 	return out
 }
 

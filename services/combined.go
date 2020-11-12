@@ -218,6 +218,7 @@ func rucioInfo(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord, m
 	// loop for every block and request replicas and files info
 	var furl string
 	chout := make(chan utils.ResponseType)
+	defer close(chout)
 	umap := map[string]int{}
 	for _, blkName := range blockNames {
 		blocks[blkName] = Block{Name: blkName}
@@ -312,6 +313,7 @@ func rucioInfoMID(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord
 	// loop for every block and request replicas and files info
 	var furl string
 	chout := make(chan utils.ResponseType)
+	defer close(chout)
 	umap := map[string]int{}
 	for _, blkName := range blockNames {
 		blocks[blkName] = Block{Name: blkName}
