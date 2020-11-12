@@ -376,6 +376,10 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 		default:
 			val := fmt.Sprintf("unable to cast to DASRecord, %+v", r)
 			out = append(out, val)
+			continue
+		}
+		if _, ok := dasrec["services"]; !ok {
+			continue
 		}
 		//         dasrec = item["das"].(mongo.DASRecord)
 		services = []string{}
