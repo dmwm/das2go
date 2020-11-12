@@ -149,7 +149,6 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	urls = append(urls, rurl)
 	rurl = fmt.Sprintf("%s/reqmgr2/data/request?inputdataset=%s", base, dataset)
 	urls = append(urls, rurl)
-	urls = append(urls, rurl)
 	umap := map[string]int{}
 	ch := make(chan utils.ResponseType)
 	defer close(ch)
