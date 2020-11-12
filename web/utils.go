@@ -370,7 +370,14 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 	var dasrec mongo.DASRecord
 	var services []string
 	for jdx, item := range data {
-		dasrec = item["das"].(mongo.DASRecord)
+		switch r := item["das"].(type) {
+		case mongo.DASRecord:
+			dasrec = r
+		default:
+			val := fmt.Sprintf("unable to cast to DASRecord, %+v", r)
+			out = append(out, val)
+		}
+		//         dasrec = item["das"].(mongo.DASRecord)
 		services = []string{}
 		for _, v := range dasrec["services"].([]interface{}) {
 			srv := strings.Split(v.(string), ":")[0]
