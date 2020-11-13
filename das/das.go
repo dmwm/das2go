@@ -394,7 +394,7 @@ func processLocalApis(dasquery dasql.DASQuery, dmaps []mongo.DASRecord, pkeys []
 	if utils.WEBSERVER > 0 && utils.VERBOSE > 0 {
 		log.Println("processLocalApis", dmaps)
 	}
-	// defer function will propagate panic message to higher level
+	// defer function will propagate error message to higher level
 	//     defer utils.ErrPropagate("processLocalApis")
 
 	// defer function profiler
@@ -468,7 +468,7 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 	if utils.WEBSERVER > 0 && utils.VERBOSE > 0 {
 		log.Println("processURLs", urls)
 	}
-	// defer function will propagate panic message to higher level
+	// defer function will propagate error message to higher level
 	//     defer utils.ErrPropagate("processUrls")
 
 	// defer function profiler
@@ -684,7 +684,7 @@ func ProcessLogic(dasquery dasql.DASQuery, maps []mongo.DASRecord, selectedServi
 
 // Process takes care of processing given DAS query
 func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
-	// defer function will propagate panic message to higher level
+	// defer function will propagate error message to higher level
 	//     defer utils.ErrPropagate("Process")
 
 	// defer function profiler
@@ -724,7 +724,7 @@ func Process(dasquery dasql.DASQuery, dmaps dasmaps.DASMaps) {
 	mongo.Insert("das", "cache", records)
 
 	// process local_api calls, we use GoDeferFunc to run processLocalApis as goroutine in defer/silent mode
-	// panic errors will be captured in GoDeferFunc and passed again into this local function
+	// errors will be captured in GoDeferFunc and passed again into this local function
 	if len(localApis) > 0 {
 		utils.GoDeferFunc("go processLocalApis", func() { processLocalApis(dasquery, localApis, pkeys) })
 	}

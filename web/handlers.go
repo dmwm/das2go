@@ -144,7 +144,7 @@ func dasZero(base string) string {
 }
 
 func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[string]interface{} {
-	// defer function will propagate panic message to higher level
+	// defer function will propagate error message to higher level
 	defer utils.ErrPropagate("processRequest")
 
 	// defer function profiler
@@ -473,7 +473,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(_top + _search + _cards + _bottom))
 		return
 	}
-	// defer function will be fired when following processRequest will panic
+	// defer function will be fired when following processRequest will exit with error
 	defer func() {
 		if err := recover(); err != nil {
 			log.Printf("ERROR: web server stack %v, error %v\n", utils.Stack(), err)

@@ -3,6 +3,7 @@ package web
 import (
 	"bytes"
 	"html/template"
+	"log"
 	"path/filepath"
 
 	"github.com/dmwm/das2go/config"
@@ -45,7 +46,7 @@ func parseTmpl(tdir, tmpl string, data interface{}) string {
 		err = t.Execute(buf, data)
 	}
 	if err != nil {
-		panic(err)
+		log.Fatal("ERROR", err)
 	}
 	return buf.String()
 }

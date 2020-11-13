@@ -45,7 +45,7 @@ func Stack() string {
 func ErrPropagate(api string) {
 	if err := recover(); err != nil {
 		log.Printf("ERROR: api %v, error %v\n", api, Stack())
-		panic(fmt.Sprintf("%s:%s", api, err))
+		log.Fatal("ERROR", fmt.Sprintf("%s:%s", api, err))
 	}
 }
 
@@ -73,7 +73,7 @@ func GoDeferFunc(api string, f func()) {
 	err := <-ch
 	if err != nil && err != "ok" {
 		msg := fmt.Sprintf("unable to run api='%s', function='%v', error='%v'", api, f, err)
-		panic(msg)
+		log.Fatal("ERROR", msg)
 	}
 }
 
