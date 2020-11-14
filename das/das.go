@@ -831,9 +831,12 @@ func GetData(dasquery dasql.DASQuery, coll string, idx, limit int) (string, []mo
 	// Get DAS status from merge collection
 	spec = bson.M{"qhash": pid, "das.record": 0}
 	dasData := mongo.Get("das", "merge", spec, 0, 1)
+	if len(dasData) == 0 {
+		return fmt.Sprintf("ERROR no DAS record found in das.merge collection\n"), emptyData
+	}
 	status, err := mongo.GetStringValue(dasData[0], "das.status")
 	if err != nil {
-		return fmt.Sprintf("failed to get data from DAS cache: %s\n", err), emptyData
+		return fmt.Sprintf("ERROR failed to get data from DAS cache: %s\n", err), emptyData
 	}
 	if len(data) == 0 {
 		return status, emptyData
