@@ -171,6 +171,7 @@ func Server(configFile string) {
 	log.Println("CricUrl w/ site API: ", services.CricUrl("site"))
 	log.Println("RucioUrl: ", services.RucioUrl())
 	log.Println("RucioAuthUrl: ", utils.RucioAuth.Url())
+	log.Println("DBS instances", config.Config.DbsInstances)
 
 	// DAS templates
 	tmplData := make(map[string]interface{})

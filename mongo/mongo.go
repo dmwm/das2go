@@ -172,7 +172,7 @@ func (m *MongoConnection) Connect() *mgo.Session {
 	if m.Session == nil {
 		m.Session, err = mgo.Dial(config.Config.Uri)
 		if err != nil {
-			log.Fatal("ERROR", err)
+			log.Fatal("ERROR ", err)
 		}
 		//         m.Session.SetMode(mgo.Monotonic, true)
 		m.Session.SetMode(mgo.Strong, true)

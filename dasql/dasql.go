@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/utils"
 	"gopkg.in/mgo.v2/bson"
 )
@@ -224,6 +225,14 @@ func parseLastValue(val string) []string {
 	return out
 }
 
+// Validate DBS instance
+func validateDBSInstance(inst string) error {
+	if !utils.InList(inst, config.Config.DbsInstances) {
+		return errors.New(fmt.Sprintf("Invalid DBS instance: %s", inst))
+	}
+	return nil
+}
+
 // Parse method provides DAS query parser
 func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 
@@ -384,6 +393,9 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 	rec.Aggregators = aggregators
 	rec.System = system
 	rec.Time = time0
+	if err := validateDBSInstance(inst); err != nil {
+		qlerror = fmt.Sprintf("Invalid DBS instance %s", inst)
+	}
 	return rec, qlerror, pLine
 }
 

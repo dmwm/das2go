@@ -46,7 +46,7 @@ func parseTmpl(tdir, tmpl string, data interface{}) string {
 		err = t.Execute(buf, data)
 	}
 	if err != nil {
-		log.Fatal("ERROR", err)
+		log.Fatal("ERROR ", err)
 	}
 	return buf.String()
 }

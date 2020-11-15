@@ -72,7 +72,7 @@ func (t *TLSCertsManager) GetCerts() ([]tls.Certificate, error) {
 		if err == nil {
 			t.Certs = certs
 		} else {
-			log.Fatal("ERROR", err.Error())
+			log.Fatal("ERROR ", err.Error())
 		}
 	}
 	return t.Certs, nil
@@ -131,7 +131,7 @@ func HttpClient() *http.Client {
 	//     certs, err := tlsCerts()
 	certs, err := tlsManager.GetCerts()
 	if err != nil {
-		log.Fatal("ERROR", err.Error())
+		log.Fatal("ERROR ", err.Error())
 	}
 	timeout := time.Duration(TIMEOUT) * time.Second
 	if len(certs) == 0 {
