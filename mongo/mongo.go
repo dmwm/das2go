@@ -195,6 +195,7 @@ func Insert(dbname, collname string, records []DASRecord) {
 	for _, rec := range records {
 		if err := c.Insert(&rec); err != nil {
 			log.Println("Fail to insert DAS record", err)
+			break
 		}
 	}
 }
@@ -233,7 +234,7 @@ func GetSorted(dbname, collname string, spec bson.M, skeys []string) []DASRecord
 	c := s.DB(dbname).C(collname)
 	err := c.Find(spec).Sort(skeys...).All(&out)
 	if err != nil {
-		log.Println("unable to sort recrds", err)
+		log.Println("unable to sort records", err)
 		// try to fetch all unsorted data
 		err = c.Find(spec).All(&out)
 		if err != nil {
