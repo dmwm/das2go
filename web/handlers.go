@@ -413,6 +413,7 @@ func ServicesHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Base"] = config.Config.Base
 	tmplData["Rows"] = keysrows()
 	tmplData["Apis"] = apisrows()
+	tmplData["Frontend"] = config.Config.Frontend
 	page := templates.Services(config.Config.Templates, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
