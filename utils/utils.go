@@ -44,7 +44,7 @@ func Stack() string {
 // ErrPropagate error helper function which can be used in defer ErrPropagate()
 func ErrPropagate(api string) {
 	if err := recover(); err != nil {
-		log.Fatal("ERROR: api %v, error %v, Stack: %v\n", api, err, Stack())
+		log.Fatalf("ERROR: api %v, error %v, Stack: %v\n", api, err, Stack())
 	}
 }
 
