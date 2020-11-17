@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"testing"
 
@@ -10,17 +11,22 @@ import (
 
 func TestOrderByRunLumis(t *testing.T) {
 	var records []mongo.DASRecord
-	rec := mongo.DASRecord{"run": mongo.DASRecord{"run_number": float64(1)}, "lumi": mongo.DASRecord{"number": []float64{1}}}
+	var vals []interface{}
+	vals = append(vals, json.Number("1"))
+	var run interface{}
+	run = json.Number("1")
+	rec := mongo.DASRecord{"run": mongo.DASRecord{"run_number": run}, "lumi": mongo.DASRecord{"number": vals}}
 	records = append(records, rec)
-	rec = mongo.DASRecord{"run": mongo.DASRecord{"run_number": float64(1)}, "lumi": mongo.DASRecord{"number": []float64{2, 3}}}
+	vals = append(vals, json.Number("2"))
+	rec = mongo.DASRecord{"run": mongo.DASRecord{"run_number": run}, "lumi": mongo.DASRecord{"number": vals}}
 	records = append(records, rec)
 	fmt.Println("records", records)
 	results := services.OrderByRunLumis(records)
-	var runs, lumis []float64
+	var runs, lumis []json.Number
 	for _, r := range results {
 		fmt.Println("rec", r)
-		runs = append(runs, mongo.GetValue(r, "run.run_number").(float64))
-		for _, l := range mongo.GetValue(r, "lumi.number").([]float64) {
+		runs = append(runs, mongo.GetValue(r, "run.run_number").(json.Number))
+		for _, l := range mongo.GetValue(r, "lumi.number").([]json.Number) {
 			lumis = append(lumis, l)
 		}
 	}
