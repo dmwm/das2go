@@ -71,6 +71,34 @@ func TestMapKeys(t *testing.T) {
 	}
 }
 
+// TestSizeFormat
+func TestSizeFormat(t *testing.T) {
+	v := 1025
+	res := utils.SizeFormat(v)
+	s := fmt.Sprintf("%d (1.0KB)", v)
+	if res != s {
+		t.Errorf("Fail TestSizeFormat %v\n", res)
+	}
+	v = 1024*1024 + 1
+	res = utils.SizeFormat(v)
+	s = fmt.Sprintf("%d (1.0MB)", v)
+	if res != s {
+		t.Errorf("Fail TestSizeFormat, %v\n", res)
+	}
+	v = 1024*1024*1024 + 1
+	res = utils.SizeFormat(v)
+	s = fmt.Sprintf("%d (1.1GB)", v)
+	if res != s {
+		t.Errorf("Fail TestSizeFormat, %v\n", res)
+	}
+	v = 1024*1024*1024*1024 + 1
+	res = utils.SizeFormat(v)
+	s = fmt.Sprintf("%d (1.1TB)", v)
+	if res != s {
+		t.Errorf("Fail TestSizeFormat, %v\n", res)
+	}
+}
+
 // helper funcion to fethc Urls
 func fetchUrls(niterations int) {
 	rurl := "https://jsonplaceholder.typicode.com/todos"
