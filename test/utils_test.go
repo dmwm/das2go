@@ -1,7 +1,10 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"testing"
+	"time"
 
 	"github.com/dmwm/das2go/utils"
 )
@@ -31,4 +34,39 @@ func TestCheckEntries(t *testing.T) {
 	if res == true {
 		t.Error("Fail TestCheckEntries")
 	}
+}
+
+func fetchUrls(niterations int) {
+	rurl := "https://jsonplaceholder.typicode.com/todos"
+	out := make(chan utils.ResponseType)
+	defer close(out)
+	umap := map[string]int{}
+	for i := 0; i < niterations; i++ {
+		furl := fmt.Sprintf("%s/%d", rurl, i)
+		umap[furl] = 1 // keep track of processed urls below
+		go utils.Fetch(furl, "", out)
+	}
+
+	// collect all results from out channel
+	exit := false
+	for {
+		select {
+		case r := <-out:
+			log.Println("repsonse", r.String())
+			delete(umap, r.Url)
+		default:
+			if len(umap) == 0 { // no more requests, merge data records
+				exit = true
+			}
+			time.Sleep(1 * time.Millisecond) // wait for response
+		}
+		if exit || len(umap) == 0 { // no more requests, merge data records
+			break
+		}
+	}
+}
+
+// TestFetchUrlWithTimeout should yield WARNING on timeout
+func TestFetch(t *testing.T) {
+	fetchUrls(5)
 }
