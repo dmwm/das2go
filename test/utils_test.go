@@ -9,6 +9,7 @@ import (
 	"github.com/dmwm/das2go/utils"
 )
 
+// TestInList
 func TestInList(t *testing.T) {
 	vals := []string{"1", "2", "3"}
 	res := utils.InList("1", vals)
@@ -21,6 +22,7 @@ func TestInList(t *testing.T) {
 	}
 }
 
+// TestCheckEntries
 func TestCheckEntries(t *testing.T) {
 	list1 := []string{"1", "2"}
 	list2 := []string{"1", "2", "3"}
@@ -36,6 +38,22 @@ func TestCheckEntries(t *testing.T) {
 	}
 }
 
+// TestMapKeys
+func TestMapKeys(t *testing.T) {
+	dict := make(map[string]interface{})
+	keys := []string{"1", "2", "3"}
+	for _, k := range keys {
+		dict[k] = k
+	}
+	res := utils.MapKeys(dict)
+	for _, v := range res {
+		if !utils.InList(v, keys) {
+			t.Error("Fail TestMapKeys")
+		}
+	}
+}
+
+// helper funcion to fethc Urls
 func fetchUrls(niterations int) {
 	rurl := "https://jsonplaceholder.typicode.com/todos"
 	out := make(chan utils.ResponseType)
