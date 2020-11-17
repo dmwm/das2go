@@ -38,6 +38,24 @@ func TestCheckEntries(t *testing.T) {
 	}
 }
 
+// TestFindInList
+func TestFindInList(t *testing.T) {
+	list := []string{"1", "2"}
+	res := utils.FindInList("2", list)
+	if res != true {
+		t.Error("Fail in TestFindInList")
+	}
+}
+
+// TestEqualLists
+func TestEqualLists(t *testing.T) {
+	list := []string{"1", "2"}
+	res := utils.EqualLists(list, list)
+	if res != true {
+		t.Error("Fail in TestEqualLists")
+	}
+}
+
 // TestMapKeys
 func TestMapKeys(t *testing.T) {
 	dict := make(map[string]interface{})
