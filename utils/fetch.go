@@ -158,6 +158,12 @@ type ResponseType struct {
 	Error error
 }
 
+// String returns ResponseType representation
+func (r *ResponseType) String() string {
+	s := fmt.Sprintf("URL: %s\nData: %s\nError: %v", r.Url, r.Data, r.Error)
+	return s
+}
+
 // UrlRequest structure holds details about url request's attributes
 type UrlRequest struct {
 	rurl string
