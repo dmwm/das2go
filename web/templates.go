@@ -93,6 +93,15 @@ func (q DASTemplates) Cards(tdir string, tmplData map[string]interface{}) string
 	return q.cards
 }
 
+// CLI method for DASTemplates structure
+func (q DASTemplates) CLI(tdir string, tmplData map[string]interface{}) string {
+	if q.top != "" {
+		return q.top
+	}
+	q.top = parseTmpl(config.Config.Templates, "cli.tmpl", tmplData)
+	return q.top
+}
+
 // FAQ method for DASTemplates structure
 func (q DASTemplates) FAQ(tdir string, tmplData map[string]interface{}) string {
 	if q.top != "" {

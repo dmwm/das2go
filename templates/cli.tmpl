@@ -1,0 +1,66 @@
+<div>
+DAS CLI is available at
+<b>/cvmfs/cms.cern.ch/cmscomon/dasgoclient</b>
+</div>
+
+<pre>
+# common usage
+/cvmfs/cms.cern.ch/cmscommon/dasgoclient -query="YOUR_DAS_QUERY"
+
+# json output
+/cvmfs/cms.cern.ch/cmscommon/dasgoclient -query="YOUR_DAS_QUERY" -json
+
+# DAS query examples
+/cvmfs/cms.cern.ch/cmscommon/dasgoclient -examples
+
+# DAS CLI options
+/cvmfs/cms.cern.ch/cmscommon/dasgoclient -help
+Usage: dasgoclient [options]
+  -aggregate
+    	aggregate results across all data-services
+  -daskeys
+    	Show supported DAS keys
+  -dasmaps string
+    	Specify location of dasmaps
+  -examples
+    	Show examples of supported DAS queries
+  -exitCodes
+    	Show DAS error codes
+  -format string
+    	Compatibility option with python das_client, use json to get das_client behavior
+  -funcProfile string
+    	Specify location of function profile file
+  -host string
+    	Specify hostname to talk to (default "https://cmsweb.cern.ch")
+  -idx int
+    	Compatibility option with python das_client
+  -json
+    	Return results in JSON data-format
+  -limit int
+    	Compatibility option with python das_client
+  -profileMode string
+    	enable profiling mode, one of [cpu, mem, block]
+  -query string
+    	DAS query to run
+  -sep string
+    	Separator to use (default " ")
+  -threshold int
+    	Compatibility option with python das_client, has no effect
+  -timeout int
+    	Timeout for url call
+  -unique
+    	Sort results and return unique list
+  -urlRetry int
+    	urlRetry for url call (default 3)
+  -verbose int
+    	Verbose level, support 0,1,2
+  -version
+    	Show version
+Examples:
+	# get results
+	dasgoclient -query="dataset=/ZMM*/*/*"
+	# get results in JSON data-format
+	dasgoclient -query="dataset=/ZMM*/*/*" -json
+	# get results from specific CMS data-service, e.g. rucio
+	dasgoclient -query="file dataset=/ZMM/Summer11-DESIGN42_V11_428_SLHC1-v1/GEN-SIM system=rucio" -json
+</pre>

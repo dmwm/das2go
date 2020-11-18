@@ -269,8 +269,10 @@ func CliHandler(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
+	var templates DASTemplates
+	tmplData := make(map[string]interface{})
+	page := templates.CLI(config.Config.Templates, tmplData)
 	w.WriteHeader(http.StatusOK)
-	page := "Please use dasgoclient tool or Utilities/General/python/cmssw_das_client.py module from CMSSW"
 	w.Write([]byte(_top + page + _bottom))
 }
 
@@ -285,6 +287,7 @@ func FAQHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Operators"] = []string{"=", "between", "last", "in"}
 	tmplData["Daskeys"] = []string{}
 	tmplData["Aggregators"] = []string{}
+	tmplData["Base"] = config.Config.Base
 	page := templates.FAQ(config.Config.Templates, tmplData)
 	w.WriteHeader(http.StatusOK)
 	w.Write([]byte(_top + page + _bottom))
