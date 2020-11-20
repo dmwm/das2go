@@ -134,3 +134,18 @@ func fetchUrls(niterations int) {
 func TestFetch(t *testing.T) {
 	fetchUrls(5)
 }
+
+// TestCerts should test certificate manager
+func TestCerts(t *testing.T) {
+	var tlsManager utils.TLSCertsManager
+	certs, err := tlsManager.GetCerts()
+	if err != nil {
+		t.Errorf("Fail TestCerts %v\n", err)
+	}
+	notAfter := utils.CertExpire(certs)
+	ts := time.Now().Add(time.Duration(600 * time.Second))
+	log.Println("certs expire", notAfter)
+	if ts.After(notAfter) {
+		t.Errorf("Fail TestCerts: current certificate expired in 600 seconds\n")
+	}
+}

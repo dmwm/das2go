@@ -13,6 +13,7 @@ import (
 	"bytes"
 	"container/heap"
 	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -72,10 +73,32 @@ func (t *TLSCertsManager) GetCerts() ([]tls.Certificate, error) {
 		if err == nil {
 			t.Certs = certs
 		} else {
-			log.Fatal("ERROR ", err.Error())
+			// to avoid collision between cron obtaining the proxy and
+			// this code base if we have error we'll increase interval instead of failure
+			if t.Certs != nil {
+				ts := time.Now().Add(time.Duration(600 * time.Second))
+				if CertExpire(t.Certs).After(ts) {
+					t.Expire = ts
+				}
+			} else {
+				log.Fatal("ERROR ", err.Error())
+			}
 		}
 	}
 	return t.Certs, nil
+}
+
+// CertExpire gets minimum certificate expire from list of certificates
+func CertExpire(certs []tls.Certificate) time.Time {
+	var notAfter time.Time
+	for _, cert := range certs {
+		c, e := x509.ParseCertificate(cert.Certificate[0])
+		if e == nil {
+			notAfter = c.NotAfter
+			break
+		}
+	}
+	return notAfter
 }
 
 // global TLSCerts manager
