@@ -4,6 +4,7 @@ import (
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	"log"
 	"net/url"
 	"sort"
 	"strconv"
@@ -422,14 +423,22 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 				records = append(records, r)
 			}
 			//             records := item[key].([]interface{})
-			uiRows := sortUiRows(pmap[key].([]interface{}), pkey)
+			var uiRows []interface{}
+			if v, ok := pmap[key]; ok {
+				switch p := v.(type) {
+				case []interface{}:
+					uiRows = sortUiRows(p, pkey)
+				default:
+					log.Printf("WARNING: unsupported type of record %+v, key=%s\n", pmap, key)
+				}
+			}
 			for idx, elem := range records {
 				if elem == nil {
 					continue
 				}
 				rec := elem.(mongo.DASRecord)
-				if v, ok := rec["error"]; ok {
-					erec := fmt.Sprintf("<b>Error:</b> <span %s>%s</span>", red, v)
+				if v, ok := rec["error"]; ok && v != "" && key != "rules" {
+					erec := fmt.Sprintf("<b>Error:</b> <span %s>%v</span>", red, v)
 					values = append(values, erec)
 				}
 				for _, uir := range uiRows {
