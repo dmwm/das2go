@@ -34,7 +34,7 @@ rules : [
         {"das":"rules.name", "ui":"Rucio rules",
          "link":[],
          "description":"is a rule on DID defined by Rucio",
-         "examples":[]
+         "examples":["rules dataset=/a/b/c", "rules block=/a/b/c#123"]
         },
         {"das":"rules.rse_expression", "ui":"RSE expression"},
         {"das":"rules.copies", "ui":"Number of copies"},
