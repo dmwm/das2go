@@ -62,10 +62,15 @@ func McMUnmarshal(api string, data []byte) []mongo.DASRecord {
 	if api == "dataset4mcm" {
 		for _, rec := range records {
 			for _, v := range rec {
-				for _, r := range v.([]interface{}) {
-					nrec := make(mongo.DASRecord)
-					nrec["name"] = r
-					out = append(out, nrec)
+				switch t := v.(type) {
+				case []interface{}:
+					for _, r := range t {
+						nrec := make(mongo.DASRecord)
+						nrec["name"] = r
+						out = append(out, nrec)
+					}
+				default:
+					log.Println("WARNING: wrong data type of McM record", v)
 				}
 			}
 		}
