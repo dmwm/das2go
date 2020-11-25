@@ -71,6 +71,9 @@ func McMUnmarshal(api string, data []byte) []mongo.DASRecord {
 					}
 				default:
 					log.Println("WARNING: wrong data type of McM record", v)
+					nrec := make(mongo.DASRecord)
+					nrec["error"] = fmt.Sprintf("McM %s", v)
+					out = append(out, nrec)
 				}
 			}
 		}
