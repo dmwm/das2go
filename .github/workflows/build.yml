@@ -70,7 +70,7 @@ jobs:
       run: |
         curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/Dockerfile
         curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/run.sh
-        sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}}" Dockerfile
+        sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
         docker build . --tag docker.pkg.github.com/vkuznet/das-server/das-server
 
     - name: Login to Registry
