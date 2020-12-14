@@ -71,7 +71,7 @@ jobs:
         curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/Dockerfile
         curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/run.sh
         sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
-        docker build . --tag docker.pkg.github.com/vkuznet/das-server/das-server
+        docker build . --tag docker.pkg.github.com/vkuznet/das2go/das-server
 
     - name: Login to Registry
       uses: docker/login-action@v1.6.0
@@ -81,7 +81,7 @@ jobs:
         password: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Publish image
-      uses: docker/build-push-action@v1
+      uses: docker/build-push-action@v2
       with:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
