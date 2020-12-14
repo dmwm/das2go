@@ -68,10 +68,10 @@ jobs:
 
     - name: Build image
       run: |
-        curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/Dockerfile
-        curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/run.sh
+        curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das2go/Dockerfile
+        curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das2go/run.sh
         sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
-        docker build . --tag docker.pkg.github.com/vkuznet/das2go/das-server
+        docker build . --tag docker.pkg.github.com/vkuznet/das2go/das2go
 
     - name: Login to Registry
       uses: docker/login-action@v1.6.0
@@ -86,5 +86,5 @@ jobs:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
         registry: docker.pkg.github.com
-        repository: vkuznet/das2go/das-server
+        repository: vkuznet/das2go/das2go
         tag_with_ref: true
