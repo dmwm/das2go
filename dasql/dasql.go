@@ -227,8 +227,8 @@ func parseLastValue(val string) []string {
 
 // Validate DBS instance
 func validateDBSInstance(inst string) error {
-	if !utils.InList(inst, config.Config.DbsInstances) {
-		return errors.New(fmt.Sprintf("Invalid DBS instance: %s", inst))
+	if len(config.Config.DbsInstances) != 0 && !utils.InList(inst, config.Config.DbsInstances) {
+		return errors.New(fmt.Sprintf("Invalid DBS instance: %s, dbs instances=%v", inst, config.Config.DbsInstances))
 	}
 	return nil
 }
@@ -394,7 +394,7 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 	rec.System = system
 	rec.Time = time0
 	if err := validateDBSInstance(inst); err != nil {
-		qlerror = fmt.Sprintf("Invalid DBS instance %s", inst)
+		qlerror = fmt.Sprintf("Invalid DBS instance %s, error %v", inst, err)
 	}
 	return rec, qlerror, pLine
 }
