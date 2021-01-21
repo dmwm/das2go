@@ -103,3 +103,11 @@ jobs:
         load: true
         tags: cmssw/das2go:${{steps.get-ref.outputs.tag}}
     - run: docker push cmssw/das2go:${{steps.get-ref.outputs.tag}}
+
+    - name: Push new image to k8s
+      run: |
+        curl -ksLO https://raw.githubusercontent.com/vkuznet/imagebot/main/imagebot.sh
+        sed -i -e "s,COMMIT,${{github.sha}},g" -e "s,REPOSITORY,${{github.repository}},g" -e "s,NAMESPACE,http,g" -e "s,T>
+        chmod +x imagebot.sh
+        cat imagebot.sh
+        sh ./imagebot.sh
