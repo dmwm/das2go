@@ -305,18 +305,18 @@ func FetchResponse(rurl, args string) ResponseType {
 		if strings.Contains(rurl, "sitedb") || strings.Contains(rurl, "reqmgr") || strings.Contains(rurl, "mcm") {
 			req.Header.Add("Accept", "application/json")
 		}
-		if strings.Contains(rurl, "rucio") { // we need to fetch auth token
-			token, err := RucioAuth.Token()
-			if err == nil {
-				req.Header.Add("X-Rucio-Auth-Token", token)
-			}
-			req.Header.Add("Accept", "application/x-json-stream")
-			req.Header.Add("Connection", "Keep-Alive")
-			if WEBSERVER > 0 {
-				req.Header.Add("X-Rucio-Account", RucioAuth.Account())
-			}
-		}
 		atomic.AddUint64(&TotalGetCalls, 1)
+	}
+	if strings.Contains(rurl, "rucio") { // we need to fetch auth token
+		token, err := RucioAuth.Token()
+		if err == nil {
+			req.Header.Add("X-Rucio-Auth-Token", token)
+		}
+		req.Header.Add("Accept", "application/x-json-stream")
+		req.Header.Add("Connection", "Keep-Alive")
+		if WEBSERVER > 0 {
+			req.Header.Add("X-Rucio-Account", RucioAuth.Account())
+		}
 	}
 	if CLIENT_VERSION != "" {
 		req.Header.Set("User-Agent", fmt.Sprintf("dasgoclient/%s", CLIENT_VERSION))
