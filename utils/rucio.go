@@ -60,6 +60,10 @@ func (r *RucioAuthModule) Token() (string, error) {
 func (r *RucioAuthModule) Account() string {
 	if r.account == "" {
 		r.account = "das"
+		v := GetEnv("RUCIO_ACCOUNT")
+		if v != "" {
+			r.account = v
+		}
 	}
 	return r.account
 }
@@ -92,10 +96,18 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	req, _ := http.NewRequest("GET", rurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
+	racc := GetEnv("RUCIO_ACCOUNT")
 	if WEBSERVER > 0 {
-		req.Header.Add("X-Rucio-Account", RucioAuth.Account())
+		if racc != "" {
+			req.Header.Add("X-Rucio-Account", racc)
+		} else {
+			req.Header.Add("X-Rucio-Account", RucioAuth.Account())
+		}
 		req.Header.Add("User-Agent", RucioAuth.Agent())
 	} else {
+		if racc != "" {
+			req.Header.Add("X-Rucio-Account", racc)
+		}
 		req.Header.Add("User-Agent", "dasgoclient")
 	}
 	req.Header.Add("Connection", "keep-alive")
@@ -134,7 +146,10 @@ func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	// I need to replace expire with time provided by Rucio auth server
 	expire := time.Now().Add(time.Minute * 59).Unix()
 	proxy := os.Getenv("X509_USER_PROXY")
-	account := fmt.Sprintf("X-Rucio-Account: %s", RucioAuth.Account())
+	account := GetEnv("RUCIO_ACCOUNT")
+	if account == "" {
+		account = fmt.Sprintf("X-Rucio-Account: %s", RucioAuth.Account())
+	}
 	agent := RucioAuth.Agent()
 	cmd := fmt.Sprintf("curl -q -I --key %s --cert %s -H \"%s\" -A %s %s", proxy, proxy, account, agent, rurl)
 	if WEBSERVER == 0 {
