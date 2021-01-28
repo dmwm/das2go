@@ -101,8 +101,8 @@ jobs:
         context: .
         file: ./Dockerfile
         load: true
-        tags: cmssw/das2go:${{steps.get-ref.outputs.tag}}
-    - run: docker push cmssw/das2go:${{steps.get-ref.outputs.tag}}
+        tags: cmssw/das-server:${{steps.get-ref.outputs.tag}}
+    - run: docker push cmssw/das-server:${{steps.get-ref.outputs.tag}}
 
     - name: Push new image to k8s
       run: |
