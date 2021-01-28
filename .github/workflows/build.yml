@@ -71,6 +71,7 @@ jobs:
         curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/Dockerfile
         curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/run.sh
         sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
+        chmod +x run.sh
         docker build . --tag docker.pkg.github.com/dmwm/das2go/das2go
 
     - name: Login to Registry
