@@ -627,7 +627,12 @@ func files4dbRunsSite(dasquery dasql.DASQuery) []mongo.DASRecord {
 	}
 	// check files in Phedex for give site (should take it form spec)
 	site := spec["site"].(string)
-	dataset := spec["dataset"].(string)
+	var dataset string
+	if v, ok := spec["dataset"]; ok {
+		dataset = v.(string)
+	} else if v, ok := spec["block"]; ok {
+		dataset = strings.Split(v.(string), "#")[0]
+	}
 	//     for _, fname := range filterFiles(fileList, site) {
 	for _, fname := range filterFilesInRucio(dasquery, fileList, dataset, site) {
 		row := make(mongo.DASRecord)
