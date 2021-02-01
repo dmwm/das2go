@@ -654,9 +654,12 @@ func (LocalAPIs) Files4BlockRunsSite(dasquery dasql.DASQuery) []mongo.DASRecord 
 }
 
 type RucioRecordRSE struct {
-	DIDs   []map[string]string `json:"dids"`
-	Domain string              `json:"domain"`
-	RSE    string              `json:"rse_expression"`
+	DIDs           []map[string]string `json:"dids"`
+	Domain         interface{}         `json:"domain"`
+	AllStates      bool                `json:"all_states"`
+	ResolveArchive bool                `json:"resolve_archive"`
+	ResolveParents bool                `json:"resolve_parents"`
+	RSE            string              `json:"rse_expression"`
 }
 
 // helper function to filter files which belong to given site using Rucio API
@@ -667,7 +670,7 @@ func filterFilesInRucio(dasquery dasql.DASQuery, files []string, dataset, site s
 	rec["scope"] = "cms"
 	var dids []map[string]string
 	dids = append(dids, rec)
-	spec := RucioRecordRSE{DIDs: dids, Domain: "all", RSE: site}
+	spec := RucioRecordRSE{DIDs: dids, Domain: nil, RSE: site}
 	// make POST request to Rucio to obtain list of files for given RSE request record
 	args, err := json.Marshal(spec)
 	if err != nil {
