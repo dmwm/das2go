@@ -1,5 +1,9 @@
 package utils
 
+// DAS RucioAuth module
+//
+// Copyright (c) 2018 - Valentin Kuznetsov <vkuznet AT gmail dot com>
+
 import (
 	"fmt"
 	"io/ioutil"
@@ -11,10 +15,6 @@ import (
 	"strings"
 	"time"
 )
-
-// DAS RucioAuth module
-//
-// Copyright (c) 2018 - Valentin Kuznetsov <vkuznet AT gmail dot com>
 
 // RucioValidity
 var RucioValidity int64
@@ -34,11 +34,23 @@ type RucioAuthModule struct {
 	ts      int64
 }
 
+// String provides string representation of RucioAuthModule
+func (r *RucioAuthModule) String() string {
+	s := fmt.Sprintf("<RucioAuth account=%s agent=%s url=%s token=%s expire=%v>", r.account, r.agent, r.url, r.token, r.ts)
+	return s
+}
+
 // Token returns Rucio authentication token
 func (r *RucioAuthModule) Token() (string, error) {
 	t := time.Now().Unix()
 	if r.token != "" && t < r.ts {
+		if VERBOSE > 1 {
+			log.Println("use cached token", r.String(), "current time", t)
+		}
 		return r.token, nil
+	}
+	if VERBOSE > 1 {
+		log.Println("get new token", r.String())
 	}
 	var token string
 	var expire int64
@@ -93,7 +105,7 @@ func (r *RucioAuthModule) Url() string {
 // FetchRucioToken request new Rucio token
 func FetchRucioToken(rurl string) (string, int64, error) {
 	// I need to replace expire with time provided by Rucio auth server
-	expire := time.Now().Add(time.Minute * 59).Unix()
+	expire := time.Now().Add(time.Minute * 5).Unix()
 	req, _ := http.NewRequest("GET", rurl, nil)
 	req.Header.Add("Accept-Encoding", "identity")
 	racc := GetEnv("RUCIO_ACCOUNT")
@@ -119,7 +131,7 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 	resp, err := client.Do(req)
 	if err != nil {
 		if VERBOSE > 0 {
-			log.Println("ERROR: unabel to perform request", err)
+			log.Println("ERROR: unable to perform request", err)
 		}
 		return "", 0, err
 	}
@@ -144,7 +156,7 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 // FetchRucioTokenViaCurl is a helper function to get Rucio token by using curl command
 func FetchRucioTokenViaCurl(rurl string) (string, int64, error) {
 	// I need to replace expire with time provided by Rucio auth server
-	expire := time.Now().Add(time.Minute * 59).Unix()
+	expire := time.Now().Add(time.Minute * 5).Unix()
 	proxy := os.Getenv("X509_USER_PROXY")
 	account := GetEnv("RUCIO_ACCOUNT")
 	if account == "" {
