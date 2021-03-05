@@ -233,7 +233,7 @@ var (
 	UrlRequestChannel = make(chan UrlRequest)
 )
 
-func init() {
+func Init() {
 	if WEBSERVER > 0 {
 		log.Println("DAS URLFetchWorker")
 	}
@@ -255,10 +255,12 @@ func URLFetchWorker(in <-chan UrlRequest) {
 		case request := <-in:
 			// put new request to urlRequests queue and increment queueSize
 			heap.Push(urlRequests, &request)
+			//             log.Println("URLFetchWorker push new request", request, "queue size", urlRequests.Len())
 		default:
 			if urlRequests.Len() > 0 && UrlQueueSize < UrlQueueLimit {
 				r := heap.Pop(urlRequests)
 				request := r.(*UrlRequest)
+				//                 log.Println("URLFetchWorker process request", request, "queue size", urlRequests.Len(), "current", UrlQueueSize)
 				go fetch(request.rurl, request.args, request.out)
 			}
 			time.Sleep(time.Duration(10) * time.Millisecond)
@@ -289,7 +291,7 @@ func FetchResponse(rurl, args string) ResponseType {
 			DNSCacheMgr = dcr.NewDNSManager(300) // 300 seconds TTL
 			log.Printf("init DNSCacheMgr %+v\n", DNSCacheMgr)
 		}
-		if strings.Contains(rurl, "cmsweb") {
+		if strings.Contains(rurl, "cmsweb") || strings.Contains(rurl, "cms-rucio.cern.ch") {
 			rurl = DNSCacheMgr.Resolve(rurl)
 		}
 	}
@@ -329,17 +331,17 @@ func FetchResponse(rurl, args string) ResponseType {
 	}
 	client := HttpClient()
 	resp, err := client.Do(req)
+	if err != nil {
+		response.Error = err
+		return response
+	}
+	defer resp.Body.Close()
 	if VERBOSE > 2 {
 		if resp != nil {
 			dump, err := httputil.DumpResponse(resp, true)
 			log.Printf("http response rurl %v, dump %v, error %v\n", rurl, string(dump), err)
 		}
 	}
-	if err != nil {
-		response.Error = err
-		return response
-	}
-	defer resp.Body.Close()
 	response.Data, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		response.Error = err
