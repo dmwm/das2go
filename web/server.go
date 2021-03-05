@@ -128,7 +128,7 @@ func Server(configFile string) {
 		log.SetFlags(log.LstdFlags | log.Lshortfile)
 	}
 	if err != nil {
-		log.Println("ERROR: unabel to parse config file", configFile)
+		log.Println("ERROR: unable to parse config file", configFile)
 	}
 
 	utils.VERBOSE = config.Config.Verbose
@@ -140,6 +140,14 @@ func Server(configFile string) {
 	utils.TLSCertsRenewInterval = time.Duration(interval * time.Second)
 	utils.RucioTokenCurl = config.Config.RucioTokenCurl
 	log.Println(config.Config.String())
+
+	// acquire rucio token
+	log.Println("rucio", utils.RucioAuth.String())
+	token, terr := utils.RucioAuth.Token()
+	log.Println("rucio token", token, terr)
+	token, terr = utils.RucioAuth.Token()
+	log.Println("rucio token", token, terr)
+
 	// init CMS Authentication module
 	if config.Config.Hkey != "" {
 		_cmsAuth.Init(config.Config.Hkey)
@@ -153,6 +161,9 @@ func Server(configFile string) {
 		utils.UseDNSCache = true
 		log.Println("UseDNSCache", utils.UseDNSCache)
 	}
+
+	// call utils init
+	utils.Init()
 
 	// load DAS Maps if necessary
 	if len(_dasmaps.Services()) == 0 {
