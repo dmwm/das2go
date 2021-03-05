@@ -48,7 +48,7 @@ func loadRucioData(api string, data []byte) []mongo.DASRecord {
 		if err != nil {
 			msg := fmt.Sprintf("Rucio unable to unmarshal the data into DAS record, api=%s, data=%s, error=%v", api, string(row), err)
 			if utils.VERBOSE > 0 {
-				log.Printf("ERROR: Rucio unable to unmarshal, data %+v, api %v, error %v\n", string(row), api, err)
+				log.Printf("ERROR: Rucio unable to unmarshal, data %+v, row %+v, api %v, error %v\n", string(data), string(row), api, err)
 			}
 			out = append(out, mongo.DASErrorRecord(msg, utils.RucioErrorName, utils.RucioError))
 		}

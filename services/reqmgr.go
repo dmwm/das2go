@@ -141,7 +141,7 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	// check that given dataset pass dataset pattern
 	matched, err := regexp.MatchString("/[\\w-]+/[\\w-]+/[A-Z-]+", dataset)
 	if err != nil || !matched {
-		log.Printf("ERROR: unabel to validate dataset %v, error %v\n", dataset, err)
+		log.Printf("ERROR: unable to validate dataset %v, error %v\n", dataset, err)
 		return []string{}, idict
 	}
 

@@ -33,7 +33,7 @@ func checkHttpEndpoint(endpoint, pat string) bool {
 	}
 	matched, _ := regexp.MatchString(pat, string(data))
 	if !matched {
-		log.Printf("ERROR: unabel to read response body with pattern %v, error %v\n", pat, err)
+		log.Printf("ERROR: unable to read response body with pattern %v, error %v\n", pat, err)
 		return false
 	}
 	return true
