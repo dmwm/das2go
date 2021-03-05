@@ -302,6 +302,14 @@ func rucioInfo(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord, m
 		rec := mongo.DASRecord{"files": 0, "blocks": int64(blockCount), "block_present": int64(blockPresent), "block_complete": int64(blockComplete), "block_file_count": int64(blockFileCount), "available_file_count": int64(availableFileCount), "kind": kind, "se": se}
 		siteInfo[se] = rec
 	}
+	if utils.VERBOSE > 0 {
+		data, _ := json.MarshalIndent(siteInfo, "", "  ")
+		if utils.WEBSERVER == 0 {
+			fmt.Println("siteInfo", string(data))
+		} else {
+			log.Println("siteInfo", string(data))
+		}
+	}
 	return siteInfo, blocks
 
 }
@@ -467,7 +475,11 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 		ratio = float64(rec2num(row["available_file_count"])) / float64(rec2num(row["block_file_count"]))
 		rf := fmt.Sprintf("%5.2f%%", 100*ratio)
 		if utils.VERBOSE > 0 {
-			fmt.Printf("site: %s siteInfo: %+v\n", key, row)
+			if utils.WEBSERVER == 0 {
+				fmt.Printf("site: %s siteInfo: %+v\n", key, row)
+			} else {
+				log.Printf("site: %s siteInfo: %+v\n", key, row)
+			}
 		}
 		// put into file das record, internal type must be list
 		rec := make(mongo.DASRecord)
