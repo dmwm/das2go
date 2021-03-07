@@ -20,6 +20,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"os"
 	"os/user"
 	"strings"
@@ -30,6 +31,9 @@ import (
 	"github.com/vkuznet/dcr"
 	"github.com/vkuznet/x509proxy"
 )
+
+// HTTP client
+var httpClient *http.Client
 
 // TIMEOUT defines timeout for net/url request
 var TIMEOUT int
@@ -246,6 +250,7 @@ func Init() {
 func URLFetchWorker(in <-chan UrlRequest) {
 	urlRequests := &UrlFetchQueue{}
 	heap.Init(urlRequests)
+	//     log.Println("URLFetchWorker queue size", UrlQueueSize, "queue limit", UrlQueueLimit)
 	// loop forever to accept url requests
 	// a given request will be placed in internal Queue and we'll process it
 	// only in a limited queueSize. Every request is processed via fetch
@@ -257,13 +262,13 @@ func URLFetchWorker(in <-chan UrlRequest) {
 			heap.Push(urlRequests, &request)
 			//             log.Println("URLFetchWorker push new request", request, "queue size", urlRequests.Len())
 		default:
+			time.Sleep(time.Duration(10) * time.Millisecond)
 			if urlRequests.Len() > 0 && UrlQueueSize < UrlQueueLimit {
 				r := heap.Pop(urlRequests)
 				request := r.(*UrlRequest)
 				//                 log.Println("URLFetchWorker process request", request, "queue size", urlRequests.Len(), "current", UrlQueueSize)
 				go fetch(request.rurl, request.args, request.out)
 			}
-			time.Sleep(time.Duration(10) * time.Millisecond)
 		}
 	}
 }
@@ -329,7 +334,12 @@ func FetchResponse(rurl, args string) ResponseType {
 		dump, err := httputil.DumpRequestOut(req, true)
 		log.Printf("http request %+v, rurl %v, dump %v, error %v\n", req, rurl, string(dump), err)
 	}
-	client := HttpClient()
+	var client *http.Client
+	if httpClient == nil {
+		httpClient = HttpClient()
+	}
+	client = httpClient
+	//     client := HttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
 		response.Error = err
@@ -349,14 +359,23 @@ func FetchResponse(rurl, args string) ResponseType {
 	if VERBOSE > 0 {
 		if args == "" {
 			if WEBSERVER == 0 {
-				fmt.Println(Color(CYAN, "DAS GET"), ColorUrl(rurl), time.Now().Sub(startTime))
+				r, e := url.QueryUnescape(rurl)
+				if e == nil {
+					fmt.Printf("DAS GET %s %v\n", r, time.Now().Sub(startTime))
+				} else {
+					fmt.Printf("DAS GET %s %v\n", rurl, time.Now().Sub(startTime))
+				}
 			} else {
 				log.Printf("DAS GET %s %v\n", rurl, time.Now().Sub(startTime))
 			}
 		} else {
 			if WEBSERVER == 0 {
-				a := fmt.Sprintf("args=%s", args)
-				fmt.Println(Color(PURPLE, "DAS POST"), ColorUrl(rurl), a, time.Now().Sub(startTime))
+				r, e := url.QueryUnescape(rurl)
+				if e == nil {
+					fmt.Printf("DAS POST %s args %v, %v\n", r, args, time.Now().Sub(startTime))
+				} else {
+					fmt.Printf("DAS POST %s args %v, %v\n", rurl, args, time.Now().Sub(startTime))
+				}
 			} else {
 				log.Printf("DAS POST %s args %v, %v\n", rurl, args, time.Now().Sub(startTime))
 			}
@@ -380,28 +399,35 @@ func Fetch(rurl string, args string, out chan<- ResponseType) {
 // local function which fetch response for given url/args and place it into response channel
 // By defat
 func fetch(rurl string, args string, ch chan<- ResponseType) {
-	var resp, r ResponseType
+	var resp ResponseType
 	resp = FetchResponse(rurl, args)
-	if resp.Error != nil {
-		if WEBSERVER == 1 && VERBOSE > 0 {
+	if resp.Error == nil {
+		ch <- resp
+		return
+	}
+	if VERBOSE > 0 {
+		if WEBSERVER == 1 {
 			log.Printf("fail to fetch data %s, error %v\n", rurl, resp.Error)
+		} else {
+			fmt.Printf("fail to fetch data %s, error %v\n", rurl, resp.Error)
 		}
-		for i := 1; i <= UrlRetry; i++ {
-			sleep := time.Duration(i) * time.Second
-			time.Sleep(sleep)
-			r = FetchResponse(rurl, args)
-			if r.Error == nil {
-				break
-			}
-			if WEBSERVER == 1 && VERBOSE > 0 {
-				log.Printf("fetch retry, url %s, retry %v, error %v\n", rurl, i, resp.Error)
-			}
+	}
+	for i := 1; i <= UrlRetry; i++ {
+		sleep := time.Duration(i) * time.Second
+		time.Sleep(sleep)
+		resp = FetchResponse(rurl, args)
+		if resp.Error == nil {
+			ch <- resp
+			return
 		}
-		resp = r
 	}
 	if resp.Error != nil {
-		if WEBSERVER == 1 && VERBOSE > 0 {
-			log.Printf("ERROR: fail to fetch %s, retries %v, error %v\n", rurl, UrlRetry, resp.Error)
+		if VERBOSE > 0 {
+			if WEBSERVER == 1 {
+				log.Printf("ERROR: fail to fetch %s, retries %v, error %v\n", rurl, UrlRetry, resp.Error)
+			} else {
+				fmt.Printf("ERROR: fail to fetch %s, retries %v, error %v\n", rurl, UrlRetry, resp.Error)
+			}
 		}
 	}
 	ch <- resp
