@@ -135,11 +135,11 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 		}
 		return "", 0, err
 	}
+	defer resp.Body.Close()
 	if VERBOSE > 1 {
 		dump, err := httputil.DumpResponse(resp, true)
 		log.Printf("http response rurl %v, dump %v, error %v\n", rurl, string(dump), err)
 	}
-	defer resp.Body.Close()
 	_, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		if VERBOSE > 0 {
