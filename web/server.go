@@ -145,8 +145,6 @@ func Server(configFile string) {
 	log.Println("rucio", utils.RucioAuth.String())
 	token, terr := utils.RucioAuth.Token()
 	log.Println("rucio token", token, terr)
-	token, terr = utils.RucioAuth.Token()
-	log.Println("rucio token", token, terr)
 
 	// init CMS Authentication module
 	if config.Config.Hkey != "" {
