@@ -38,6 +38,7 @@ func InitFunctionProfiler(fname string) {
 		log.Printf("ERROR: fail to open %s, error %v\n", fname, err)
 		return
 	}
+	defer file.Close()
 	Profiler = bufio.NewWriter(file)
 	if WEBSERVER != 0 {
 		log.Println("DAS profiler", fname)
