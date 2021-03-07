@@ -67,7 +67,8 @@ func SiteDBUnmarshal(api string, data []byte) []mongo.DASRecord {
 
 func getSiteDBData(api string) []mongo.DASRecord {
 	furl := fmt.Sprintf("%s/%s", SitedbUrl(), api)
-	response := utils.FetchResponse(furl, "")
+	client := utils.HttpClient()
+	response := utils.FetchResponse(client, furl, "")
 	if response.Error == nil {
 		records := loadSiteDBData(api, response.Data)
 		return records

@@ -76,7 +76,8 @@ func getCRICData(api string) []mongo.DASRecord {
 	} else {
 		furl = fmt.Sprintf("%s?json&preset=people", furl)
 	}
-	response := utils.FetchResponse(furl, "")
+	client := utils.HttpClient()
+	response := utils.FetchResponse(client, furl, "")
 	if response.Error == nil {
 		records := loadCRICData(api, response.Data)
 		return records

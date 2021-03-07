@@ -152,9 +152,10 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	umap := map[string]int{}
 	ch := make(chan utils.ResponseType)
 	defer close(ch)
+	client := utils.HttpClient()
 	for _, u := range urls {
 		umap[u] = 1 // keep track of processed urls below
-		go utils.Fetch(u, "", ch)
+		go utils.Fetch(client, u, "", ch)
 	}
 	exit := false
 	for {
@@ -246,9 +247,10 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	exit := false
 	ch := make(chan utils.ResponseType)
 	defer close(ch)
+	client := utils.HttpClient()
 	for _, u := range rurls {
 		umap[u] = 1 // keep track of processed urls below
-		go utils.Fetch(u, "", ch)
+		go utils.Fetch(client, u, "", ch)
 	}
 	for {
 		select {

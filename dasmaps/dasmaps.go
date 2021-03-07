@@ -503,12 +503,13 @@ func (m *DASMaps) LoadMapsFromFile() {
 	}
 	fname := fmt.Sprintf("%s/.dasmaps/das_maps_dbs_prod.js", utils.DASMAPS)
 	stats, err := os.Stat(fname)
+	client := utils.HttpClient()
 	if err != nil || time.Now().Unix()-stats.ModTime().Unix() > 24*60*60 {
 		if utils.VERBOSE > 0 {
 			fmt.Println("### download dasmaps")
 		}
 		// download maps from github
-		resp := utils.FetchResponse(githubUrl, "")
+		resp := utils.FetchResponse(client, githubUrl, "")
 		if resp.Error == nil {
 			// write data to local area
 			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)

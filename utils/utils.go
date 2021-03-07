@@ -491,9 +491,10 @@ func LoadExamples(ename, home string) string {
 		os.Mkdir(dname, 0777)
 	}
 	fname := fmt.Sprintf("%s/.dasexamples/%s", home, ename)
+	client := HttpClient()
 	if _, err := os.Stat(fname); err != nil {
 		// download maps from github
-		resp := FetchResponse(githubUrl, "")
+		resp := FetchResponse(client, githubUrl, "")
 		if resp.Error == nil {
 			// write data to local area
 			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)

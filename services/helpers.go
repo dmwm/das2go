@@ -88,7 +88,8 @@ func findBlocks(dasquery dasql.DASQuery) []string {
 	dataset := spec["dataset"].(string)
 	api := "blocks"
 	furl := fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
-	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	client := utils.HttpClient()
+	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
 		v := rec["block_name"]
@@ -106,9 +107,10 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 	out := make(chan utils.ResponseType)
 	defer close(out)
 	umap := map[string]int{}
+	client := utils.HttpClient()
 	for _, furl := range urls {
-		umap[furl] = 1                // keep track of processed urls below
-		go utils.Fetch(furl, "", out) // "" specify optional args
+		umap[furl] = 1                        // keep track of processed urls below
+		go utils.Fetch(client, furl, "", out) // "" specify optional args
 	}
 	// collect all results from out channel
 	exit := false
@@ -287,7 +289,8 @@ func dataset4release(dasquery dasql.DASQuery) []string {
 	if status != nil {
 		furl = fmt.Sprintf("%s&dataset_access_type=%s", furl, status.(string))
 	}
-	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	client := utils.HttpClient()
+	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
 		if rec["name"] == nil {
@@ -370,7 +373,8 @@ func (p *PhedexNodes) Nodes() []mongo.DASRecord {
 	}
 	api := "nodes"
 	furl := fmt.Sprintf("%s/%s", PhedexUrl(), api)
-	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	client := utils.HttpClient()
+	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
 	p.nodes = PhedexUnmarshal(api, resp.Data)
 	p.tstamp = time.Now().Unix()
 	return p.nodes

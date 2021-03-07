@@ -32,9 +32,6 @@ import (
 	"github.com/vkuznet/x509proxy"
 )
 
-// HTTP client
-var httpClient *http.Client
-
 // TIMEOUT defines timeout for net/url request
 var TIMEOUT int
 
@@ -193,10 +190,11 @@ func (r *ResponseType) String() string {
 
 // UrlRequest structure holds details about url request's attributes
 type UrlRequest struct {
-	rurl string
-	args string
-	out  chan<- ResponseType
-	ts   int64
+	rurl   string
+	args   string
+	out    chan<- ResponseType
+	ts     int64
+	client *http.Client
 }
 
 // A UrlFetchQueue implements heap.Interface and holds UrlRequests
@@ -267,7 +265,7 @@ func URLFetchWorker(in <-chan UrlRequest) {
 				r := heap.Pop(urlRequests)
 				request := r.(*UrlRequest)
 				//                 log.Println("URLFetchWorker process request", request, "queue size", urlRequests.Len(), "current", UrlQueueSize)
-				go fetch(request.rurl, request.args, request.out)
+				go fetch(request.client, request.rurl, request.args, request.out)
 			}
 		}
 	}
@@ -277,7 +275,7 @@ func URLFetchWorker(in <-chan UrlRequest) {
 // http://craigwickesser.com/2015/01/golang-http-to-many-open-files/
 
 // FetchResponse fetches data for provided URL, args is a json dump of arguments
-func FetchResponse(rurl, args string) ResponseType {
+func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 	startTime := time.Now()
 	// increment UrlQueueSize since we'll process request
 	atomic.AddInt32(&UrlQueueSize, 1)
@@ -334,11 +332,10 @@ func FetchResponse(rurl, args string) ResponseType {
 		dump, err := httputil.DumpRequestOut(req, true)
 		log.Printf("http request %+v, rurl %v, dump %v, error %v\n", req, rurl, string(dump), err)
 	}
-	var client *http.Client
 	if httpClient == nil {
 		httpClient = HttpClient()
 	}
-	client = httpClient
+	client := httpClient
 	//     client := HttpClient()
 	resp, err := client.Do(req)
 	if err != nil {
@@ -387,20 +384,20 @@ func FetchResponse(rurl, args string) ResponseType {
 // Fetch data for provided URL and redirect results to given channel
 // This wrapper function look-up UrlQueueLimit and either redirect to
 // URULFetchWorker go-routine or pass the call to local fetch function
-func Fetch(rurl string, args string, out chan<- ResponseType) {
+func Fetch(httpClient *http.Client, rurl string, args string, out chan<- ResponseType) {
 	if UrlQueueLimit > 0 {
-		request := UrlRequest{rurl: rurl, args: args, out: out, ts: time.Now().Unix()}
+		request := UrlRequest{rurl: rurl, args: args, out: out, ts: time.Now().Unix(), client: httpClient}
 		UrlRequestChannel <- request
 	} else {
-		fetch(rurl, args, out)
+		fetch(httpClient, rurl, args, out)
 	}
 }
 
 // local function which fetch response for given url/args and place it into response channel
 // By defat
-func fetch(rurl string, args string, ch chan<- ResponseType) {
+func fetch(httpClient *http.Client, rurl string, args string, ch chan<- ResponseType) {
 	var resp ResponseType
-	resp = FetchResponse(rurl, args)
+	resp = FetchResponse(httpClient, rurl, args)
 	if resp.Error == nil {
 		ch <- resp
 		return
@@ -415,7 +412,7 @@ func fetch(rurl string, args string, ch chan<- ResponseType) {
 	for i := 1; i <= UrlRetry; i++ {
 		sleep := time.Duration(i) * time.Second
 		time.Sleep(sleep)
-		resp = FetchResponse(rurl, args)
+		resp = FetchResponse(httpClient, rurl, args)
 		if resp.Error == nil {
 			ch <- resp
 			return

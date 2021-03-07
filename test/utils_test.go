@@ -105,10 +105,11 @@ func fetchUrls(niterations int) {
 	out := make(chan utils.ResponseType)
 	defer close(out)
 	umap := map[string]int{}
+	client := utils.HttpClient()
 	for i := 0; i < niterations; i++ {
 		furl := fmt.Sprintf("%s/%d", rurl, i)
 		umap[furl] = 1 // keep track of processed urls below
-		go utils.Fetch(furl, "", out)
+		go utils.Fetch(client, furl, "", out)
 	}
 
 	// collect all results from out channel

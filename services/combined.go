@@ -43,7 +43,8 @@ func (LocalAPIs) Child4SiteReleaseDataset(dasquery dasql.DASQuery) []mongo.DASRe
 	site := spec["site"].(string)
 	api := "datasetchildren"
 	furl := fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
-	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	client := utils.HttpClient()
+	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	// collect dbs urls to fetch versions for given set of datasets
 	api = "releaseversions"
@@ -136,7 +137,8 @@ func (LocalAPIs) Site4Block(dasquery dasql.DASQuery) []mongo.DASRecord {
 	// Phedex part find block replicas for given dataset
 	api := "blockReplicas"
 	furl := fmt.Sprintf("%s/%s?block=%s", PhedexUrl(), api, url.QueryEscape(block))
-	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	client := utils.HttpClient()
+	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
 	records := PhedexUnmarshal(api, resp.Data)
 	for _, rec := range records {
 		if rec["replica"] == nil {
@@ -220,13 +222,14 @@ func rucioInfo(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord, m
 	chout := make(chan utils.ResponseType)
 	defer close(chout)
 	umap := map[string]int{}
+	client := utils.HttpClient()
 	for _, blkName := range blockNames {
 		blocks[blkName] = Block{Name: blkName}
 
 		// http://cms-rucio.cern.ch/replicas/cms/{block['name']}/datasets
 		furl = fmt.Sprintf("%s/replicas/cms/%s/datasets", RucioUrl(), url.QueryEscape(blkName))
 		umap[furl] = 1 // keep track of processed urls below
-		go utils.Fetch(furl, "", chout)
+		go utils.Fetch(client, furl, "", chout)
 	}
 
 	// collect results from block URL calls
@@ -323,18 +326,19 @@ func rucioInfoMID(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord
 	chout := make(chan utils.ResponseType)
 	defer close(chout)
 	umap := map[string]int{}
+	client := utils.HttpClient()
 	for _, blkName := range blockNames {
 		blocks[blkName] = Block{Name: blkName}
 
 		// http://cms-rucio.cern.ch/replicas/cms/{block['name']}/datasets
 		furl = fmt.Sprintf("%s/replicas/cms/%s/datasets", RucioUrl(), url.QueryEscape(blkName))
 		umap[furl] = 1 // keep track of processed urls below
-		go utils.Fetch(furl, "", chout)
+		go utils.Fetch(client, furl, "", chout)
 
 		// http://cms-rucio.cern.ch/dids/cms/{block['name']}/dids
 		furl = fmt.Sprintf("%s/dids/cms/%s/dids", RucioUrl(), url.QueryEscape(blkName))
 		umap[furl] = 1 // keep track of processed urls below
-		go utils.Fetch(furl, "", chout)
+		go utils.Fetch(client, furl, "", chout)
 	}
 
 	// collect results from block URL calls
@@ -424,7 +428,8 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 	dataset := spec["dataset"].(string)
 	api := "filesummaries"
 	furl := fmt.Sprintf("%s/%s?dataset=%s&validFileOnly=1", DBSUrl(inst), api, dataset)
-	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	client := utils.HttpClient()
+	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var totblocks, totfiles int64
 	if len(records) == 0 {
@@ -437,7 +442,7 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 	// we obtain this list from DBS
 	api = "blocks"
 	furl = fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
-	resp = utils.FetchResponse(furl, "") // "" specify optional args
+	resp = utils.FetchResponse(client, furl, "") // "" specify optional args
 	records = DBSUnmarshal(api, resp.Data)
 	var blocks []string
 	for _, rec := range records {
@@ -504,7 +509,8 @@ func (LocalAPIs) Site4Dataset_phedex(dasquery dasql.DASQuery) []mongo.DASRecord 
 	dataset := spec["dataset"].(string)
 	api := "filesummaries"
 	furl := fmt.Sprintf("%s/%s?dataset=%s&validFileOnly=1", DBSUrl(inst), api, dataset)
-	resp := utils.FetchResponse(furl, "") // "" specify optional args
+	client := utils.HttpClient()
+	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
 	records := DBSUnmarshal(api, resp.Data)
 	var totblocks, totfiles int64
 	if len(records) == 0 {
@@ -515,7 +521,7 @@ func (LocalAPIs) Site4Dataset_phedex(dasquery dasql.DASQuery) []mongo.DASRecord 
 	// Phedex part find block replicas for given dataset
 	api = "blockReplicas"
 	furl = fmt.Sprintf("%s/%s?dataset=%s", PhedexUrl(), api, dataset)
-	resp = utils.FetchResponse(furl, "") // "" specify optional args
+	resp = utils.FetchResponse(client, furl, "") // "" specify optional args
 	records = PhedexUnmarshal(api, resp.Data)
 	siteInfo := make(mongo.DASRecord)
 	var bComplete, nfiles, nblks, bfiles int64
@@ -690,7 +696,8 @@ func filterFilesInRucio(dasquery dasql.DASQuery, files []string, dataset, site s
 		return out
 	}
 	furl := fmt.Sprintf("%s/replicas/list", RucioUrl())
-	resp := utils.FetchResponse(furl, string(args)) // POST request
+	client := utils.HttpClient()
+	resp := utils.FetchResponse(client, furl, string(args)) // POST request
 	records := RucioUnmarshal(dasquery, "full_record", resp.Data)
 	for _, r := range records {
 		if v, ok := r["name"]; ok {

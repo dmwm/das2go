@@ -477,9 +477,10 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 	out := make(chan utils.ResponseType)
 	defer close(out)
 	umap := map[string]int{}
+	client := utils.HttpClient()
 	for furl, args := range urls {
 		umap[furl] = 1 // keep track of processed urls below
-		go utils.Fetch(furl, args, out)
+		go utils.Fetch(client, furl, args, out)
 	}
 
 	// collect all results from out channel
