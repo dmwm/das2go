@@ -350,7 +350,7 @@ func PresentDataPlain(path string, dasquery dasql.DASQuery, data []mongo.DASReco
 }
 
 // PresentData represents DAS records for web UI
-func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int, procTime float64) string {
+func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int, procTime time.Duration) string {
 	var out []string
 	line := "<hr class=\"line\" />"
 	red := "style=\"color:red\""
@@ -545,11 +545,11 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 		}
 	}
 	out = append(out, pagination(path, dasquery.Query, dasquery.Instance, total, startIdx, limit))
-	if procTime == 0 { // look-up processing time if it is not provided
+	if procTime.Seconds() == 0 { // look-up processing time if it is not provided
 		ts := das.TimeStamp(dasquery)
-		procTime = time.Now().Sub(time.Unix(ts, 0)).Seconds()
+		procTime = time.Now().Sub(time.Unix(ts, 0))
 	}
-	out = append(out, fmt.Sprintf("<div align=\"right\">processing time: %v sec</div>", procTime))
+	out = append(out, fmt.Sprintf("<div align=\"right\">processing time: %v</div>", procTime))
 	return strings.Join(out, "\n")
 }
 

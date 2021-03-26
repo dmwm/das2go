@@ -161,12 +161,12 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 		response["pid"] = pid
 		response["data"] = data
 		response["procTime"] = procTime
-		log.Printf("query=%v pid=%v process_time=%v\n", dasquery, pid, procTime)
+		log.Printf("%v pid=%v processing_time=%v\n", dasquery, pid, procTime)
 	} else if das.CheckData(pid) { // data exists in cache but still processing
 		response["status"] = "processing"
 		response["pid"] = pid
 	} else { // no data in cache (even client supplied the pid), process it
-		log.Printf("query=%v pid=%v\n", dasquery, pid)
+		log.Printf("%v pid=%v\n", dasquery, pid)
 		go das.Process(dasquery, _dasmaps)
 		response["status"] = "requested"
 		response["pid"] = pid
@@ -452,7 +452,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if hash != "" {
 		dasquery, err, _ := dasql.Parse(query, inst, _dasmaps.DASKeys())
-		log.Println("INPUT", query, inst, dasquery)
+		log.Printf("input=\"%s\" %s", query, dasquery)
 		msg := fmt.Sprintf("%s spec=%v filters=%v aggregators=%v err=%s", dasquery, dasquery.Spec, dasquery.Filters, dasquery.Aggregators, err)
 		w.Write([]byte(msg))
 		return
@@ -506,7 +506,7 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}()
 	dasquery, err2, pLine := dasql.Parse(query, inst, _dasmaps.DASKeys())
-	log.Println("INPUT", query, inst, dasquery)
+	log.Printf("input=\"%s\" %s", query, dasquery)
 	if err2 != "" {
 		w.Write([]byte(dasError(query, err2, pLine)))
 		return
@@ -541,9 +541,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, msg, http.StatusInternalServerError)
 	} else if path == base+"/request" || path == base+"/request/" {
 		status := response["status"]
-		var procTime float64
+		var procTime time.Duration
 		if response["procTime"] != nil {
-			procTime = response["procTime"].(float64)
+			procTime = response["procTime"].(time.Duration)
 		}
 		var page string
 		if status == "ok" {
