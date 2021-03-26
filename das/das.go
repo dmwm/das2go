@@ -978,6 +978,12 @@ func Count(pid string) int {
 	return mongo.Count("das", "merge", spec)
 }
 
+// Bytes gets size of records for given DAS query
+func Bytes(pid string) int {
+	spec := bson.M{"qhash": pid, "das.record": 1}
+	return mongo.Bytes("das", "merge", spec)
+}
+
 // GetTimestamp gets initial timestamp of DAS query request
 func GetTimestamp(pid string) int64 {
 	spec := bson.M{"qhash": pid, "das.record": 0}

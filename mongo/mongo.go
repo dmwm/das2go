@@ -316,6 +316,31 @@ func Count(dbname, collname string, spec bson.M) int {
 	return nrec
 }
 
+// Bytes gets number records from MongoDB
+func Bytes(dbname, collname string, spec bson.M) int {
+
+	// defer function profiler
+	defer utils.MeasureTime("mongo/Bytes")()
+
+	s := _Mongo.Connect()
+	defer s.Close()
+	c := s.DB(dbname).C(collname)
+	var rec DASRecord
+	err := c.Find(spec).One(&rec)
+	if err != nil {
+		log.Printf("ERROR: unable to find record spec=%+v error=%v\n", spec, err)
+	}
+	data, err := json.Marshal(rec)
+	if err != nil {
+		log.Printf("ERROR: unable to marshl DASRecord error=%v\n", err)
+	}
+	// find total number of records
+	nrec := Count(dbname, collname, spec)
+
+	// return total size of all DAS records for given spec
+	return nrec * len(data)
+}
+
 // Remove records from MongoDB
 func Remove(dbname, collname string, spec bson.M) {
 
