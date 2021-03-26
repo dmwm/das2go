@@ -68,7 +68,7 @@ func (t *TLSCertsManager) GetCerts() ([]tls.Certificate, error) {
 	if t.Certs == nil || time.Since(t.Expire) > TLSCertsRenewInterval {
 		t.Expire = time.Now()
 		if WEBSERVER > 0 {
-			log.Println("read new certs, expire", t.Expire, "config.TLSCertsRenewInterval", TLSCertsRenewInterval)
+			log.Printf("read new certs expire=\"%v\" renewal_interval=%v\n", t.Expire, TLSCertsRenewInterval)
 		}
 		certs, err := tlsCerts()
 		if err == nil {
@@ -363,7 +363,7 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 					fmt.Printf("DAS GET %s %v\n", rurl, time.Now().Sub(startTime))
 				}
 			} else {
-				log.Printf("DAS GET %s %v\n", rurl, time.Now().Sub(startTime))
+				log.Printf("DAS GET url=%s time=%v\n", rurl, time.Now().Sub(startTime))
 			}
 		} else {
 			if WEBSERVER == 0 {
@@ -374,7 +374,7 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 					fmt.Printf("DAS POST %s args %v, %v\n", rurl, args, time.Now().Sub(startTime))
 				}
 			} else {
-				log.Printf("DAS POST %s args %v, %v\n", rurl, args, time.Now().Sub(startTime))
+				log.Printf("DAS POST url=%s args=%v time=%v\n", rurl, args, time.Now().Sub(startTime))
 			}
 		}
 	}
