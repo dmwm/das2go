@@ -155,13 +155,14 @@ func processRequest(dasquery dasql.DASQuery, pid string, idx, limit int) map[str
 		status, data := das.GetData(dasquery, "merge", idx, limit)
 		ts := das.TimeStamp(dasquery)
 		procTime := time.Now().Sub(time.Unix(ts, 0))
-		response["nresults"] = das.Count(pid)
+		nrec := das.Count(pid)
+		response["nresults"] = nrec
 		response["timestamp"] = das.GetTimestamp(pid)
 		response["status"] = status
 		response["pid"] = pid
 		response["data"] = data
 		response["procTime"] = procTime
-		log.Printf("%v pid=%v processing_time=%v\n", dasquery, pid, procTime)
+		log.Printf("%v pid=%v status=%v nrecords=%d idx=%v limit=%v processing_time=%v\n", dasquery, pid, status, nrec, idx, limit, procTime)
 	} else if das.CheckData(pid) { // data exists in cache but still processing
 		response["status"] = "processing"
 		response["pid"] = pid
