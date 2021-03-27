@@ -364,7 +364,7 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 				}
 			}
 		} else {
-			log.Printf("DAS GET url=%s time=%v\n", rurl, time.Now().Sub(startTime))
+			log.Printf("DAS GET url=%s time=%v\n", rurl, time.Now().Sub(startTime).Seconds())
 		}
 	} else {
 		if WEBSERVER == 0 {
@@ -377,7 +377,7 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 				}
 			}
 		} else {
-			log.Printf("DAS POST url=%s args=%v time=%v\n", rurl, args, time.Now().Sub(startTime))
+			log.Printf("DAS POST url=%s args=%v time=%v\n", rurl, args, time.Now().Sub(startTime).Seconds())
 		}
 	}
 	return response
