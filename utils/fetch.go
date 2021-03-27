@@ -364,7 +364,7 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 				}
 			}
 		} else {
-			log.Printf("DAS GET url=\"%s\" time=%v\n", rurl, time.Now().Sub(startTime).Seconds())
+			log.Printf("DAS GET system=%s url=\"%s\" time=%v\n", system(rurl), rurl, time.Now().Sub(startTime))
 		}
 	} else {
 		if WEBSERVER == 0 {
@@ -377,10 +377,32 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 				}
 			}
 		} else {
-			log.Printf("DAS POST url=\"%s\" args=\"%v\" time=%v\n", rurl, args, time.Now().Sub(startTime).Seconds())
+			log.Printf("DAS POST system=%s url=\"%s\" args=\"%v\" time=%v\n", system(rurl), rurl, args, time.Now().Sub(startTime))
 		}
 	}
 	return response
+}
+
+// helper function to extract cmsweb system
+func system(rurl string) string {
+	if strings.Contains(rurl, "dbs") {
+		return "dbs"
+	} else if strings.Contains(rurl, "rucio") {
+		return "rucio"
+	} else if strings.Contains(rurl, "reqmgr") {
+		return "reqmgr"
+	} else if strings.Contains(rurl, "mcm") {
+		return "mcm"
+	} else if strings.Contains(rurl, "conddb") {
+		return "conddb"
+	} else if strings.Contains(rurl, "phedex") {
+		return "phedex"
+	} else if strings.Contains(rurl, "runregistry") {
+		return "runregistry"
+	} else if strings.Contains(rurl, "dashboard") {
+		return "dashboard"
+	}
+	return "combined"
 }
 
 // Fetch data for provided URL and redirect results to given channel
