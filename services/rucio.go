@@ -101,6 +101,10 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 				arr := strings.Split(blk, "#")
 				rmap[arr[0]] = 1
 			}
+		} else if api == "block4site" {
+			if rec["name"] != nil {
+				out = append(out, rec)
+			}
 		} else if api == "rules4dataset" || api == "rules4block" || api == "rules4file" {
 			out = append(out, rec)
 		} else if api == "block4dataset" {
