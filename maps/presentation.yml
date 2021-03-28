@@ -274,7 +274,7 @@ release: [
 site : [
         {"das":"site.name", "ui":"Site name",
          "link":[
-                 {"name":"Datasets", "query":"dataset site=%s*"},
+                 {"name":"Datasets", "query":"dataset site=%s"},
                 ],
          "description": "is CMS site name used by Phedex and SiteDB systems",
          "examples":[
