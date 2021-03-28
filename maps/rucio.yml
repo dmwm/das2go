@@ -13,6 +13,17 @@ das_map : [
         {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
 ]
 ---
+urn : block4site
+url : "http://cms-rucio.cern.ch/replicas/rse"
+expire : 3600
+params : {"se":"optional", "node":"optional"}
+lookup : block
+das_map : [
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
+        {"das_key":"site", "rec_key":"site.name", "api_arg": "node", "pattern":"^T[0-3]_"},
+        {"das_key":"site", "rec_key":"site.se", "api_arg":"se", "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
+]
+---
 # we need ending slash since Rucio rules API requires /dids/cms//a/b/c pattern
 urn : block4dataset
 url : "http://cms-rucio.cern.ch/dids/cms/"
