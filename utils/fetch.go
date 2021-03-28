@@ -195,7 +195,7 @@ func (r *ResponseType) String() string {
 
 // Details returns ResponseType details
 func (r *ResponseType) Details() string {
-	s := fmt.Sprintf("method=%s url=\"%s\" params=\"%v\" time=%v sendBytes=%v recvBytes=%v error=%v", r.Method, r.Url, r.Params, r.Time, r.SendBytes, r.RecvBytes, r.Error)
+	s := fmt.Sprintf("system=%s method=%s url=\"%s\" params=\"%v\" time=%v sendBytes=%v recvBytes=%v error=%v", system(r.Url), r.Method, r.Url, r.Params, r.Time, r.SendBytes, r.RecvBytes, r.Error)
 	return s
 }
 
@@ -379,8 +379,8 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 					fmt.Printf("DAS GET %s %v\n", rurl, time.Now().Sub(startTime))
 				}
 			}
-		} else {
-			log.Printf("DAS GET system=%s url=\"%s\" time=%v\n", system(rurl), rurl, time.Now().Sub(startTime))
+			//         } else {
+			//             log.Printf("DAS GET system=%s url=\"%s\" time=%v\n", system(rurl), rurl, time.Now().Sub(startTime))
 		}
 	} else {
 		if WEBSERVER == 0 {
@@ -393,7 +393,7 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 				}
 			}
 		} else {
-			log.Printf("DAS POST system=%s url=\"%s\" args=\"%v\" time=%v\n", system(rurl), rurl, args, time.Now().Sub(startTime))
+			//             log.Printf("DAS POST system=%s url=\"%s\" args=\"%v\" time=%v\n", system(rurl), rurl, args, time.Now().Sub(startTime))
 		}
 	}
 	return response
