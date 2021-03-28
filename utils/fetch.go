@@ -177,14 +177,25 @@ func HttpClient() *http.Client {
 // ResponseType structure is what we expect to get for our URL call.
 // It contains a request URL, the data chunk and possible error from remote
 type ResponseType struct {
-	Url   string
-	Data  []byte
-	Error error
+	Url       string
+	Data      []byte
+	Error     error
+	Time      time.Duration
+	Params    string
+	Method    string
+	SendBytes int
+	RecvBytes int
 }
 
 // String returns ResponseType representation
 func (r *ResponseType) String() string {
 	s := fmt.Sprintf("URL: %s\nData: %s\nError: %v", r.Url, r.Data, r.Error)
+	return s
+}
+
+// Details returns ResponseType details
+func (r *ResponseType) Details() string {
+	s := fmt.Sprintf("method=%s url=\"%s\" params=\"%v\" time=%v sendBytes=%v recvBytes=%v error=%v", r.Method, r.Url, r.Params, r.Time, r.SendBytes, r.RecvBytes, r.Error)
 	return s
 }
 
@@ -304,6 +315,8 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 		req, _ = http.NewRequest("POST", rurl, bytes.NewBuffer(jsonStr))
 		req.Header.Set("Content-Type", "application/json")
 		atomic.AddUint64(&TotalPostCalls, 1)
+		response.Method = "POST"
+		response.SendBytes = len(jsonStr)
 	} else {
 		req, _ = http.NewRequest("GET", rurl, nil)
 		req.Header.Add("Accept-Encoding", "identity")
@@ -311,6 +324,7 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 			req.Header.Add("Accept", "application/json")
 		}
 		atomic.AddUint64(&TotalGetCalls, 1)
+		response.Method = "GET"
 	}
 	if strings.Contains(rurl, "rucio") { // we need to fetch auth token
 		token, err := RucioAuth.Token()
@@ -350,6 +364,8 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 		}
 	}
 	response.Data, err = ioutil.ReadAll(resp.Body)
+	response.Time = time.Now().Sub(startTime)
+	response.RecvBytes = len(response.Data)
 	if err != nil {
 		response.Error = err
 	}
