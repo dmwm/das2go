@@ -133,7 +133,7 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
  */
 
 // helper function to find ReqMgr ids
-func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
+func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]string, map[string][]string) {
 	var inputOut, outputOut, ids, urls []string
 	var rurl string
 	idict := make(map[string][]string)
@@ -161,6 +161,7 @@ func findReqMgrIds(base, dataset string) ([]string, map[string][]string) {
 	for {
 		select {
 		case r := <-ch:
+			log.Printf("pid=%s %s\n", dasquery.Qhash, r.Details())
 			var data mongo.DASRecord
 			view := ""
 			if strings.Contains(strings.ToLower(r.Url), "inputdataset") {
@@ -229,7 +230,7 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	base := "https://cmsweb.cern.ch:8443"
 	// find ReqMgr Ids for given dataset
 	dataset := spec["dataset"].(string)
-	ids, idict := findReqMgrIds(base, dataset)
+	ids, idict := findReqMgrIds(dasquery, base, dataset)
 	var urls, rurls, uids []string
 	var rurl string
 	for _, v := range ids {
@@ -255,6 +256,7 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	for {
 		select {
 		case r := <-ch:
+			log.Printf("pid=%s %s\n", dasquery.Qhash, r.Details())
 			var data mongo.DASRecord
 			err := json.Unmarshal(r.Data, &data)
 			if err == nil {

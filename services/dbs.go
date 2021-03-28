@@ -228,7 +228,7 @@ func (LocalAPIs) BlockRunLumi4Dataset(dasquery dasql.DASQuery) []mongo.DASRecord
 	// run_num, logical_file_name, lumi_secion_num from provided keys
 	api := "filelumis"
 	urls := dbsUrls(dasquery, api)
-	filelumis := processUrls("dbs3", api, urls)
+	filelumis := processUrls(dasquery, "dbs3", api, urls)
 	for _, rec := range filelumis {
 		row := make(mongo.DASRecord)
 		for _, key := range keys {

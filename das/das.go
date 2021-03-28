@@ -488,6 +488,7 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 	for {
 		select {
 		case r := <-out:
+			log.Printf("pid=%s %s\n", dasquery.Qhash, r.Details())
 			system := ""
 			expire := 0
 			urn := ""

@@ -90,6 +90,7 @@ func findBlocks(dasquery dasql.DASQuery) []string {
 	furl := fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
 	client := utils.HttpClient()
 	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
+	log.Printf("pid=%s %s\n", dasquery.Qhash, resp.Details())
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
 		v := rec["block_name"]
@@ -102,7 +103,7 @@ func findBlocks(dasquery dasql.DASQuery) []string {
 
 // helper function to process given set of urls and unmarshal results
 // from all url calls
-func processUrls(system, api string, urls []string) []mongo.DASRecord {
+func processUrls(dasquery dasql.DASQuery, system, api string, urls []string) []mongo.DASRecord {
 	var outRecords []mongo.DASRecord
 	out := make(chan utils.ResponseType)
 	defer close(out)
@@ -117,6 +118,7 @@ func processUrls(system, api string, urls []string) []mongo.DASRecord {
 	for {
 		select {
 		case r := <-out:
+			log.Printf("pid=%s %s\n", dasquery.Qhash, r.Details())
 			// process data
 			var records []mongo.DASRecord
 			if system == "dbs3" || system == "dbs" {
@@ -211,7 +213,7 @@ func fileRunLumi(dasquery dasql.DASQuery, keys []string) []mongo.DASRecord {
 	// run_num, logical_file_name, lumi_secion_num from provided fields
 	api := "filelumis"
 	urls := dbsUrls(dasquery, api)
-	filelumis := processUrls("dbs3", api, urls)
+	filelumis := processUrls(dasquery, "dbs3", api, urls)
 	for _, rec := range filelumis {
 		if _, ok := rec["error"]; ok {
 			out = append(out, rec)
@@ -291,6 +293,7 @@ func dataset4release(dasquery dasql.DASQuery) []string {
 	}
 	client := utils.HttpClient()
 	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
+	log.Printf("pid=%s %s\n", dasquery.Qhash, resp.Details())
 	records := DBSUnmarshal(api, resp.Data)
 	for _, rec := range records {
 		if rec["name"] == nil {
@@ -339,7 +342,7 @@ func dataset4siteRelease(dasquery dasql.DASQuery) []mongo.DASRecord {
 			urls = append(urls, furl)
 		}
 	}
-	for _, rec := range processUrls("phedex", api, urls) {
+	for _, rec := range processUrls(dasquery, "phedex", api, urls) {
 		if rec["name"] == nil {
 			continue
 		}
@@ -375,6 +378,7 @@ func (p *PhedexNodes) Nodes() []mongo.DASRecord {
 	furl := fmt.Sprintf("%s/%s", PhedexUrl(), api)
 	client := utils.HttpClient()
 	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
+	log.Printf("phedexNodes %s\n", resp.Details())
 	p.nodes = PhedexUnmarshal(api, resp.Data)
 	p.tstamp = time.Now().Unix()
 	return p.nodes
