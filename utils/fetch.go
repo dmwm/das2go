@@ -369,31 +369,29 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 	if err != nil {
 		response.Error = err
 	}
-	if args == "" {
-		if WEBSERVER == 0 {
-			if VERBOSE > 0 {
+	if VERBOSE > 0 {
+		if args == "" {
+			if WEBSERVER == 0 {
 				r, e := url.QueryUnescape(rurl)
 				if e == nil {
 					fmt.Printf("DAS GET %s %v\n", r, time.Now().Sub(startTime))
 				} else {
 					fmt.Printf("DAS GET %s %v\n", rurl, time.Now().Sub(startTime))
 				}
+			} else {
+				log.Printf("DAS GET system=%s url=\"%s\" time=%v\n", system(rurl), rurl, time.Now().Sub(startTime))
 			}
-			//         } else {
-			//             log.Printf("DAS GET system=%s url=\"%s\" time=%v\n", system(rurl), rurl, time.Now().Sub(startTime))
-		}
-	} else {
-		if WEBSERVER == 0 {
-			if VERBOSE > 0 {
+		} else {
+			if WEBSERVER == 0 {
 				r, e := url.QueryUnescape(rurl)
 				if e == nil {
 					fmt.Printf("DAS POST %s args %v, %v\n", r, args, time.Now().Sub(startTime))
 				} else {
 					fmt.Printf("DAS POST %s args %v, %v\n", rurl, args, time.Now().Sub(startTime))
 				}
+			} else {
+				log.Printf("DAS POST system=%s url=\"%s\" args=\"%v\" time=%v\n", system(rurl), rurl, args, time.Now().Sub(startTime))
 			}
-		} else {
-			//             log.Printf("DAS POST system=%s url=\"%s\" args=\"%v\" time=%v\n", system(rurl), rurl, args, time.Now().Sub(startTime))
 		}
 	}
 	return response

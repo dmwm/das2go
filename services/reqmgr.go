@@ -161,7 +161,6 @@ func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]string, map
 	for {
 		select {
 		case r := <-ch:
-			log.Printf("pid=%s %s\n", dasquery.Qhash, r.Details())
 			var data mongo.DASRecord
 			view := ""
 			if strings.Contains(strings.ToLower(r.Url), "inputdataset") {
@@ -256,7 +255,6 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	for {
 		select {
 		case r := <-ch:
-			log.Printf("pid=%s %s\n", dasquery.Qhash, r.Details())
 			var data mongo.DASRecord
 			err := json.Unmarshal(r.Data, &data)
 			if err == nil {
