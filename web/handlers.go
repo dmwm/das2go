@@ -341,6 +341,15 @@ type Mem struct {
 	Swap    Memory
 }
 
+// MemStats represents runtime memory stats
+type MemStats struct {
+	Sys        uint64 // is the total bytes of memory obtained from the OS.
+	Alloc      uint64 // is bytes of allocated heap objects.
+	TotalAlloc uint64 // is cumulative bytes allocated for heap objects.
+	HeapSys    uint64 // is bytes of heap memory obtained from the OS.
+	StackSys   uint64 // is bytes of stack memory obtained from the OS
+}
+
 // StatusHandler handlers Status requests
 func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != "GET" {
@@ -362,6 +371,8 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	l, _ := load.Avg()
 	c, _ := cpu.Percent(time.Millisecond, true)
 	process, perr := process.NewProcess(int32(os.Getpid()))
+	var memstats runtime.MemStats
+	runtime.ReadMemStats(&memstats)
 
 	// get unfinished queries
 	var templates DASTemplates
@@ -376,6 +387,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Memory"] = Mem{Virtual: virt, Swap: swap}
 	tmplData["Load"] = l
 	tmplData["CPU"] = c
+	tmplData["MemStats"] = MemStats{Sys: memstats.Sys, Alloc: memstats.Alloc, TotalAlloc: memstats.TotalAlloc, StackSys: memstats.StackSys, HeapSys: memstats.HeapSys}
 	if perr == nil { // if we got process info
 		conn, err := process.Connections()
 		if err == nil {
