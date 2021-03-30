@@ -347,7 +347,10 @@ type MemStats struct {
 	Alloc      uint64 // is bytes of allocated heap objects.
 	TotalAlloc uint64 // is cumulative bytes allocated for heap objects.
 	HeapSys    uint64 // is bytes of heap memory obtained from the OS.
+	HeapInuse  uint64 // is bytes in in-use spans
 	StackSys   uint64 // is bytes of stack memory obtained from the OS
+	StackInuse uint64 // is bytes in stack spans
+	GCSys      uint64 // is bytes of memory in garbage collection metadata.
 }
 
 // StatusHandler handlers Status requests
@@ -387,7 +390,7 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Memory"] = Mem{Virtual: virt, Swap: swap}
 	tmplData["Load"] = l
 	tmplData["CPU"] = c
-	tmplData["MemStats"] = MemStats{Sys: memstats.Sys, Alloc: memstats.Alloc, TotalAlloc: memstats.TotalAlloc, StackSys: memstats.StackSys, HeapSys: memstats.HeapSys}
+	tmplData["MemStats"] = MemStats{Sys: memstats.Sys, Alloc: memstats.Alloc, TotalAlloc: memstats.TotalAlloc, StackSys: memstats.StackSys, HeapSys: memstats.HeapSys, GCSys: memstats.GCSys, StackInuse: memstats.StackInuse, HeapInuse: memstats.HeapInuse}
 	if perr == nil { // if we got process info
 		conn, err := process.Connections()
 		if err == nil {
