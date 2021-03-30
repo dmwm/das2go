@@ -23,6 +23,7 @@ import (
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
+	"github.com/prometheus/procfs"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/load"
 	"github.com/shirou/gopsutil/mem"
@@ -391,6 +392,28 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["Load"] = l
 	tmplData["CPU"] = c
 	tmplData["MemStats"] = MemStats{Sys: memstats.Sys, Alloc: memstats.Alloc, TotalAlloc: memstats.TotalAlloc, StackSys: memstats.StackSys, HeapSys: memstats.HeapSys, GCSys: memstats.GCSys, StackInuse: memstats.StackInuse, HeapInuse: memstats.HeapInuse}
+	var cpuTotal, vsize, rss, openFDs, maxFDs, maxVsize float64
+	if proc, err := procfs.NewProc(os.Getpid()); err == nil {
+		if stat, err := proc.Stat(); err == nil {
+			// CPUTime returns the total CPU user and system time in seconds.
+			cpuTotal = float64(stat.CPUTime())
+			vsize = float64(stat.VirtualMemory())
+			rss = float64(stat.ResidentMemory())
+		}
+		if fds, err := proc.FileDescriptorsLen(); err == nil {
+			openFDs = float64(fds)
+		}
+		if limits, err := proc.NewLimits(); err == nil {
+			maxFDs = float64(limits.OpenFiles)
+			maxVsize = float64(limits.AddressSpace)
+		}
+	}
+	tmplData["CPUTotal"] = cpuTotal
+	tmplData["VSize"] = vsize
+	tmplData["RSS"] = rss
+	tmplData["OpenFDs"] = openFDs
+	tmplData["MaxFDs"] = maxFDs
+	tmplData["MaxVSize"] = maxVsize
 	if perr == nil { // if we got process info
 		conn, err := process.Connections()
 		if err == nil {
