@@ -35,6 +35,9 @@ import (
 // TIMEOUT defines timeout for net/url request
 var TIMEOUT int
 
+// Token defines access token location
+var Token string
+
 // TotalGetCalls counts total number of GET requests made by the server
 var TotalGetCalls uint64
 
@@ -147,6 +150,18 @@ func tlsCerts() ([]tls.Certificate, error) {
 	}
 	certs := []tls.Certificate{x509cert}
 	return certs, nil
+}
+
+// helper function to either read file content or return given string
+func readToken(r string) string {
+	if _, err := os.Stat(r); err == nil {
+		b, e := ioutil.ReadFile(r)
+		if e != nil {
+			log.Fatalf("Unable to read data from file: %s, error: %s", r, e)
+		}
+		return strings.Replace(string(b), "\n", "", -1)
+	}
+	return r
 }
 
 // HttpClient is HTTP client for urlfetch server
@@ -325,6 +340,9 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 		}
 		atomic.AddUint64(&TotalGetCalls, 1)
 		response.Method = "GET"
+	}
+	if Token != "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", readToken(Token)))
 	}
 	if strings.Contains(rurl, "rucio") { // we need to fetch auth token
 		token, err := RucioAuth.Token()
