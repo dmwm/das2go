@@ -166,11 +166,14 @@ func readToken(r string) string {
 
 // HttpClient is HTTP client for urlfetch server
 func HttpClient() *http.Client {
-	// get X509 certs
-	//     certs, err := tlsCerts()
-	certs, err := tlsManager.GetCerts()
-	if err != nil {
-		log.Fatal("ERROR ", err.Error())
+	var certs []tls.Certificate
+	var err error
+	if Token == "" { // if there is no token back auth we fall back to x509
+		// get X509 certs
+		certs, err = tlsManager.GetCerts()
+		if err != nil {
+			log.Fatal("ERROR ", err.Error())
+		}
 	}
 	timeout := time.Duration(TIMEOUT) * time.Second
 	if len(certs) == 0 {
