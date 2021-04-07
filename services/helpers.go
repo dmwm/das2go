@@ -26,10 +26,13 @@ func DBSUrl(inst string) string {
 	if burl == "" { // case of dasgoclient
 		burl = "https://cmsweb.cern.ch:8443"
 	}
-	surl := fmt.Sprintf("%s/dbs/%s/DBSReader", burl, inst)
 	if v != "" {
-		surl = v
+		if strings.Contains(v, "DBSReader") {
+			return v
+		}
+		burl = v
 	}
+	surl := fmt.Sprintf("%s/dbs/%s/DBSReader", burl, inst)
 	return surl
 }
 func PhedexUrl() string {
@@ -38,10 +41,10 @@ func PhedexUrl() string {
 	if burl == "" { // case of dasgoclient
 		burl = "https://cmsweb.cern.ch:8443"
 	}
-	surl := fmt.Sprintf("%s/phedex/datasvc/json/prod", burl)
 	if v != "" {
-		surl = v
+		burl = v
 	}
+	surl := fmt.Sprintf("%s/phedex/datasvc/json/prod", burl)
 	return surl
 }
 func SitedbUrl() string {
