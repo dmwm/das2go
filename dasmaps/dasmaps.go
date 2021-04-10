@@ -488,6 +488,7 @@ func (m *DASMaps) LoadMaps(dbname, dbcoll string) {
 // LoadMapsFromFile loads DAS maps from github or local file
 func (m *DASMaps) LoadMapsFromFile() {
 	githubUrl := "https://raw.githubusercontent.com/dmwm/DASMaps/master/js/das_maps_dbs_prod.js"
+	var dname string
 	if utils.DASMAPS == "" {
 		for _, item := range os.Environ() {
 			value := strings.Split(item, "=")
@@ -496,8 +497,21 @@ func (m *DASMaps) LoadMapsFromFile() {
 				break
 			}
 		}
+		dname = fmt.Sprintf("%s/.dasmaps", utils.DASMAPS)
+	} else {
+		stat, err := os.Stat(utils.DASMAPS)
+		if err == nil {
+			if stat.IsDir() {
+				dname = utils.DASMAPS
+			} else {
+				m.ReadMapFile(utils.DASMAPS)
+				return
+			}
+		} else {
+			log.Printf("ERROR: unable to stat %s, error %v\n", utils.DASMAPS, err)
+			return
+		}
 	}
-	dname := fmt.Sprintf("%s/.dasmaps", utils.DASMAPS)
 	if _, err := os.Stat(dname); err != nil {
 		os.Mkdir(dname, 0777)
 	}
@@ -522,6 +536,28 @@ func (m *DASMaps) LoadMapsFromFile() {
 			return
 		}
 	}
+	m.ReadMapFile(fname)
+	/*
+		data, err := ioutil.ReadFile(fname)
+		if err != nil {
+			log.Printf("ERROR: unable to read DAS maps, time %v, file %v, error %v\n", time.Now(), fname, err)
+			return
+		}
+		records := string(data)
+		for _, rec := range strings.Split(records, "\n") {
+			if strings.Contains(rec, "hash") {
+				var dmap mongo.DASRecord
+				err := json.Unmarshal([]byte(rec), &dmap)
+				if err == nil {
+					m.records = append(m.records, dmap)
+				}
+			}
+		}
+	*/
+}
+
+// ReadMapFile reads given map file
+func (m *DASMaps) ReadMapFile(fname string) {
 	if utils.VERBOSE > 0 {
 		fmt.Println("Load dasmaps", fname)
 	}
