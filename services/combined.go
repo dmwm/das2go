@@ -130,7 +130,14 @@ func rec2num(rec interface{}) int64 {
 }
 
 // Site4Block returns site info for given block
+// we keep it for backward compatibility
 func (LocalAPIs) Site4Block(dasquery dasql.DASQuery) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	return out
+}
+
+// Site4Block returns site info for given block based on Phedex blockReplicas
+func (LocalAPIs) Site4BlockPhedex(dasquery dasql.DASQuery) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	spec := dasquery.Spec
 	block := spec["block"].(string)
