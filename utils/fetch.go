@@ -313,6 +313,9 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 		log.Printf("http request, UrlQueueSize %v, UrlQueueLimit %v\n", UrlQueueSize, UrlQueueLimit)
 	}
 	var response ResponseType
+	if strings.Contains(rurl, "#") {
+		rurl = strings.Replace(rurl, "#", "%23", -1)
+	}
 	response.Url = rurl
 	if validateUrl(rurl) == false {
 		response.Error = errors.New("Invalid URL")
