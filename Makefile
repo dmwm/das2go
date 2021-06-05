@@ -5,7 +5,7 @@ flags=-ldflags="-s -w -X main.version=${VERSION}"
 all: build
 
 build:
-	go clean; rm -rf pkg; go build ${flags}
+	GODEBUG=netdns=go CGO_ENABLED=0 go clean; rm -rf pkg; go build ${flags}
 
 build_debug:
 	go clean; rm -rf pkg; go build ${flags} -gcflags="-m -m"
