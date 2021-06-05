@@ -515,6 +515,16 @@ func LoadExamples(ename, home string) string {
 	return string(data)
 }
 
+// GetHostUrl return URL of given URL path
+func GetHostUrl(s string) string {
+	arr := strings.Split(s, "://")
+	if len(arr) > 1 {
+		hurl := strings.Split(arr[1], "/")
+		return fmt.Sprintf("%s://%s", arr[0], hurl[0])
+	}
+	return ""
+}
+
 // Color prints given string in color based on ANSI escape codes, see
 // http://www.wikiwand.com/en/ANSI_escape_code#/Colors
 func Color(col, text string) string {
