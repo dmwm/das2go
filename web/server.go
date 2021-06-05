@@ -173,6 +173,13 @@ func Server(configFile string) {
 		log.Println("DAS services ", _dasmaps.Services())
 		log.Println("DAS keys ", _dasmaps.DASKeys())
 	}
+	// set default urls for our services
+	services.UrlMap = make(map[string]string)
+	for _, srv := range _dasmaps.Services() {
+		services.UrlMap[srv] = _dasmaps.GetUrl(srv)
+	}
+	log.Println("DAS url map", services.UrlMap)
+
 	// list URLs we're going to use
 	log.Println("DBSUrl: ", services.DBSUrl(config.Config.DbsInstances[0]))
 	log.Println("PhedexUrl: ", services.PhedexUrl())
