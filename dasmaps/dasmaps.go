@@ -294,6 +294,31 @@ func (m *DASMaps) FindPresentation(daskey string) []mongo.DASRecord {
 	return m.presentations[daskey].([]mongo.DASRecord)
 }
 
+// GetUrl provides url from das maps for a given service name
+func (m *DASMaps) GetUrl(s string) string {
+	var value string
+	for _, rec := range m.records {
+		rtype := rec["type"]
+		if val, ok := rtype.(string); ok {
+			value = val
+		} else {
+			continue
+		}
+		var srv string
+		if value == "service" {
+			srv = rec["system"].(string)
+		}
+		if srv == "" || srv != s {
+			continue
+		}
+		rurl := rec["url"]
+		if val, ok := rurl.(string); ok {
+			return utils.GetHostUrl(val)
+		}
+	}
+	return ""
+}
+
 // GetDASMaps returns das maps for given entry
 func GetDASMaps(entry interface{}) []mongo.DASRecord {
 	var maps []mongo.DASRecord
