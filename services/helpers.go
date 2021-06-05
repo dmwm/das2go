@@ -14,54 +14,79 @@ import (
 	"strings"
 	"time"
 
-	"github.com/dmwm/das2go/config"
 	"github.com/dmwm/das2go/dasql"
 	"github.com/dmwm/das2go/mongo"
 	"github.com/dmwm/das2go/utils"
 )
 
+var UrlMap map[string]string
+
+// DBSUrl returns DBS URL
 func DBSUrl(inst string) string {
 	v := utils.GetEnv("DBS_URL")
-	burl := config.Config.Frontend
-	if burl == "" { // case of dasgoclient
-		burl = "https://cmsweb.cern.ch:8443"
-	}
 	if v != "" {
 		if strings.Contains(v, "DBSReader") {
 			return v
 		}
-		burl = v
+		return fmt.Sprintf("%s/dbs/%s/DBSReader", v, inst)
 	}
-	surl := fmt.Sprintf("%s/dbs/%s/DBSReader", burl, inst)
+	if val, ok := UrlMap["dbs3"]; ok {
+		v = val
+	}
+	if strings.Contains(v, "DBSReader") {
+		return v
+	}
+	surl := fmt.Sprintf("%s/dbs/%s/DBSReader", v, inst)
 	return surl
 }
+
+// PhedexUrl returns Phedex URL
 func PhedexUrl() string {
 	v := utils.GetEnv("PHEDEX_URL")
-	burl := config.Config.Frontend
-	if burl == "" { // case of dasgoclient
-		burl = "https://cmsweb.cern.ch:8443"
-	}
 	if v != "" {
-		burl = v
+		if strings.Contains(v, "phedex") {
+			return v
+		}
+		return fmt.Sprintf("%s/phedex/datasvc/json/prod", v)
 	}
-	surl := fmt.Sprintf("%s/phedex/datasvc/json/prod", burl)
+	if val, ok := UrlMap["phedex"]; ok {
+		v = val
+	}
+	if strings.Contains(v, "phedex") {
+		return v
+	}
+	surl := fmt.Sprintf("%s/phedex/datasvc/json/prod", v)
 	return surl
 }
+
+// SitedbUrl returns Sitedb URL
 func SitedbUrl() string {
 	v := utils.GetEnv("SITEDB_URL")
-	burl := config.Config.Frontend
-	if burl == "" { // case of dasgoclient
-		burl = "https://cmsweb.cern.ch:8443"
-	}
-	surl := fmt.Sprintf("%s/sitedb/data/prod", burl)
 	if v != "" {
-		surl = v
+		if strings.Contains(v, "sitedb") {
+			return v
+		}
+		return fmt.Sprintf("%s/sitedb/data/prod", v)
 	}
+	if val, ok := UrlMap["sitedb"]; ok {
+		v = val
+	}
+	if strings.Contains(v, "sitedb") {
+		return v
+	}
+	surl := fmt.Sprintf("%s/sitedb/data/prod", v)
 	return surl
 }
+
+// CricUrl returns Cric URL
 func CricUrl(api string) string {
 	v := utils.GetEnv("CRIC_URL")
 	surl := "https://cms-cric.cern.ch"
+	if val, ok := UrlMap["cric"]; ok {
+		if val != "" {
+			surl = val
+		}
+	}
 	if v != "" {
 		surl = v
 	}
@@ -70,12 +95,17 @@ func CricUrl(api string) string {
 	}
 	return fmt.Sprintf("%s/api/accounts/user/query", surl)
 }
+
+// RucioUrl returns Rucio url
 func RucioUrl() string {
 	v := utils.GetEnv("RUCIO_URL")
 	if v != "" {
 		return v
 	}
-	return "http://cms-rucio.cern.ch"
+	if val, ok := UrlMap["rucio"]; ok {
+		v = val
+	}
+	return v
 }
 
 // helper function to find file,run,lumis for given dataset or block
