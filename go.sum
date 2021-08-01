@@ -2,11 +2,10 @@ github.com/StackExchange/wmi v0.0.0-20210224194228-fe8f1750fd46 h1:5sXbqlSomvdjl
 github.com/StackExchange/wmi v0.0.0-20210224194228-fe8f1750fd46/go.mod h1:3eOhrUMpNV+6aFIbp5/iudMxNCF27Vw2OZgy4xEx0Fg=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/dmwm/cmsauth v0.0.0-20200227183320-1e78c9119730 h1:pKaYvPwmfzuB7YfsPvJEo4GDPLKwdZZYKaTnSfWDd2c=
-github.com/dmwm/cmsauth v0.0.0-20200227183320-1e78c9119730/go.mod h1:Bi7pLBRdNIRdhUbSFT3jZvEM2zTSTat/IuHiJMctqIQ=
+github.com/dmwm/cmsauth v0.0.0-20210801171713-57cb9b909db0 h1:IVs/XVvy/5QDNi6Hl6bEVq/At1kxfUCPh8JOgoNYgU4=
+github.com/dmwm/cmsauth v0.0.0-20210801171713-57cb9b909db0/go.mod h1:+ybphq48TVfrBjWKn7QZFsweZZlHI/m7QlfWMrgRiPY=
 github.com/go-ole/go-ole v1.2.5 h1:t4MGB5xEDZvXI+0rMjjsfBsD7yAgp/s9ZDkL1JndXwY=
 github.com/go-ole/go-ole v1.2.5/go.mod h1:pprOEPIfldk/42T2oK7lQ4v4JSDwmV0As9GaiUsvbm0=
-github.com/go-stomp/stomp v2.0.5+incompatible/go.mod h1:VqCtqNZv1226A1/79yh+rMiFUcfY3R109np+7ke4n0c=
 github.com/google/go-cmp v0.5.4 h1:L8R9j+yAqZuZjsqh/z+F1NCffTKKLShY6zXTItVIZ8M=
 github.com/google/go-cmp v0.5.4/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/gNBxE=
 github.com/jonboulle/clockwork v0.2.2 h1:UOGuzwb1PwsrDAObMuhUnj0p5ULPj8V/xJ7Kx9qUBdQ=
@@ -41,8 +40,9 @@ github.com/tklauser/numcpus v0.2.2 h1:oyhllyrScuYI6g+h/zUvNXNp1wy7x8qQy3t/piefld
 github.com/tklauser/numcpus v0.2.2/go.mod h1:x3qojaO3uyYt0i56EW/VUYs7uBvdl2fkfZFu0T9wgjM=
 github.com/vkuznet/dcr v0.0.0-20200922173840-46cf19c474b3 h1:+OR49j+jxUFyz5V1g6n5+8aW6T98IdRV+oBURga5qrs=
 github.com/vkuznet/dcr v0.0.0-20200922173840-46cf19c474b3/go.mod h1:qrpJaX0+aN8cSkjRRHifnzCBhMk79FkuEM2biRIWjtI=
-github.com/vkuznet/x509proxy v0.0.0-20191014143623-163039704c67 h1:7s/FGCnCgfaJxmyeE+k18s5Bpx1TIrss4sMesjqRJsI=
 github.com/vkuznet/x509proxy v0.0.0-20191014143623-163039704c67/go.mod h1:n8gnqWgHpPWW+DyA66Zam8qQshAmDxVVmSmObyR6M8g=
+github.com/vkuznet/x509proxy v0.0.0-20210801171832-e47b94db99b6 h1:Y5LCuH9nfTZ6srI5NaoKKbcDb01zqTHw8678++4fw0c=
+github.com/vkuznet/x509proxy v0.0.0-20210801171832-e47b94db99b6/go.mod h1:gfEPE3azFe+K/nMLezta3+kTiumttEYDawGAE72IYfM=
 golang.org/x/sync v0.0.0-20201207232520-09787c993a3a/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sys v0.0.0-20190916202348-b4ddaad3f8a3/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20210124154548-22da62e12c0c/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
