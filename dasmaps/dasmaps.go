@@ -8,7 +8,6 @@ package dasmaps
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -551,7 +550,7 @@ func (m *DASMaps) LoadMapsFromFile() {
 		resp := utils.FetchResponse(client, githubUrl, "")
 		if resp.Error == nil {
 			// write data to local area
-			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)
+			err := os.WriteFile(fname, []byte(resp.Data), 0777)
 			if err != nil {
 				log.Printf("ERROR: unable to write DAS maps, time %v, error %v\n", time.Now(), err)
 				return
@@ -563,7 +562,7 @@ func (m *DASMaps) LoadMapsFromFile() {
 	}
 	m.ReadMapFile(fname)
 	/*
-		data, err := ioutil.ReadFile(fname)
+		data, err := os.ReadFile(fname)
 		if err != nil {
 			log.Printf("ERROR: unable to read DAS maps, time %v, file %v, error %v\n", time.Now(), fname, err)
 			return
@@ -586,7 +585,7 @@ func (m *DASMaps) ReadMapFile(fname string) {
 	if utils.VERBOSE > 0 {
 		fmt.Println("Load dasmaps", fname)
 	}
-	data, err := ioutil.ReadFile(fname)
+	data, err := os.ReadFile(fname)
 	if err != nil {
 		log.Printf("ERROR: unable to read DAS maps, time %v, file %v, error %v\n", time.Now(), fname, err)
 		return

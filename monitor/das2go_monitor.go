@@ -26,7 +26,7 @@ func checkHttpEndpoint(endpoint, pat string) bool {
 		log.Printf("ERROR: unable to fetch data, url %v, error %v\n", endpoint, err)
 		return false
 	}
-	data, err := ioutil.ReadAll(resp.Body)
+	data, err := io.ReadAll(resp.Body)
 	if err != nil {
 		log.Printf("ERROR: unable to read response body, status %v, error %v\n", resp.Status, err)
 		return false
@@ -102,7 +102,7 @@ func main() {
 	flag.StringVar(&config, "config", "config.json", "DAS server config")
 	flag.Parse()
 	// parse DAS config file and find our on which port it is running
-	data, e := ioutil.ReadFile(config)
+	data, e := os.ReadFile(config)
 	if e != nil {
 		log.Fatalf("unable to open %s\n", config)
 	}

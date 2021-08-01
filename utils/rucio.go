@@ -6,7 +6,7 @@ package utils
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -140,7 +140,7 @@ func FetchRucioToken(rurl string) (string, int64, error) {
 		dump, err := httputil.DumpResponse(resp, true)
 		log.Printf("http response rurl %v, dump %v, error %v\n", rurl, string(dump), err)
 	}
-	_, err = ioutil.ReadAll(resp.Body)
+	_, err = io.ReadAll(resp.Body)
 	if err != nil {
 		if VERBOSE > 0 {
 			log.Println("ERROR: unable to read response body", err)

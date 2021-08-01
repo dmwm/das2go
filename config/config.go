@@ -9,8 +9,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
+	"os"
 )
 
 // Configuration stores DAS configuration parameters
@@ -54,7 +54,7 @@ func (c *Configuration) String() string {
 
 // ParseConfig parse given config file
 func ParseConfig(configFile string) error {
-	data, err := ioutil.ReadFile(configFile)
+	data, err := os.ReadFile(configFile)
 	if err != nil {
 		log.Printf("Unable to read: file %s, error %v\n", configFile, err)
 		return err

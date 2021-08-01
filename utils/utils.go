@@ -10,7 +10,6 @@ import (
 	"encoding/gob"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"runtime"
@@ -497,7 +496,7 @@ func LoadExamples(ename, home string) string {
 		resp := FetchResponse(client, githubUrl, "")
 		if resp.Error == nil {
 			// write data to local area
-			err := ioutil.WriteFile(fname, []byte(resp.Data), 0777)
+			err := os.WriteFile(fname, []byte(resp.Data), 0777)
 			if err != nil {
 				log.Println("ERROR: unable to write DAS example file", err)
 				return ""
@@ -507,7 +506,7 @@ func LoadExamples(ename, home string) string {
 			return ""
 		}
 	}
-	data, err := ioutil.ReadFile(fname)
+	data, err := os.ReadFile(fname)
 	if err != nil {
 		log.Printf("ERROR: unable to read DAS example file %v, error %v\n", fname, err)
 		return ""

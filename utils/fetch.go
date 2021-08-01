@@ -155,7 +155,7 @@ func tlsCerts() ([]tls.Certificate, error) {
 // helper function to either read file content or return given string
 func readToken(r string) string {
 	if _, err := os.Stat(r); err == nil {
-		b, e := ioutil.ReadFile(r)
+		b, e := os.ReadFile(r)
 		if e != nil {
 			log.Fatalf("Unable to read data from file: %s, error: %s", r, e)
 		}
