@@ -4,7 +4,7 @@ go 1.16
 
 require (
 	github.com/StackExchange/wmi v1.2.1 // indirect
-	github.com/dmwm/cmsauth v0.0.0-20210801171713-57cb9b909db0
+	github.com/dmwm/cmsauth v0.0.0-20210802115144-6a4971fa8b26
 	github.com/go-ole/go-ole v1.2.5 // indirect
 	github.com/jonboulle/clockwork v0.2.2 // indirect
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
