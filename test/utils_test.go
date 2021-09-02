@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"testing"
 	"time"
 
@@ -138,6 +139,13 @@ func TestFetch(t *testing.T) {
 
 // TestCerts should test certificate manager
 func TestCerts(t *testing.T) {
+	uproxy := os.Getenv("X509_USER_PROXY")
+	uckey := os.Getenv("X509_USER_KEY")
+	ucert := os.Getenv("X509_USER_CERT")
+	if uproxy == "" && uckey == "" && ucert == "" {
+		// nothing to test
+		return
+	}
 	var tlsManager utils.TLSCertsManager
 	certs, err := tlsManager.GetCerts()
 	if err != nil {
