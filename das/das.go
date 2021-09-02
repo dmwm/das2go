@@ -1032,12 +1032,12 @@ func TimeStamp(dasquery dasql.DASQuery) int64 {
 	spec := bson.M{"das.record": 0, "qhash": dasquery.Qhash}
 	recs := mongo.Get("das", "cache", spec, 0, 1)
 	if len(recs) == 0 {
-		log.Printf("ERROR: unable to find das record, query: %s, spec %#v\n", dasquery.String, spec)
+		log.Printf("ERROR: unable to find das record, query: %s, spec %#v\n", dasquery.String(), spec)
 		return 0
 	}
 	ts, err := mongo.GetInt64Value(recs[0], "das.ts")
 	if err != nil {
-		log.Printf("ERROR: unable to find das record, query: %s, spec %#v\n", dasquery.String, spec)
+		log.Printf("ERROR: unable to find das record, query: %s, spec %#v\n", dasquery.String(), spec)
 		return 0
 	}
 	return ts

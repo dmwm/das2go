@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"reflect"
 	"runtime"
 	"sort"
 	"strconv"
@@ -70,9 +71,14 @@ func GoDeferFunc(api string, f func()) {
 	}()
 	err := <-ch
 	if err != nil && err != "ok" {
-		msg := fmt.Sprintf("unable to run api='%s', function='%#v', error='%v'", api, f, err)
+		msg := fmt.Sprintf("unable to run api='%s', function='%v', error='%v'", api, GetFuncName(f), err)
 		log.Fatal("ERROR ", msg)
 	}
+}
+
+// GetFuncName returns name of the function
+func GetFuncName(i interface{}) string {
+	return runtime.FuncForPC(reflect.ValueOf(i).Pointer()).Name()
 }
 
 // FindInList helper function to find item in a list
