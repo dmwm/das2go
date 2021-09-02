@@ -85,7 +85,7 @@ func GetValue(rec DASRecord, key string) interface{} {
 	if len(keys) > 1 {
 		value, ok := rec[keys[0]]
 		if !ok {
-			log.Printf("unable to find key-value, record %+v, key\n", rec, key)
+			log.Printf("unable to find key-value, record %+v, key %s\n", rec, key)
 			return ""
 		}
 		switch v := value.(type) {
