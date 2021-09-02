@@ -2,6 +2,7 @@ das2go
 ======
 
 [![Build Status](https://travis-ci.org/dmwm/das2go.svg?branch=master)](https://travis-ci.org/dmwm/das2go)
+[![Go CI build](https://github.com/dmwm/das2go/actions/workflows/go-ci.yml/badge.svg)](https://github.com/dmwm/das2go/actions/workflows/go-ci.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/dmwm/das2go)](https://goreportcard.com/report/github.com/dmwm/das2go)
 [![GoDoc](https://godoc.org/github.com/dmwm/das2go?status.svg)](https://godoc.org/github.com/dmwm/das2go)
 
