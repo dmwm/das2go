@@ -75,7 +75,7 @@ jobs:
         username: ${{ secrets.CERN_LOGIN }}
         password: ${{ secrets.CERN_TOKEN }}
         registry: registry.cern.ch
-        repository: cmsweb/das2go
+        repository: cmsweb/das-server
         tag_with_ref: true
 
     - name: Login to Registry
