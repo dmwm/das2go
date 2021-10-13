@@ -493,6 +493,9 @@ func RequestHandler(w http.ResponseWriter, r *http.Request) {
 	inst := template.HTMLEscapeString(r.FormValue("instance"))
 	if inst == "" {
 		inst = _dasmaps.DBSInstance()
+		if inst == "" && len(config.Config.DbsInstances) > 0 { // case of dbs2go
+			inst = config.Config.DbsInstances[0]
+		}
 	}
 	if hash != "" {
 		dasquery, err, _ := dasql.Parse(query, inst, _dasmaps.DASKeys())

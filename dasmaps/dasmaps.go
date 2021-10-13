@@ -50,11 +50,14 @@ func (m *DASMaps) DBSInstance() string {
 	if !ok {
 		log.Fatalf("unable to find url in DAS record: %+v\n", rec)
 	}
-	// example of url "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
 	v := u.(string)
-	arr := strings.Split(v, "dbs/")
-	inst := strings.Split(arr[1], "/DBSReader")
-	return inst[0]
+	if strings.Contains(v, "/DBSReader") {
+		// example of url "https://cmsweb.cern.ch/dbs/prod/global/DBSReader/datasets/"
+		arr := strings.Split(v, "dbs/")
+		inst := strings.Split(arr[1], "/DBSReader")
+		return inst[0]
+	}
+	return ""
 }
 
 // FindApiRecord finds DAS API record
