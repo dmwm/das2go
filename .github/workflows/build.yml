@@ -60,7 +60,7 @@ jobs:
         sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
         chmod +x run.sh
         docker build . --tag docker.pkg.github.com/dmwm/das2go/das2go
-        docker tag docker.pkg.github.com/dmwm/das2go/das2go registry.cern.ch/cmsweb/das2go
+        docker tag docker.pkg.github.com/dmwm/das2go/das2go registry.cern.ch/cmsweb/das-server
 
     - name: Login to registry.cern.ch
       uses: docker/login-action@v1.6.0
@@ -112,7 +112,7 @@ jobs:
     - name: Push new image to k8s
       run: |
         curl -ksLO https://raw.githubusercontent.com/vkuznet/imagebot/main/imagebot.sh
-        sed -i -e "s,COMMIT,${{github.sha}},g" -e "s,REPOSITORY,${{github.repository}},g" -e "s,NAMESPACE,das,g" -e "s,TAG,${{steps.get-ref.outputs.tag}},g" -e "s,IMAGE,registry.cern.ch/cmsweb/das2go,g" -e "s,SERVICE,das-server,g" -e "s,HOST,${{secrets.IMAGEBOT_URL}},g" imagebot.sh
+        sed -i -e "s,COMMIT,${{github.sha}},g" -e "s,REPOSITORY,${{github.repository}},g" -e "s,NAMESPACE,das,g" -e "s,TAG,${{steps.get-ref.outputs.tag}},g" -e "s,IMAGE,registry.cern.ch/cmsweb/das-server,g" -e "s,SERVICE,das-server,g" -e "s,HOST,${{secrets.IMAGEBOT_URL}},g" imagebot.sh
         chmod +x imagebot.sh
         cat imagebot.sh
         sh ./imagebot.sh
