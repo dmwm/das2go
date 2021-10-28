@@ -387,7 +387,7 @@ child : [
 config : [
         {"das":"config.name", "ui":"Config name",
          "link":[
-           {"name":"request", "url":"https://cmsweb.cern.ch/reqmgr2/fetch?rid=%s"},
+           {"name":"ReqMgr info", "url":"https://cmsweb.cern.ch/reqmgr2/fetch?rid=%s"},
          ],
          "description":"is a DAS key to lookup CMS configuration information about dataset",
          "examples":[
