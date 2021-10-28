@@ -129,6 +129,9 @@ func dasLinks(path, inst, val string, links []interface{}) string {
 	for _, row := range links {
 		rec := row.(mongo.DASRecord)
 		name := rec["name"].(string)
+		if strings.Contains(name, "%s") {
+			name = fmt.Sprintf(name, val)
+		}
 		if v, ok := rec["query"]; ok {
 			q := v.(string)
 			if q != "" {
@@ -481,6 +484,15 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					value := ExtractValue(rec, attr)
 					if daskey == "lumi.number" {
 						value = joinLumis(strings.Split(value, ","))
+					}
+					if daskey == "config.ids" {
+						var vals []string
+						for _, vvv := range strings.Split(value, ",") {
+							v := strings.Trim(vvv, " ")
+							v = fmt.Sprintf("<a href=\"https://cmsweb.cern.ch/couchdb/reqmgr_config_cache/%s/configFile\">%s</a>", v, v)
+							vals = append(vals, v)
+						}
+						value = strings.Join(vals, ", ")
 					}
 					if pval == "" {
 						pval = value
