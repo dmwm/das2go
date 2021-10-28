@@ -385,14 +385,12 @@ child : [
         {"das":"child.size", "ui":"Size"},
         ],
 config : [
-        {"das":"config.name", "ui":"Config name",
+        {"das":"config.name", "ui":"Request name",
          "link":[
            {"name":"ReqMgr info", "url":"https://cmsweb.cern.ch/reqmgr2/fetch?rid=%s"},
          ],
-         "description":"is a DAS key to lookup CMS configuration information about dataset",
-         "examples":[
-         "config dataset=/a/b/c",
-         ]
+         "description":"is a DAS key to lookup CMS configuration information about dataset configuration",
+         "examples":[]
         },
         {"das":"config.ids", "ui":"Request ids"},
         {"das":"config.urls", "ui":"Config urls"},
