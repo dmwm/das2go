@@ -132,17 +132,24 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
  * LOCAL APIs
  */
 
+type ReqMgrInfo struct {
+	RequestName string
+	ConfigIDs   []string
+	Tasks       []string
+}
+
 // helper function to find ReqMgr ids
-func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]string, map[string][]string) {
+func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]ReqMgrInfo, map[string][]string) {
 	var inputOut, outputOut, ids, urls []string
 	var rurl string
+	var reqmgrInfo []ReqMgrInfo
 	idict := make(map[string][]string)
 
 	// check that given dataset pass dataset pattern
 	matched, err := regexp.MatchString("/[\\w-]+/[\\w-]+/[A-Z-]+", dataset)
 	if err != nil || !matched {
 		log.Printf("ERROR: unable to validate dataset %v, error %v\n", dataset, err)
-		return []string{}, idict
+		return reqmgrInfo, idict
 	}
 
 	rurl = fmt.Sprintf("%s/reqmgr2/data/request?outputdataset=%s", base, dataset)
@@ -176,7 +183,8 @@ func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]string, map
 					rows := result.([]interface{})
 					for _, rec := range rows {
 						row := rec.(map[string]interface{})
-						for _, d := range row {
+						for reqName, d := range row {
+							rinfo := ReqMgrInfo{RequestName: reqName}
 							data := d.(map[string]interface{})
 							for kkk, vvv := range data {
 								if strings.Contains(kkk, "ConfigCacheID") {
@@ -195,7 +203,23 @@ func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]string, map
 										}
 									}
 								}
+								// extract configs from Task parts of FJR document
+								if strings.Contains(kkk, "Task") {
+									switch data := vvv.(type) {
+									case map[string]interface{}:
+										for k, v := range data {
+											if k == "ConfigCacheID" {
+												switch tid := v.(type) {
+												case string:
+													ids = append(ids, tid)
+												}
+											}
+										}
+									}
+								}
 							}
+							rinfo.ConfigIDs = utils.List2Set(ids)
+							reqmgrInfo = append(reqmgrInfo, rinfo)
 						}
 					}
 				}
@@ -213,7 +237,7 @@ func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]string, map
 			break
 		}
 	}
-	return utils.List2Set(ids), idict
+	return reqmgrInfo, idict
 }
 
 // Configs reqmgr APIs to lookup configs for given dataset
@@ -229,16 +253,18 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	base := "https://cmsweb.cern.ch:8443"
 	// find ReqMgr Ids for given dataset
 	dataset := spec["dataset"].(string)
-	ids, idict := findReqMgrIds(dasquery, base, dataset)
+	reqmgrInfo, idict := findReqMgrIds(dasquery, base, dataset)
 	var urls, rurls, uids []string
 	var rurl string
-	for _, v := range ids {
-		if len(v) == 32 {
-			rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
-			urls = append(urls, rurl)
-		} else {
-			rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s", base, v)
-			rurls = append(rurls, rurl)
+	for _, req := range reqmgrInfo {
+		for _, v := range req.ConfigIDs {
+			if len(v) == 32 {
+				rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
+				urls = append(urls, rurl)
+			} else {
+				rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s", base, v)
+				rurls = append(rurls, rurl)
+			}
 		}
 	}
 
@@ -281,28 +307,40 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	}
 
 	// Construct final record
-	rec := make(mongo.DASRecord)
-	rec["dataset"] = dataset
-	rec["name"] = "ReqMgr2"
-	rec["ids"] = ids
-	rec["idict"] = idict
-	var outputUrls, inputUrls []string
-	for _, uid := range idict["byinputdataset"] {
-		for _, rurl := range urls {
-			if strings.Contains(rurl, uid) {
-				inputUrls = append(inputUrls, rurl)
-			}
-		}
-	}
-	for _, uid := range idict["byoutputdataset"] {
-		for _, rurl := range urls {
-			if strings.Contains(rurl, uid) {
-				outputUrls = append(outputUrls, rurl)
-			}
-		}
-	}
-	rec["urls"] = mongo.DASRecord{"output": outputUrls, "input": inputUrls}
 	var out []mongo.DASRecord
-	out = append(out, rec)
+	for _, req := range reqmgrInfo {
+		rec := make(mongo.DASRecord)
+		rec["dataset"] = dataset
+		rec["name"] = req.RequestName
+		rec["ids"] = req.ConfigIDs
+		rec["idict"] = idict
+		var outputUrls, inputUrls []string
+		for _, uid := range idict["byinputdataset"] {
+			for _, rurl := range urls {
+				if strings.Contains(rurl, uid) {
+					// we should ensure that rurl covers req ConfigIDs
+					for _, rid := range req.ConfigIDs {
+						if strings.Contains(rurl, rid) {
+							inputUrls = append(inputUrls, rurl)
+						}
+					}
+				}
+			}
+		}
+		for _, uid := range idict["byoutputdataset"] {
+			for _, rurl := range urls {
+				if strings.Contains(rurl, uid) {
+					// we should ensure that rurl covers req ConfigIDs
+					for _, rid := range req.ConfigIDs {
+						if strings.Contains(rurl, rid) {
+							outputUrls = append(outputUrls, rurl)
+						}
+					}
+				}
+			}
+		}
+		rec["urls"] = mongo.DASRecord{"output": outputUrls, "input": inputUrls}
+		out = append(out, rec)
+	}
 	return out
 }
