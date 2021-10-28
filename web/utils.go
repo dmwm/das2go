@@ -131,8 +131,7 @@ func dasLinks(path, inst, val string, links []interface{}) string {
 			out = append(out, link)
 		} else if u, ok := rec["url"]; ok {
 			qurl := fmt.Sprintf(u.(string), val)
-			base := strings.Replace(path, "/das", "", -1)
-			link := fmt.Sprintf("<a href=\"%s%s\">%s</a>", base, qurl, name)
+			link := fmt.Sprintf("<a href=\"%s\">%s</a>", qurl, name)
 			out = append(out, link)
 		}
 	}
