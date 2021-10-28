@@ -19,7 +19,7 @@ import (
 	"gopkg.in/mgo.v2/bson"
 )
 
-// helper function to make a link
+// helper function to make a link of first element of the record in web UI presentation
 func href(path, daskey, value, inst string) string {
 	key := strings.Split(daskey, ".")[0]
 	var ref string
@@ -34,6 +34,10 @@ func href(path, daskey, value, inst string) string {
 	parameters.Add("input", ref)
 	furl.RawQuery = parameters.Encode()
 	out := fmt.Sprintf("<span class=\"highlight\"><a href=\"%s&instance=%s\">%s</a></span>", furl.String(), inst, value)
+	// if value is config one we simply need to show its value
+	if strings.Contains(furl.String(), "config") {
+		out = fmt.Sprintf("<span class=\"highlight\">%s</span>", value)
+	}
 	return out
 }
 
@@ -125,14 +129,21 @@ func dasLinks(path, inst, val string, links []interface{}) string {
 	for _, row := range links {
 		rec := row.(mongo.DASRecord)
 		name := rec["name"].(string)
-		if q, ok := rec["query"]; ok {
-			query := fmt.Sprintf(q.(string), val)
-			link := fmt.Sprintf("<a href=\"%s?instance=%s&input=%s\">%s</a>", path, inst, url.QueryEscape(query), name)
-			out = append(out, link)
-		} else if u, ok := rec["url"]; ok {
-			qurl := fmt.Sprintf(u.(string), val)
-			link := fmt.Sprintf("<a href=\"%s\">%s</a>", qurl, name)
-			out = append(out, link)
+		if v, ok := rec["query"]; ok {
+			q := v.(string)
+			if q != "" {
+				query := fmt.Sprintf(q, val)
+				link := fmt.Sprintf("<a href=\"%s?instance=%s&input=%s\">%s</a>", path, inst, url.QueryEscape(query), name)
+				out = append(out, link)
+			}
+		}
+		if v, ok := rec["url"]; ok {
+			q := v.(string)
+			if q != "" {
+				qurl := fmt.Sprintf(q, val)
+				link := fmt.Sprintf("<a href=\"%s\">%s</a>", qurl, name)
+				out = append(out, link)
+			}
 		}
 	}
 	return "<br/>" + strings.Join(out, ", ")
