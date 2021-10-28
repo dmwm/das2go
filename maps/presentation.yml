@@ -394,6 +394,7 @@ config : [
          "config dataset=/a/b/c",
          ]
         },
+        {"das":"config.ids", "ui":"Request ids"},
         {"das":"config.urls", "ui":"Config urls"},
         {"das":"config.type", "ui":"Type"},
         {"das":"config.version", "ui":"Version"},
