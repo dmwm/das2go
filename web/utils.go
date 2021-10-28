@@ -125,9 +125,16 @@ func dasLinks(path, inst, val string, links []interface{}) string {
 	for _, row := range links {
 		rec := row.(mongo.DASRecord)
 		name := rec["name"].(string)
-		query := fmt.Sprintf(rec["query"].(string), val)
-		link := fmt.Sprintf("<a href=\"%s?instance=%s&input=%s\">%s</a>", path, inst, url.QueryEscape(query), name)
-		out = append(out, link)
+		if q, ok := rec["query"]; ok {
+			query := fmt.Sprintf(q.(string), val)
+			link := fmt.Sprintf("<a href=\"%s?instance=%s&input=%s\">%s</a>", path, inst, url.QueryEscape(query), name)
+			out = append(out, link)
+		} else if u, ok := rec["url"]; ok {
+			qurl := fmt.Sprintf(u.(string), val)
+			base := strings.Replace(path, "/das", "", -1)
+			link := fmt.Sprintf("<a href=\"%s%s\">%s</a>", base, qurl, name)
+			out = append(out, link)
+		}
 	}
 	return "<br/>" + strings.Join(out, ", ")
 }
