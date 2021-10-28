@@ -125,7 +125,7 @@ a:active {
     color:#666666;
     background-color:#e3e0d1;
 }
-.highlight a {
+.highlight a, span {
     color: #333333;
     padding: 3px;
     font-weight: bold;
