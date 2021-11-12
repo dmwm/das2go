@@ -20,11 +20,19 @@ import (
 )
 
 // helper function to make a link of first element of the record in web UI presentation
-func href(path, daskey, value, inst string) string {
+func href(path, daskey, value, inst, query string) string {
 	key := strings.Split(daskey, ".")[0]
 	var ref string
 	if key == "parent" || key == "child" {
-		ref = fmt.Sprintf("dataset=%s", value)
+		if strings.Contains(query, "dataset=") {
+			ref = fmt.Sprintf("dataset=%s", value)
+		} else if strings.Contains(query, "block=") {
+			ref = fmt.Sprintf("block=%s", value)
+		} else if strings.Contains(query, "file=") {
+			ref = fmt.Sprintf("file=%s", value)
+		} else {
+			ref = fmt.Sprintf("%s=%s", key, value)
+		}
 	} else {
 		ref = fmt.Sprintf("%s=%s", key, value)
 	}
@@ -533,7 +541,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 							webkey = tooltip(webkey)
 						}
 						if daskey == pkey {
-							row = fmt.Sprintf("%s: %v\n<br/>\n", webkey, href(path, pkey, value, inst))
+							row = fmt.Sprintf("%s: %v\n<br/>\n", webkey, href(path, pkey, value, inst, dasquery.Query))
 						} else {
 							row = fmt.Sprintf("%s: %v\n", webkey, value)
 						}
