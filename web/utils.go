@@ -497,7 +497,14 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 						var vals []string
 						for _, vvv := range strings.Split(value, ",") {
 							v := strings.Trim(vvv, " ")
-							v = fmt.Sprintf("<a href=\"https://cmsweb.cern.ch/couchdb/reqmgr_config_cache/%s/configFile\">%s</a>", v, v)
+							name := v
+							cid := v
+							if strings.Contains(v, "::") {
+								arr := strings.Split(v, "::")
+								cid = arr[0]
+								name = arr[1]
+							}
+							v = fmt.Sprintf("<a href=\"https://cmsweb.cern.ch/couchdb/reqmgr_config_cache/%s/configFile\">%s</a>", cid, name)
 							vals = append(vals, v)
 						}
 						value = strings.Join(vals, ", ")

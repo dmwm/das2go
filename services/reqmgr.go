@@ -327,7 +327,7 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 		var configIds []string
 		for _, k := range req.ConfigIDs {
 			if v, ok := req.ConfigIDMap[k]; ok {
-				configIds = append(configIds, fmt.Sprintf("%s (%s)", k, v))
+				configIds = append(configIds, fmt.Sprintf("%s::%s", k, v))
 			} else {
 				configIds = append(configIds, k)
 			}
