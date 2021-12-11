@@ -135,6 +135,7 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
 type ReqMgrInfo struct {
 	RequestName string
 	ConfigIDs   []string
+	ConfigIDMap map[string]string
 	Tasks       []string
 }
 
@@ -144,6 +145,7 @@ func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]ReqMgrInfo,
 	var rurl string
 	var reqmgrInfo []ReqMgrInfo
 	idict := make(map[string][]string)
+	rmap := make(map[string]string)
 
 	// check that given dataset pass dataset pattern
 	matched, err := regexp.MatchString("/[\\w-]+/[\\w-]+/[A-Z-]+", dataset)
@@ -200,6 +202,7 @@ func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]ReqMgrInfo,
 											if !utils.InList(val, ids) {
 												ids = append(ids, val)
 											}
+											rmap[val] = kkk
 										}
 									}
 								}
@@ -207,11 +210,16 @@ func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]ReqMgrInfo,
 								if strings.Contains(kkk, "Task") {
 									switch data := vvv.(type) {
 									case map[string]interface{}:
+										var taskName string
+										if tname, ok := data["TaskName"]; ok {
+											taskName = fmt.Sprintf("%s", tname)
+										}
 										for k, v := range data {
 											if k == "ConfigCacheID" {
 												switch tid := v.(type) {
 												case string:
 													ids = append(ids, tid)
+													rmap[tid] = taskName
 												}
 											}
 										}
@@ -219,6 +227,7 @@ func findReqMgrIds(dasquery dasql.DASQuery, base, dataset string) ([]ReqMgrInfo,
 								}
 							}
 							rinfo.ConfigIDs = utils.List2Set(ids)
+							rinfo.ConfigIDMap = rmap
 							reqmgrInfo = append(reqmgrInfo, rinfo)
 						}
 					}
@@ -312,7 +321,18 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 		rec := make(mongo.DASRecord)
 		rec["dataset"] = dataset
 		rec["name"] = req.RequestName
-		rec["ids"] = req.ConfigIDs
+		//         rec["ids"] = req.ConfigIDs
+		// construct human readble representation of config ids, i.e.
+		// we take request config id map and check if proper key exists for given id
+		var configIds []string
+		for _, k := range req.ConfigIDs {
+			if v, ok := req.ConfigIDMap[k]; ok {
+				configIds = append(configIds, fmt.Sprintf("%s (%s)", k, v))
+			} else {
+				configIds = append(configIds, k)
+			}
+		}
+		rec["ids"] = configIds
 		rec["idict"] = idict
 		var outputUrls, inputUrls []string
 		for _, uid := range idict["byinputdataset"] {
