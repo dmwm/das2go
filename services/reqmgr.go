@@ -322,9 +322,7 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 		rec["dataset"] = dataset
 		rec["name"] = req.RequestName
 		rec["ids"] = req.ConfigIDs
-		if utils.WEBSERVER > 0 {
-			rec["ids_map"] = req.ConfigIDMap
-		}
+		rec["ids_map"] = req.ConfigIDMap
 		rec["idict"] = idict
 		var outputUrls, inputUrls []string
 		for _, uid := range idict["byinputdataset"] {
