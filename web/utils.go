@@ -495,16 +495,23 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					}
 					if daskey == "config.ids" {
 						var vals []string
-						for _, vvv := range strings.Split(value, ",") {
-							v := strings.Trim(vvv, " ")
-							name := v
-							cid := v
-							if strings.Contains(v, "::") {
-								arr := strings.Split(v, "::")
-								cid = arr[0]
-								name = arr[1]
+						// get name from configIDMap
+						rmap := make(map[string]string)
+						if rec["ids_map"] != nil {
+							r := rec["ids_map"].(mongo.DASRecord)
+							for k, v := range r {
+								key := fmt.Sprintf("%v", k)
+								val := fmt.Sprintf("%v", v)
+								rmap[key] = val
 							}
-							v = fmt.Sprintf("<a href=\"https://cmsweb.cern.ch/couchdb/reqmgr_config_cache/%s/configFile\">%s</a>", cid, name)
+						}
+						for _, vvv := range strings.Split(value, ",") {
+							cid := strings.Trim(vvv, " ")
+							var name string
+							if cname, ok := rmap[cid]; ok {
+								name = cname
+							}
+							v := fmt.Sprintf("<a href=\"https://cmsweb.cern.ch/couchdb/reqmgr_config_cache/%s/configFile\">%s</a>", cid, name)
 							vals = append(vals, v)
 						}
 						value = strings.Join(vals, ", ")

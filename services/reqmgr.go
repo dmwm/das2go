@@ -321,18 +321,10 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 		rec := make(mongo.DASRecord)
 		rec["dataset"] = dataset
 		rec["name"] = req.RequestName
-		//         rec["ids"] = req.ConfigIDs
-		// construct human readble representation of config ids, i.e.
-		// we take request config id map and check if proper key exists for given id
-		var configIds []string
-		for _, k := range req.ConfigIDs {
-			if v, ok := req.ConfigIDMap[k]; ok {
-				configIds = append(configIds, fmt.Sprintf("%s::%s", k, v))
-			} else {
-				configIds = append(configIds, k)
-			}
+		rec["ids"] = req.ConfigIDs
+		if utils.WEBSERVER > 0 {
+			rec["ids_map"] = req.ConfigIDMap
 		}
-		rec["ids"] = configIds
 		rec["idict"] = idict
 		var outputUrls, inputUrls []string
 		for _, uid := range idict["byinputdataset"] {
