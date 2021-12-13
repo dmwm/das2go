@@ -393,7 +393,6 @@ config : [
          "examples":[]
         },
         {"das":"config.ids", "ui":"Request ids"},
-        {"das":"config.urls", "ui":"Config urls"},
         {"das":"config.type", "ui":"Type"},
         {"das":"config.version", "ui":"Version"},
         {"das":"config.release_version", "ui":"Release"},
