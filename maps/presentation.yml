@@ -392,7 +392,7 @@ config : [
          "description":"is a DAS key to lookup CMS configuration information about dataset configuration",
          "examples":[]
         },
-        {"das":"config.ids", "ui":"Request ids"},
+        {"das":"config.ids", "ui":"Request urls"},
         {"das":"config.type", "ui":"Type"},
         {"das":"config.version", "ui":"Version"},
         {"das":"config.release_version", "ui":"Release"},
