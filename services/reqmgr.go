@@ -259,7 +259,11 @@ func (LocalAPIs) Configs(dasquery dasql.DASQuery) []mongo.DASRecord {
 
 func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 	spec := dasquery.Spec
-	base := "https://cmsweb.cern.ch:8443"
+	base := FrontendURL
+	// if base does not contain port, we'll use 8443
+	if !strings.Contains(strings.Replace(base, "://", "", -1), ":") {
+		base = fmt.Sprintf("%s:8443", FrontendURL)
+	}
 	// find ReqMgr Ids for given dataset
 	dataset := spec["dataset"].(string)
 	reqmgrInfo, idict := findReqMgrIds(dasquery, base, dataset)
@@ -324,32 +328,45 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 		rec["ids"] = req.ConfigIDs
 		rec["ids_map"] = req.ConfigIDMap
 		rec["idict"] = idict
-		var outputUrls, inputUrls []string
-		for _, uid := range idict["byinputdataset"] {
-			for _, rurl := range urls {
-				if strings.Contains(rurl, uid) {
-					// we should ensure that rurl covers req ConfigIDs
-					for _, rid := range req.ConfigIDs {
-						if strings.Contains(rurl, rid) {
-							inputUrls = append(inputUrls, rurl)
+		var configs []string
+		for _, v := range req.ConfigIDs {
+			if len(v) == 32 {
+				rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
+			} else {
+				rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s", base, v)
+			}
+			configs = append(configs, rurl)
+		}
+		rec["urls"] = configs
+		/*
+
+			var outputUrls, inputUrls []string
+			for _, uid := range idict["byinputdataset"] {
+				for _, rurl := range urls {
+					if strings.Contains(rurl, uid) {
+						// we should ensure that rurl covers req ConfigIDs
+						for _, rid := range req.ConfigIDs {
+							if strings.Contains(rurl, rid) {
+								inputUrls = append(inputUrls, rurl)
+							}
 						}
 					}
 				}
 			}
-		}
-		for _, uid := range idict["byoutputdataset"] {
-			for _, rurl := range urls {
-				if strings.Contains(rurl, uid) {
-					// we should ensure that rurl covers req ConfigIDs
-					for _, rid := range req.ConfigIDs {
-						if strings.Contains(rurl, rid) {
-							outputUrls = append(outputUrls, rurl)
+			for _, uid := range idict["byoutputdataset"] {
+				for _, rurl := range urls {
+					if strings.Contains(rurl, uid) {
+						// we should ensure that rurl covers req ConfigIDs
+						for _, rid := range req.ConfigIDs {
+							if strings.Contains(rurl, rid) {
+								outputUrls = append(outputUrls, rurl)
+							}
 						}
 					}
 				}
 			}
-		}
-		rec["urls"] = mongo.DASRecord{"output": outputUrls, "input": inputUrls}
+			rec["urls"] = mongo.DASRecord{"output": outputUrls, "input": inputUrls}
+		*/
 		out = append(out, rec)
 	}
 	return out
