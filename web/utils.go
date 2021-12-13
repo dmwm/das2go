@@ -106,7 +106,7 @@ func urlsFormat(urls interface{}) string {
 	for _, val := range rec {
 		output := val.([]interface{})
 		for i, v := range output {
-			url := fmt.Sprintf("<a href=\"%s\">output-config-%d</a>", v, i)
+			url := fmt.Sprintf("<a href=\"%s\">url-%d</a>", v, i)
 			out = append(out, url)
 		}
 	}
@@ -511,7 +511,8 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 							if cname, ok := rmap[cid]; ok {
 								name = cname
 							}
-							v := fmt.Sprintf("<a href=\"https://cmsweb.cern.ch/couchdb/reqmgr_config_cache/%s/configFile\">%s</a>", cid, name)
+							furl := config.Config.Frontend
+							v := fmt.Sprintf("<a href=\"%s/couchdb/reqmgr_config_cache/%s/configFile\">%s</a>", furl, cid, name)
 							vals = append(vals, v)
 						}
 						value = strings.Join(vals, ", ")
