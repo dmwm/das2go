@@ -132,6 +132,7 @@ func ReqMgrUnmarshal(api string, data []byte) []mongo.DASRecord {
  * LOCAL APIs
  */
 
+// ReqMgrInfo represents information aobut request mananger service
 type ReqMgrInfo struct {
 	RequestName string
 	ConfigIDs   []string
@@ -329,11 +330,11 @@ func reqmgrConfigs(dasquery dasql.DASQuery) []mongo.DASRecord {
 		rec["ids_map"] = req.ConfigIDMap
 		rec["idict"] = idict
 		var configs []string
-		for _, v := range req.ConfigIDs {
-			if len(v) == 32 {
-				rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, v)
+		for cid := range req.ConfigIDMap {
+			if len(cid) == 32 {
+				rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s/configFile", base, cid)
 			} else {
-				rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s", base, v)
+				rurl = fmt.Sprintf("%s/couchdb/reqmgr_config_cache/%s", base, cid)
 			}
 			configs = append(configs, rurl)
 		}
