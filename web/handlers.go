@@ -393,7 +393,6 @@ func StatusHandler(w http.ResponseWriter, r *http.Request) {
 	tmplData["CPU"] = c
 	tmplData["MemStats"] = MemStats{Sys: memstats.Sys, Alloc: memstats.Alloc, TotalAlloc: memstats.TotalAlloc, StackSys: memstats.StackSys, HeapSys: memstats.HeapSys, GCSys: memstats.GCSys, StackInuse: memstats.StackInuse, HeapInuse: memstats.HeapInuse}
 	var cpuTotal, vsize, rss, openFDs, maxFDs, maxVsize float64
-	log.Println("das2go PID", os.Getpid())
 	if proc, err := procfs.NewProc(os.Getpid()); err == nil {
 		if stat, err := proc.Stat(); err == nil {
 			// CPUTime returns the total CPU user and system time in seconds.
