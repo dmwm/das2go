@@ -530,6 +530,16 @@ func GetHostUrl(s string) string {
 	return ""
 }
 
+// AdjustUrl removes double slashes in URL
+func AdjustUrl(s string) string {
+	arr := strings.Split(s, "://")
+	if len(arr) > 1 {
+		hurl := strings.Replace(arr[1], "//", "/", -1)
+		return fmt.Sprintf("%s://%s", arr[0], hurl)
+	}
+	return s
+}
+
 // Color prints given string in color based on ANSI escape codes, see
 // http://www.wikiwand.com/en/ANSI_escape_code#/Colors
 func Color(col, text string) string {

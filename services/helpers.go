@@ -23,6 +23,13 @@ var UrlMap map[string]string
 
 // DBSUrl returns DBS URL
 func DBSUrl(inst string) string {
+	url := bareDbsUrl(inst)
+	if strings.HasPrefix(url, "http") {
+		return url
+	}
+	return utils.AdjustUrl(fmt.Sprintf("%s/%s", FrontendURL, url))
+}
+func bareDbsUrl(inst string) string {
 	v := utils.GetEnv("DBS_URL")
 	if v != "" {
 		if strings.Contains(v, "DBSReader") {
@@ -42,6 +49,13 @@ func DBSUrl(inst string) string {
 
 // PhedexUrl returns Phedex URL
 func PhedexUrl() string {
+	url := barePhedexUrl()
+	if strings.HasPrefix(url, "http") {
+		return url
+	}
+	return utils.AdjustUrl(fmt.Sprintf("%s/%s", FrontendURL, url))
+}
+func barePhedexUrl() string {
 	v := utils.GetEnv("PHEDEX_URL")
 	if v != "" {
 		if strings.Contains(v, "phedex") {
@@ -61,6 +75,13 @@ func PhedexUrl() string {
 
 // SitedbUrl returns Sitedb URL
 func SitedbUrl() string {
+	url := bareSitedbUrl()
+	if strings.HasPrefix(url, "http") {
+		return url
+	}
+	return utils.AdjustUrl(fmt.Sprintf("%s/%s", FrontendURL, url))
+}
+func bareSitedbUrl() string {
 	v := utils.GetEnv("SITEDB_URL")
 	if v != "" {
 		if strings.Contains(v, "sitedb") {
@@ -98,6 +119,13 @@ func CricUrl(api string) string {
 
 // RucioUrl returns Rucio url
 func RucioUrl() string {
+	url := bareRucioUrl()
+	if strings.HasPrefix(url, "http") {
+		return url
+	}
+	return utils.AdjustUrl(fmt.Sprintf("%s/%s", FrontendURL, url))
+}
+func bareRucioUrl() string {
 	v := utils.GetEnv("RUCIO_URL")
 	if v != "" {
 		return v

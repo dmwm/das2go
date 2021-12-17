@@ -10,6 +10,24 @@ import (
 	"github.com/dmwm/das2go/utils"
 )
 
+// TestAdjustURL
+func TestAdjustURL(t *testing.T) {
+	url := "http://bla.com//bla"
+	expect := "http://bla.com/bla"
+	res := utils.AdjustUrl(url)
+	if res != expect {
+		log.Printf("%s != %s", url, expect)
+		t.Error("Fail TestAdjustUrl")
+	}
+	url = "https://bla.com//bla"
+	expect = "https://bla.com/bla"
+	res = utils.AdjustUrl(url)
+	if res != expect {
+		log.Printf("%s != %s", url, expect)
+		t.Error("Fail TestAdjustUrl")
+	}
+}
+
 // TestInList
 func TestInList(t *testing.T) {
 	vals := []string{"1", "2", "3"}
