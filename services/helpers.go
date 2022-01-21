@@ -123,9 +123,12 @@ func RucioUrl() string {
 	if strings.HasPrefix(url, "http") {
 		return url
 	}
-	// here we hard-code rucio url since it should be used by dasgoclient
-	// for das web it will be fetched from dasmaps DB, otherwise
-	// it should be either set via RUCIO_URL or we should have valid default
+	// here we hard-code rucio url since it is used across DAS APIs.
+	// For das web it will be fetched from dasmaps DB, or config.
+	// For dasgoclient we should have a valid default
+	if RucioURL == "" {
+		return utils.AdjustUrl(fmt.Sprintf("https://cms-rucio.cern.ch/%s", url))
+	}
 	return utils.AdjustUrl(fmt.Sprintf("%s/%s", RucioURL, url))
 }
 func bareRucioUrl() string {
