@@ -137,6 +137,7 @@ func Server(configFile string) {
 	utils.DASMAPS = config.Config.DasMaps
 	utils.TIMEOUT = config.Config.Timeout
 	services.FrontendURL = config.Config.Frontend
+	services.RucioURL = config.Config.RucioUrl
 	interval := time.Duration(config.Config.TLSCertsRenewInterval)
 	utils.TLSCertsRenewInterval = time.Duration(interval * time.Second)
 	utils.RucioTokenCurl = config.Config.RucioTokenCurl

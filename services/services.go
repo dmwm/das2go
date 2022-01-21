@@ -20,6 +20,9 @@ import (
 // FrontendURL represents DAS frontend URL
 var FrontendURL string
 
+// RucioURL represents Rucio URL
+var RucioURL string
+
 // remap function uses DAS notations and convert series of DAS records
 // into another set where appropriate remapping is done
 func remap(api string, records []mongo.DASRecord, notations []mongo.DASRecord) []mongo.DASRecord {

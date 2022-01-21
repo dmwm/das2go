@@ -36,6 +36,7 @@ type Configuration struct {
 	UpdateDNs             int      `json:"updateDNs"`             // interval in minutes to update user DNs
 	Timeout               int      `json:"timeout"`               // query time out
 	Frontend              string   `json:"frontend"`              // frontend URI to use
+	RucioUrl              string   `json:"rucioUrl"`              // default RucioUrl
 	RucioTokenCurl        bool     `json:"rucioTokenCurl"`        // use curl method to obtain Rucio Token
 	ProfileFile           string   `json:"profileFile"`           // send profile data to a given file
 	TLSCertsRenewInterval int      `json:"tlsCertsRenewInterval"` // renewal interval for TLS certs
@@ -70,6 +71,9 @@ func ParseConfig(configFile string) error {
 	}
 	if Config.TLSCertsRenewInterval == 0 {
 		Config.TLSCertsRenewInterval = 600
+	}
+	if Config.RucioUrl == "" {
+		Config.RucioUrl = "https://cms-rucio.cern.ch"
 	}
 	return nil
 }
