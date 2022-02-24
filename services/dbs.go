@@ -268,24 +268,43 @@ func (LocalAPIs) File4DatasetRunLumi(dasquery dasql.DASQuery) []mongo.DASRecord 
 		for _, row := range rec["lumi"].([]mongo.DASRecord) {
 			v := row["number"]
 			if v != nil {
-				lumis := row["number"].([]interface{})
-				for _, val := range lumis {
-					switch v := val.(type) {
-					case json.Number:
-						lumiVal, e := v.Float64()
-						if e == nil && lumi == lumiVal {
-							row := make(mongo.DASRecord)
-							row["file"] = rec["file"]
-							out = append(out, row)
-						}
-					case float64:
-						if lumi == v {
-							row := make(mongo.DASRecord)
-							row["file"] = rec["file"]
-							out = append(out, row)
+				luminumber := row["number"]
+				switch lumis := luminumber.(type) {
+				case []interface{}:
+					// case of DBS Python server when lumis returned as list
+					for _, val := range lumis {
+						switch v := val.(type) {
+						case json.Number:
+							lumiVal, e := v.Float64()
+							if e == nil && lumi == lumiVal {
+								row := make(mongo.DASRecord)
+								row["file"] = rec["file"]
+								out = append(out, row)
+							}
+						case float64:
+							if lumi == v {
+								row := make(mongo.DASRecord)
+								row["file"] = rec["file"]
+								out = append(out, row)
+							}
 						}
 					}
+				// case of DBS Go server when lumis returned individually
+				case json.Number:
+					lumiVal, e := lumis.Float64()
+					if e == nil && lumi == lumiVal {
+						row := make(mongo.DASRecord)
+						row["file"] = rec["file"]
+						out = append(out, row)
+					}
+				case float64:
+					if lumi == lumis {
+						row := make(mongo.DASRecord)
+						row["file"] = rec["file"]
+						out = append(out, row)
+					}
 				}
+
 			}
 		}
 	}
