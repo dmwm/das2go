@@ -111,6 +111,11 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 					r["run_number"] = v
 					out = append(out, r)
 				}
+			// case of DBS Go server when lumis returned individually
+			case json.Number, float64:
+				r := make(mongo.DASRecord)
+				r["run_number"] = val
+				out = append(out, r)
 			}
 		}
 		return out
