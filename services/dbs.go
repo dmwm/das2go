@@ -87,6 +87,10 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 					r["name"] = v.(string)
 					out = append(out, r)
 				}
+			case interface{}:
+				r := make(mongo.DASRecord)
+				r["name"] = val.(string)
+				out = append(out, r)
 			}
 		}
 		return out
@@ -99,6 +103,10 @@ func DBSUnmarshal(api string, data []byte) []mongo.DASRecord {
 					r["name"] = v.(string)
 					out = append(out, r)
 				}
+			case interface{}:
+				r := make(mongo.DASRecord)
+				r["name"] = val.(string)
+				out = append(out, r)
 			}
 		}
 		return out
