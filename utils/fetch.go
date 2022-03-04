@@ -324,6 +324,9 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 	if UseDNSCache {
 		if DNSCacheMgr == nil {
 			DNSCacheMgr = dcr.NewDNSManager(300) // 300 seconds TTL
+			if VERBOSE > 1 {
+				log.Printf("init DNSCacheMgr %+v\n", DNSCacheMgr)
+			}
 			log.Printf("init DNSCacheMgr %+v\n", DNSCacheMgr)
 		}
 		if strings.Contains(rurl, "cmsweb") || strings.Contains(rurl, "cms-rucio.cern.ch") {
