@@ -327,7 +327,6 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 			if VERBOSE > 1 {
 				log.Printf("init DNSCacheMgr %+v\n", DNSCacheMgr)
 			}
-			log.Printf("init DNSCacheMgr %+v\n", DNSCacheMgr)
 		}
 		if strings.Contains(rurl, "cmsweb") || strings.Contains(rurl, "cms-rucio.cern.ch") {
 			rurl = DNSCacheMgr.Resolve(rurl)
