@@ -76,6 +76,8 @@ github.com/vkuznet/dcr v0.0.0-20200922173840-46cf19c474b3 h1:+OR49j+jxUFyz5V1g6n
 github.com/vkuznet/dcr v0.0.0-20200922173840-46cf19c474b3/go.mod h1:qrpJaX0+aN8cSkjRRHifnzCBhMk79FkuEM2biRIWjtI=
 github.com/vkuznet/dcr v0.0.0-20220304182053-a37e6a208de6 h1:ETv7qCXtRS50vbmF9BO5IlgL7HzyQU2f4coNEf6eE5E=
 github.com/vkuznet/dcr v0.0.0-20220304182053-a37e6a208de6/go.mod h1:qrpJaX0+aN8cSkjRRHifnzCBhMk79FkuEM2biRIWjtI=
+github.com/vkuznet/dcr v0.0.0-20220305122652-f04b8bee787b h1:bmz2GgjIfJk9sf9mZT/H8KH2SNIRuNHhkOwpeaxfZWw=
+github.com/vkuznet/dcr v0.0.0-20220305122652-f04b8bee787b/go.mod h1:qrpJaX0+aN8cSkjRRHifnzCBhMk79FkuEM2biRIWjtI=
 github.com/vkuznet/x509proxy v0.0.0-20191014143623-163039704c67/go.mod h1:n8gnqWgHpPWW+DyA66Zam8qQshAmDxVVmSmObyR6M8g=
 github.com/vkuznet/x509proxy v0.0.0-20210801171832-e47b94db99b6 h1:Y5LCuH9nfTZ6srI5NaoKKbcDb01zqTHw8678++4fw0c=
 github.com/vkuznet/x509proxy v0.0.0-20210801171832-e47b94db99b6/go.mod h1:gfEPE3azFe+K/nMLezta3+kTiumttEYDawGAE72IYfM=

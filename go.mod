@@ -7,7 +7,7 @@ require (
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
 	github.com/prometheus/procfs v0.7.3
 	github.com/shirou/gopsutil v3.21.11+incompatible
-	github.com/vkuznet/dcr v0.0.0-20220304182053-a37e6a208de6
+	github.com/vkuznet/dcr v0.0.0-20220305122652-f04b8bee787b
 	github.com/vkuznet/x509proxy v0.0.0-20210801171832-e47b94db99b6
 	gopkg.in/mgo.v2 v2.0.0-20190816093944-a6b53ec6cb22
 )
