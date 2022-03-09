@@ -32,6 +32,10 @@ import (
 	"github.com/vkuznet/x509proxy"
 )
 
+// KEEP_ALIVE defines to use Keep-Alive HTTP header in HTTP requests
+// https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Keep-Alive
+var KEEP_ALIVE bool
+
 // TIMEOUT defines timeout for net/url request
 var TIMEOUT int
 
@@ -348,6 +352,10 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 		}
 		atomic.AddUint64(&TotalGetCalls, 1)
 		response.Method = "GET"
+	}
+	if KEEP_ALIVE {
+		req.Header.Add("Connection", "Keep-Alive")
+		req.Header.Add("Keep-Alive", "timeout=5, max=1000")
 	}
 	if Token != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", readToken(Token)))
