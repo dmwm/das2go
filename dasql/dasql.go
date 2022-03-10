@@ -365,11 +365,17 @@ func Parse(query, inst string, daskeys []string) (DASQuery, string, string) {
 	}
 
 	// remove detail from spec
-	detail := false
-	if spec["detail"] != nil || len(filters) != 0 {
-		detail = true
-		delete(spec, "detail")
+	// by default detail is set to true for all APIs, to change this I need
+	// to change das maps and then change it here
+	detail := true
+	//     if spec["detail"] != nil || len(filters) != 0 {
+	//         detail = true
+	//         delete(spec, "detail")
+	//     }
+	if spec["detail"] == "-" || spec["detail"] == "false" || spec["detail"] == "False" {
+		detail = false
 	}
+	delete(spec, "detail")
 
 	// find out which system to use
 	var system string

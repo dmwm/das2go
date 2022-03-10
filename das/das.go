@@ -323,6 +323,19 @@ func FormUrlCall(dasquery dasql.DASQuery, dasmap mongo.DASRecord) string {
 	if len(vals) < len(skeys) {
 		return "" // number of arguments should be equal or more number of spec key values
 	}
+	// replace details=True argument in DBS calls
+	if dasquery.Detail == false {
+		args = strings.Replace(args, "detail=True", "detail=False", -1)
+	}
+	// replace details=True argument in DBS calls
+	if strings.Contains(args, "detail") {
+		if v, ok := vals["detail"]; ok {
+			sv := fmt.Sprintf("%v", v)
+			if sv == "0" || sv == "false" || sv == "False" {
+				args = strings.Replace(args, "detail=True", "detail=False", -1)
+			}
+		}
+	}
 	if len(args) > 0 {
 		return base + "?" + args
 	}
