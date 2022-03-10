@@ -11,6 +11,7 @@ package utils
 
 import (
 	"bytes"
+	"compress/gzip"
 	"container/heap"
 	"crypto/tls"
 	"crypto/x509"
@@ -357,6 +358,10 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 		req.Header.Add("Connection", "Keep-Alive")
 		req.Header.Add("Keep-Alive", "timeout=5, max=1000")
 	}
+	// use gzip encoding if our rurl is going to DBS
+	if strings.Contains(rurl, "dbs") {
+		req.Header.Add("Accept-Encoding", "gzip")
+	}
 	if Token != "" {
 		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", readToken(Token)))
 	}
@@ -397,7 +402,21 @@ func FetchResponse(httpClient *http.Client, rurl, args string) ResponseType {
 			log.Printf("http response rurl %v, dump %v, error %v\n", rurl, string(dump), err)
 		}
 	}
-	response.Data, err = ioutil.ReadAll(resp.Body)
+	// check if we got gzipped content
+	if resp.Header.Get("Content-Encoding") == "gzip" {
+		var gz *gzip.Reader
+		gz, err = gzip.NewReader(resp.Body)
+		if err != nil {
+			response.Data = []byte("Unable to read gzipped content")
+		} else {
+			defer gz.Close()
+			response.Data, err = ioutil.ReadAll(gz)
+		}
+	} else {
+		response.Data, err = ioutil.ReadAll(resp.Body)
+	}
+
+	//     response.Data, err = ioutil.ReadAll(resp.Body)
 	response.Time = time.Now().Sub(startTime)
 	response.RecvBytes = len(response.Data)
 	if err != nil {
