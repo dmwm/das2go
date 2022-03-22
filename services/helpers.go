@@ -313,18 +313,29 @@ func OrderByRunLumis(records []mongo.DASRecord) []mongo.DASRecord {
 	var out []mongo.DASRecord
 	rmap := make(map[json.Number][]json.Number)
 	for _, r := range records {
-		lumiList := mongo.GetValue(r, "lumi.number").([]interface{})
+		var lumiList []json.Number
+		switch v := mongo.GetValue(r, "lumi.number").(type) {
+		case json.Number:
+			lumiList = append(lumiList, v)
+		case []interface{}:
+			for _, vv := range v {
+				lumiList = append(lumiList, vv.(json.Number))
+			}
+		}
+		//         lumiList := mongo.GetValue(r, "lumi.number").([]interface{})
 		run := mongo.GetValue(r, "run.run_number").(json.Number)
 		lumis, ok := rmap[run]
 		if ok {
 			for _, v := range lumiList {
-				lumis = append(lumis, v.(json.Number))
+				//                 lumis = append(lumis, v.(json.Number))
+				lumis = append(lumis, v)
 			}
 			rmap[run] = lumis
 		} else {
 			var lumiValues []json.Number
 			for _, v := range lumiList {
-				lumiValues = append(lumiValues, v.(json.Number))
+				//                 lumiValues = append(lumiValues, v.(json.Number))
+				lumiValues = append(lumiValues, v)
 			}
 			rmap[run] = lumiValues
 		}
