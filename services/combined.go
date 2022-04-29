@@ -234,7 +234,7 @@ func rucioInfo(dasquery dasql.DASQuery, blockNames []string) (mongo.DASRecord, m
 		blocks[blkName] = Block{Name: blkName}
 
 		// http://cms-rucio.cern.ch/replicas/cms/{block['name']}/datasets
-		furl = fmt.Sprintf("%s/replicas/cms/%s/datasets", RucioUrl(), url.QueryEscape(blkName))
+		furl = fmt.Sprintf("%s/replicas/cms/%s/datasets?deep=True", RucioUrl(), url.QueryEscape(blkName))
 		umap[furl] = 1 // keep track of processed urls below
 		go utils.Fetch(client, furl, "", chout)
 	}
