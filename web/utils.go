@@ -235,7 +235,7 @@ func makeUrl(url, urlType string, startIdx, limit, nres int) string {
 		}
 		idx = j
 	}
-	out = fmt.Sprintf("%s&amp;idx=%d&&amp;limit=%d", url, idx, limit)
+	out = fmt.Sprintf("%s&idx=%d&limit=%d", url, idx, limit)
 	return out
 }
 
