@@ -484,7 +484,11 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 		}
 		ratio := float64(rec2num(row["block_present"])) / float64(rec2num(row["blocks"]))
 		bc := fmt.Sprintf("%5.2f%%", 100*ratio)
-		ratio = float64(rec2num(row["available_file_count"])) / float64(rec2num(row["block_file_count"]))
+		if rec2num(row["block_file_count"]) != 0 {
+			ratio = float64(rec2num(row["available_file_count"])) / float64(rec2num(row["block_file_count"]))
+		} else {
+			ratio = 0
+		}
 		rf := fmt.Sprintf("%5.2f%%", 100*ratio)
 		if utils.VERBOSE > 0 {
 			if utils.WEBSERVER == 0 {
