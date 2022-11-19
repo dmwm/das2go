@@ -377,6 +377,29 @@ func PresentDataPlain(path string, dasquery dasql.DASQuery, data []mongo.DASReco
 	return out
 }
 
+// helper function to parse DBSError struct
+func parseDBSError(dbsErr mongo.DASRecord) string {
+	var out string
+	var desc, mesg bool
+	if v, ok := dbsErr["reason"]; ok {
+		reason := fmt.Sprintf("%v", v)
+		for _, v := range strings.Split(reason, ":") {
+			if desc || mesg {
+				v := strings.Replace(v, " Function", "", -1)
+				v = strings.Replace(v, " Message", "", -1)
+				out = fmt.Sprintf("%s<br/>%s", out, v)
+			}
+			if strings.Contains(v, " Description") {
+				desc = true
+			}
+			if strings.Contains(v, " Message") {
+				mesg = true
+			}
+		}
+	}
+	return out
+}
+
 // PresentData represents DAS records for web UI
 func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, pmap mongo.DASRecord, nres, startIdx, limit int, procTime time.Duration) string {
 	var out []string
@@ -466,8 +489,15 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 				}
 				rec := elem.(mongo.DASRecord)
 				if v, ok := rec["error"]; ok && v != "" && key != "rules" {
-					erec := fmt.Sprintf("<b>Error:</b> <span %s>%v</span>", red, v)
+					estm := fmt.Sprintf("### %v of type %T", v, v)
+					//                     log.Println("### estm", estm)
+					switch t := v.(type) {
+					case mongo.DASRecord:
+						estm = parseDBSError(t)
+					}
+					erec := fmt.Sprintf("<b>Error:</b> <span %s>%v</span>", red, estm)
 					values = append(values, erec)
+					continue
 				}
 				for _, uir := range uiRows {
 					uirow := uir.(mongo.DASRecord)
