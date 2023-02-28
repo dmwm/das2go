@@ -637,6 +637,7 @@ func ProcessLogic(dasquery dasql.DASQuery, maps []mongo.DASRecord, selectedServi
 				furl = FormRESTUrl(dasquery, dmap)
 				if ok && urn == "file4dataset_site" { // put back site condition into dasquery spec
 					dasquery.Spec["site"] = site
+					furl += "?deep=True"
 				}
 				if urn == "block4dataset_size" {
 					// add datasets after url which will return CMS blocks (Rucio datasets)
