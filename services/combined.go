@@ -501,7 +501,10 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 		rec := make(mongo.DASRecord)
 		rec["site"] = []mongo.DASRecord{{"name": key,
 			"dataset_fraction": pfiles, "block_fraction": pblks, "block_completion": bc,
-			"se": row["se"].(string), "replica_fraction": rf, "kind": row["kind"].(string)}}
+			"se": row["se"].(string), "replica_fraction": rf, "kind": row["kind"].(string),
+			"nblocks": rec2num(row["block_present"]), "nfiles": rec2num(row["available_file_count"]),
+			"total_blocks": totblocks, "total_files": totfiles,
+		}}
 		out = append(out, rec)
 	}
 	return out
