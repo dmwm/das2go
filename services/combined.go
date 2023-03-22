@@ -434,10 +434,9 @@ func (LocalAPIs) Site4DatasetPct(dasquery dasql.DASQuery) []mongo.DASRecord {
 	// DBS part, find total number of blocks and files for given dataset
 	dataset := spec["dataset"].(string)
 	api := "filesummaries"
+	furl := fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
 	if strings.HasPrefix(inst, "prod") {
-		furl := fmt.Sprintf("%s/%s?dataset=%s&validFileOnly=1", DBSUrl(inst), api, dataset)
-	} else {
-		furl := fmt.Sprintf("%s/%s?dataset=%s", DBSUrl(inst), api, dataset)
+		furl = fmt.Sprintf("%s/%s?dataset=%s&validFileOnly=1", DBSUrl(inst), api, dataset)
 	}
 	client := utils.HttpClient()
 	resp := utils.FetchResponse(client, furl, "") // "" specify optional args
