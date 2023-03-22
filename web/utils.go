@@ -593,6 +593,19 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 						values = append(values, row)
 					}
 				}
+				// add blocks/files presence on site
+				if v, ok := rec["nblocks"]; ok {
+					if t, ok := rec["total_blocks"]; ok {
+						row := fmt.Sprintf("\n<br/>\n <b>Number of blocks</b> %v/%v ", v, t)
+						values = append(values, row)
+					}
+				}
+				if v, ok := rec["nfiles"]; ok {
+					if t, ok := rec["total_files"]; ok {
+						row := fmt.Sprintf(" <b>number of files</b> %v/%v ", v, t)
+						values = append(values, row)
+					}
+				}
 			}
 		}
 		// Join attribute fields, e.g. in file dataset=/a/b/c query it is
