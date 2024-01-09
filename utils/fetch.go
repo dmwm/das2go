@@ -119,14 +119,24 @@ func tlsCerts() ([]tls.Certificate, error) {
 	uckey := os.Getenv("X509_USER_KEY")
 	ucert := os.Getenv("X509_USER_CERT")
 
-	// check if /tmp/x509up_u$UID exists, if so setup X509_USER_PROXY env
-	u, err := user.Current()
-	if err == nil {
-		fname := fmt.Sprintf("/tmp/x509up_u%s", u.Uid)
-		if _, err := os.Stat(fname); err == nil {
-			uproxy = fname
+	// check for proxy in $X509_USER_PROXY
+	if uproxy != "" {
+		if _, err := os.Stat(uproxy); err != nil {
+			uproxy = ""
 		}
 	}
+
+	if uproxy == "" {
+		// fall back to /tmp/x509up_u$UID
+		u, err := user.Current()
+		if err == nil {
+			fname := fmt.Sprintf("/tmp/x509up_u%s", u.Uid)
+			if _, err := os.Stat(fname); err == nil {
+				uproxy = fname
+			}
+		}
+	}
+
 	if WEBSERVER == 1 {
 		log.Printf("tls certs, X509_USER_PROXY=%v, X509_USER_KEY=%v, X509_USER_CERT=%v\n", uproxy, uckey, ucert)
 	}
