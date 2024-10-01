@@ -623,7 +623,7 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 			arr := strings.Split(pval, "/")
 			if len(arr) > 1 {
 				primds := arr[1]
-				link := fmt.Sprintf("<a href=\"https://cms-gen-dev.cern.ch/xsdb/?searchQuery=DAS=%s\">XSDB</a>", primds)
+				link := fmt.Sprintf("<a href=\"https://xsecdb-xsdb-official.app.cern.ch/xsdb/?searchQuery=DAS=%s\">XSDB</a>", primds)
 				out = append(out, link)
 				if v, ok := dtypes[pval]; ok {
 					if v == "mc" {
