@@ -1,3 +1,7 @@
+### **04.07.40rc1 to 04.07.40rc2:**
+  - Separate Release Candidate actions from Stable Release actions (Todor Ivanov) [#72](https://github.com/dmwm/das2go/pull/72)
+
+
 ### **04.07.35 to 04.07.40rc1:**
   - Update XSDB url (Cedric Verstege) [#68](https://github.com/dmwm/das2go/pull/68)
   - Fix X509_USER_PROXY handling (iarspider) [#61](https://github.com/dmwm/das2go/pull/61)
