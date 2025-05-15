@@ -1,3 +1,7 @@
+### **04.07.40rc2 to 04.07.40rc3:**
+  - Fix broken upload_url for upload step in build gh/action (Todor Ivanov) [e420ba](https://github.com/dmwm/das2go/commit/e420baac2f6df9bbeed8f78dec6ec6ef45271da7) on master
+
+
 ### **04.07.40rc1 to 04.07.40rc2:**
   - Separate Release Candidate actions from Stable Release actions (Todor Ivanov) [#72](https://github.com/dmwm/das2go/pull/72)
 
