@@ -37,7 +37,7 @@ jobs:
       run: |
         if [[ ${{ steps.get-ref.outputs.tag }} =~ ${{ env.tag_regex_rc }} ]]; then
             echo "match=true" >> $GITHUB_OUTPUT
-            echo "Build triggered on stable release"
+            echo "Build triggered on release candidate"
         else
             echo "match=false" >> $GITHUB_OUTPUT
         fi
@@ -86,7 +86,7 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        upload_url: ${{ fromJSON(steps.is-stable.outputs.match) && steps.create_release.outputs.upload_url || steps.create_prerelease.outputs.upload_url }}
         asset_path: ./das2go
         asset_name: das2go
         asset_content_type: application/octet-stream
