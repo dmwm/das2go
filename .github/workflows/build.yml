@@ -1,9 +1,12 @@
 name: Build
-
+env:
+  tag_regex_st: '^v?[0-9]+\.[0-9]+\.[0-9]+$'
+  tag_regex_rc: '^v?[0-9]+\.[0-9]+\.[0-9]+rc[0-9]+$'
 on:
   push:
     tags:
-      - '*.*.*'
+      - 'v?[0-9]+.[0-9]+.[0-9]+'
+      - 'v?[0-9]+.[0-9]+.[0-9]+rc[0-9]+'
 
 jobs:
 
@@ -11,6 +14,33 @@ jobs:
     name: Build
     runs-on: ubuntu-latest
     steps:
+
+    - name: Get the Ref
+      id: get-ref
+      uses: ankitvgupta/ref-to-tag-action@master
+      with:
+        ref: ${{ github.ref }}
+        head_ref: ${{ github.head_ref }}
+
+    - name: Set Stable Flag
+      id: is-stable
+      run: |
+        if [[ ${{ steps.get-ref.outputs.tag }} =~ ${{ env.tag_regex_st }} ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+            echo "Build triggered on stable release"
+        else
+            echo "match=false" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Set RC Flag
+      id: is-rc
+      run: |
+        if [[ ${{ steps.get-ref.outputs.tag }} =~ ${{ env.tag_regex_rc }} ]]; then
+            echo "match=true" >> $GITHUB_OUTPUT
+            echo "Build triggered on stable release"
+        else
+            echo "match=false" >> $GITHUB_OUTPUT
+        fi
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -22,10 +52,13 @@ jobs:
 
     - name: Build
       run: |
+        ${{ steps.is-rc.outputs.match }} && echo "Building a release candidate ..." || true
+        ${{ steps.is-stable.outputs.match }} && echo "Building a stable release ..." || true
         make
 
     - name: Create Release
       id: create_release
+      if: steps.is-stable.outputs.match == 'true'
       uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -34,6 +67,18 @@ jobs:
         release_name: Release ${{ github.ref }}
         draft: false
         prerelease: false
+
+    - name: Create PreRelease
+      id: create_prerelease
+      if: steps.is-rc.outputs.match == 'true'
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        draft: false
+        prerelease: true
 
     - name: Upload binaries
       id: upload-das2go
@@ -46,21 +91,17 @@ jobs:
         asset_name: das2go
         asset_content_type: application/octet-stream
 
-    - name: Get the Ref
-      id: get-ref
-      uses: ankitvgupta/ref-to-tag-action@master
-      with:
-        ref: ${{ github.ref }}
-        head_ref: ${{ github.head_ref }}
-
     - name: Build image
       run: |
         curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/Dockerfile
         curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/run.sh
         sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
         chmod +x run.sh
-        docker build . --tag docker.pkg.github.com/dmwm/das2go/das2go
+        docker build . --tag docker.pkg.github.com/dmwm/das2go/das2go --tag docker.pkg.github.com/dmwm/das2go/das2go:${{steps.get-ref.outputs.tag}}
         docker tag docker.pkg.github.com/dmwm/das2go/das2go registry.cern.ch/cmsweb/das-server
+        if ${{ steps.is-stable.outputs.match }}; then
+              docker tag docker.pkg.github.com/dmwm/das2go/das2go:${{steps.get-ref.outputs.tag}} registry.cern.ch/cmsweb/das-server:${{steps.get-ref.outputs.tag}}-stable
+        fi
 
     - name: Login to registry.cern.ch
       uses: docker/login-action@v1.6.0
