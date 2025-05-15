@@ -1,3 +1,6 @@
+### **04.07.41rc1 to 04.07.41:**
+
+
 ### **04.07.40 to 04.07.41rc1:**
   - Fix stable tag creation for upload to registry step instead of build image step in build gh/action (Todor Ivanov) [8f9c8d](https://github.com/dmwm/das2go/commit/8f9c8dc194cffbc1c8aa00cfa7bb074b61ce0fa5) on master
 
