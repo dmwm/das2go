@@ -97,11 +97,8 @@ jobs:
         curl -ksLO https://raw.githubusercontent.com/dmwm/CMSKubernetes/master/docker/das-server/run.sh
         sed -i -e "s,ENV TAG=.*,ENV TAG=${{steps.get-ref.outputs.tag}},g" Dockerfile
         chmod +x run.sh
-        docker build . --tag docker.pkg.github.com/dmwm/das2go/das2go --tag docker.pkg.github.com/dmwm/das2go/das2go:${{steps.get-ref.outputs.tag}}
+        docker build . --tag docker.pkg.github.com/dmwm/das2go/das2go
         docker tag docker.pkg.github.com/dmwm/das2go/das2go registry.cern.ch/cmsweb/das-server
-        if ${{ steps.is-stable.outputs.match }}; then
-              docker tag docker.pkg.github.com/dmwm/das2go/das2go:${{steps.get-ref.outputs.tag}} registry.cern.ch/cmsweb/das-server:${{steps.get-ref.outputs.tag}}-stable
-        fi
 
     - name: Login to registry.cern.ch
       uses: docker/login-action@v1.6.0
@@ -118,6 +115,7 @@ jobs:
         registry: registry.cern.ch
         repository: cmsweb/das-server
         tag_with_ref: true
+        tags: ${{ fromJSON(steps.is-stable.outputs.match) && format('{0}, {0}-stable', steps.get-ref.outputs.tag) || steps.get-ref.outputs.tag }}
 
     - name: Login to Registry
       uses: docker/login-action@v1.6.0
