@@ -248,9 +248,9 @@ params : {
         "dataset":"required",
         "dataset_access_type": "optional",
 }
-lookup : site
+lookup : origin_site
 das_map : [
-    {"das_key": "site", "rec_key":"site.name"},
+    {"das_key": "origin_site", "rec_key":"origin_site.name"},
     {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
      "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
 ]
@@ -263,9 +263,9 @@ params : {
         "block_name":"required",
         "dataset_access_type": "optional",
 }
-lookup : site
+lookup : origin_site
 das_map : [
-    {"das_key": "site", "rec_key":"site.name"},
+    {"das_key": "origin_site", "rec_key":"origin_site.name"},
     {"das_key": "block", "rec_key":"block.name", "api_arg":"block_name",
      "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+#[0-9a-zA-Z-]"},
 ]

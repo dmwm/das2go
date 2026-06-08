@@ -868,9 +868,9 @@ func PostProcessing(dasquery dasql.DASQuery, data []mongo.DASRecord) []mongo.DAS
 	// defer function profiler
 	defer utils.MeasureTime("das/PostProcessing")()
 
-	// site4dataset use case
+	// origin_site4dataset use case
 	fields := dasquery.Fields
-	if utils.InList("site", fields) {
+	if utils.InList("origin_site", fields) {
 		var out []mongo.DASRecord
 		for _, r := range data {
 			var das mongo.DASRecord
@@ -892,7 +892,7 @@ func PostProcessing(dasquery dasql.DASQuery, data []mongo.DASRecord) []mongo.DAS
 			orig := false // original placement
 			if len(srvs) == 1 {
 				var recs []mongo.DASRecord
-				switch v := r["site"].(type) {
+				switch v := r["origin_site"].(type) {
 				case []interface{}:
 					for _, v := range v {
 						recs = append(recs, v.(mongo.DASRecord))
