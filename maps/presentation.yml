@@ -316,7 +316,7 @@ origin_site : [
         },
         {"das":"origin_site.se", "ui":"Origin storage element",
          "examples":[
-         "dataset origin_site=osg-se.cac.cornell.edu",
+         "block dataset=/WJets_matchingup_7TeV-madgraph/Summer10-START36_V10_FastSim-v3/DQM origin_site=osg-se.cac.cornell.edu",
          ]
         },
         {"das":"origin_site.kind", "ui":"Site type"},

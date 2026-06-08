@@ -298,8 +298,9 @@ params : {
         "origin_site_name":"required",
         "dataset":"required",
 }
-lookup : dataset
+lookup : block
 das_map : [
+    {"das_key": "block", "rec_key":"block.name"},
     {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
      "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
     {"das_key": "origin_site", "rec_key":"origin_site.se", "api_arg":"origin_site_name",
@@ -871,7 +872,7 @@ das_map : [
 ]
 ---
 notations : [
-    {"api_output": "dataset", "rec_key": "name", "api": "blockorigin"},
+    {"api_output": "block_name", "rec_key": "name", "api": "blockorigin"},
     {"api_output": "creation_date", "rec_key":"creation_time", "api":""},
     {"api_output": "last_modification_date", "rec_key":"modification_time", "api":""},
     {"api_output": "create_by", "rec_key":"created_by", "api":""},
