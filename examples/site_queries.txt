@@ -2,4 +2,4 @@
 site=T3_*
 site=T1_CH_CERN
 site dataset=/WJets_matchingup_7TeV-madgraph/Summer10-START36_V10_FastSim-v3/DQM
-site dataset=/QCD_Pt_0to5_TuneZ2_7TeV_pythia6/wteo-qcd_tunez2_pt0to5_pythia_fall10_387-250136cb6ade55a0822a3f1b6b851d5a/USER instance=cms_dbs_ph_analysis_02
+origin_site dataset=/QCD_Pt_0to5_TuneZ2_7TeV_pythia6/wteo-qcd_tunez2_pt0to5_pythia_fall10_387-250136cb6ade55a0822a3f1b6b851d5a/USER instance=cms_dbs_ph_analysis_02

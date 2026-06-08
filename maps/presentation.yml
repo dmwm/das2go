@@ -307,6 +307,20 @@ site : [
         {"das":"error", "ui":"Error"},
         {"das":"reason", "ui":"Reason"},
         ],
+origin_site : [
+        {"das":"origin_site.name", "ui":"Origin site name",
+         "description": "is DBS origin_site_name",
+         "examples":[
+         "origin_site dataset=/WJets_matchingup_7TeV-madgraph/Summer10-START36_V10_FastSim-v3/DQM",
+         ]
+        },
+        {"das":"origin_site.se", "ui":"Origin storage element",
+         "examples":[
+         "dataset origin_site=osg-se.cac.cornell.edu",
+         ]
+        },
+        {"das":"origin_site.kind", "ui":"Site type"},
+        ],
 monitor : [
         {"das":"monitor", "ui":"Monitor", "link":[],
          "description":"is a DAS keyword to find monitoring information about phedex for specific period of time",
