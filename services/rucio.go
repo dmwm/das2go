@@ -10,6 +10,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net/url"
 	"regexp"
 	"strings"
 
@@ -109,6 +110,14 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 			out = append(out, rec)
 		} else if api == "block4dataset" {
 			out = append(out, rec)
+		} else if api == "block4dataset_site" {
+			if val, ok := specs["site"]; ok && rec["name"] != nil {
+				site := fmt.Sprintf("%s", val)
+				block := rec["name"].(string)
+				if rucioBlockAtSite(block, site) {
+					out = append(out, rec)
+				}
+			}
 		} else if api == "full_record" {
 			out = append(out, rec)
 		} else if api == "file4dataset_site" || api == "file4block_site" {
@@ -145,4 +154,31 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 		}
 	}
 	return out
+}
+
+func rucioBlockAtSite(block, site string) bool {
+	furl := fmt.Sprintf("%s/replicas/cms/%s/datasets?deep=True", RucioUrl(), url.QueryEscape(block))
+	client := utils.HttpClient()
+	resp := utils.FetchResponse(client, furl, "")
+	if resp.Error != nil {
+		return false
+	}
+	for _, rec := range loadRucioData("block4dataset_site", resp.Data) {
+		if rec["rse"] == nil {
+			continue
+		}
+		if rucioSiteMatch(site, rec["rse"].(string)) {
+			return true
+		}
+	}
+	return false
+}
+
+func rucioSiteMatch(site, rse string) bool {
+	if strings.Contains(site, "*") {
+		pat := "^" + strings.Replace(regexp.QuoteMeta(site), "\\*", ".*", -1) + "$"
+		matched, _ := regexp.MatchString(pat, rse)
+		return matched
+	}
+	return site == rse
 }
