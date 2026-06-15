@@ -4,9 +4,10 @@ SHELL := /bin/bash
 EXECUTABLE := das2go
 ENV := $(shell kubectl config get-contexts -o name)
 MAKETIME := $(shell date +%Y%m%d-%H%M%S)
+DAS2GO_SRC := $(shell pwd)
 
 # Configuration variables:
-TMP_DIR     = tmp
+TMP_DIR     := $(DAS2GO_SRC)/tmp
 # CONFIG_REPO = git@github.com:dmwm/CMSKubernetes.git
 # CONFIG_REPO = https://github.com/dmwm/CMSKubernetes.git
 # CONFIG_BRANCH = master
@@ -20,6 +21,7 @@ DAS_SERVER_DEV_MANIFEST = $(CONFIG_DIR)/kubernetes/cmsweb/services/das-server-de
 DASTOOLS_REPO = https://github.com/dmwm/DASTools.git
 DASTOOLS_BRANCH = master
 DASTOOLS_DIR  = $(TMP_DIR)/DASTools
+export PATH := $(DASTOOLS_DIR)/bin:$(PATH)
 
 # DAS maps variables:
 DASMAPS_PARSER = $(DASTOOLS_DIR)/bin/dasmaps_parser
@@ -31,6 +33,8 @@ DASMAPS_BACKUP_DIR_REMOTE = /data/dasmaps-dev.d/backup
 DASMAPS_BACKUP_FILE = dasmaps_db.backup.$(ENV).$(MAKETIME).json
 DASMAPS_BACKUP_LINK = $(DASMAPS_BACKUP_DIR)/latest
 DASMAPS_BACKUP_FILE_LATEST = $(shell readlink -f $(DASMAPS_BACKUP_LINK))
+DASMAPS_STAGE_DIR = $(TMP_DIR)/DASMaps/js
+
 
 # Backup variables
 BACKUP_DIR = $(TMP_DIR)/backup.d/
@@ -45,8 +49,11 @@ DAS_SERVER_POD = $(shell kubectl -n das get pod -l app=das-server -o jsonpath='{
 DAS_MONGO_POD = $(shell kubectl -n das get pod -l app=das-mongo -o jsonpath='{.items[0].metadata.name}')
 
 
+
+
 .PHONY: deploy build confirm_deploy devpush devinit run_dev_push run_dev_init \
-	run_dev_redirect run_maps_push run_maps_backup run_maps_revert setup_config setup_dastools
+	run_dev_redirect run_maps_push run_maps_backup run_maps_revert run_maps_generate \
+	run_maps_cache_clean run_maps_transform run_maps_fetch setup_config setup_dastools
 
 # Confirmation step: Require user interactive confirmation based on the detected environment
 confirm_deploy:
@@ -105,7 +112,10 @@ devrevert: confirm_deploy run_dev_revert
 
 mapsbackup: confirm_deploy run_maps_backup
 
-mapspush: confirm_deploy setup_dastools run_maps_push
+mapspush: confirm_deploy setup_dastools \
+	run_maps_generate \
+	run_maps_push \
+	run_maps_cache_clean
 
 mapsrevert: confirm_deploy run_maps_revert
 
@@ -198,16 +208,61 @@ run_dev_revert:
 	@echo ">>> Reverting ingress traffic to $(DAS_SERVER_POD) for $(ENV):"
 	@kubectl -n das patch service das-server -p '{"spec":{"selector":{"app":"das-server"}}}'
 
+run_maps_fetch:
+	@rm -rf   $(DASMAPS_STAGE_DIR)
+	@mkdir -p $(DASMAPS_STAGE_DIR)
+	@das_js_fetch https://raw.githubusercontent.com/dmwm/DASMaps/master/js $(DASMAPS_STAGE_DIR)
+
+# run_maps_generate:
+# 	@echo ">>> Generating DAS maps from local source tree..."
+# 	@mkdir -p $(DASMAPS_DIR)
+# 	@rm -f $(DASMAPS_GENERATED_FILE)
+# 	@for map in $(DASMAPS_YAML_ALL); do \
+# 	  echo ">>> parsing $$map"; \
+# 	  $(DASMAPS_PARSER) -input $$map >> $(DASMAPS_GENERATED_FILE); \
+# 	done
+# 	@echo ">>> validating $(DASMAPS_GENERATED_FILE)"
+# 	@$(DASMAPS_VALIDATOR) -dasmaps $(DASMAPS_GENERATED_FILE)
+
+run_maps_generate:
+	@rm -rf $(DASMAPS_DIR)
+	@mkdir -p $(DASMAPS_DIR)
+	@cd $(DASMAPS_DIR) && das_create_json_maps $(DAS2GO_SRC)/maps
+
+
 run_maps_push:
-	@echo ">>> Building DAS maps for pushing into das-mongo at $(ENV)" && \
-	$(DASMAPS_PARSER) -input maps/dbs3.yml > $(DASMAPS_DIR)/update_mapping_db.js && \
-	$(DASMAPS_PARSER) -input maps/rucio.yml >> $(DASMAPS_DIR)/update_mapping_db.js && \
-	$(DASMAPS_PARSER) -input maps/presentation.yml >> $(DASMAPS_DIR)/update_mapping_db.js && \
-	$(DASMAPS_VALIDATOR) -dasmaps $(DASMAPS_DIR)/update_mapping_db.js && \
-	echo ">>> Pushing DAS maps to das-mongo at $(ENV)" && \
-	kubectl -n das exec $(DAS_MONGO_POD) -- mkdir -p $(DASMAPS_DIR_REMOTE) && \
-	kubectl -n das cp $(DASMAPS_DIR)/update_mapping_db.js $(DAS_MONGO_POD):$(DASMAPS_DIR_REMOTE)/update_mapping_db.js && \
-	kubectl -n das exec -it $(DAS_MONGO_POD) -- bash -lc 'export PATH=/data:$$PATH; /data/das_js_import $(DASMAPS_DIR_REMOTE)'
+	@echo ">>> Pushing locally generated DASMaps into das-mongo"
+	@test -n "$(DAS_MONGO_POD)" || { \
+	  echo "ERROR: DAS_MONGO_POD is empty"; \
+	  exit 1; \
+	}
+	@test -d "$(DASMAPS_DIR)" || { \
+	  echo "ERROR: missing local DASMAPS_DIR=$(DASMAPS_DIR). Run run_maps_generate first."; \
+	  exit 1; \
+	}
+	@test "$$(find "$(DASMAPS_DIR)" -maxdepth 1 -name '*.js' | wc -l)" -gt 0 || { \
+	  echo "ERROR: no *.js maps found in DASMAPS_DIR=$(DASMAPS_DIR)"; \
+	  exit 1; \
+	}
+	@echo ">>> DAS_MONGO_POD=$(DAS_MONGO_POD)"
+	@echo ">>> DASMAPS_DIR=$(DASMAPS_DIR)"
+	@echo ">>> DASMAPS_DIR_REMOTE=$(DASMAPS_DIR_REMOTE)"
+	@kubectl -n das exec "$(DAS_MONGO_POD)" -- sh -lc 'rm -rf "$(DASMAPS_DIR_REMOTE)" && mkdir -p "$(DASMAPS_DIR_REMOTE)"'
+	@tar -C "$(DASMAPS_DIR)" -cf - . | \
+	  kubectl -n das exec -i "$(DAS_MONGO_POD)" -- sh -lc 'tar -C "$(DASMAPS_DIR_REMOTE)" -xf -'
+	@kubectl -n das exec "$(DAS_MONGO_POD)" -- sh -lc 'export PATH=/data:$$PATH; \
+		dasmap=`cat /etc/secrets/dasmap`; echo dasmap: $$dasmap; \
+		cp -f $(DASMAPS_DIR_REMOTE)/$$dasmap $(DASMAPS_DIR_REMOTE)/update_mapping_db.js'
+	@kubectl -n das exec "$(DAS_MONGO_POD)" -- sh -lc 'export PATH=/data:$$PATH; das_js_validate "$(DASMAPS_DIR_REMOTE)"'
+	@kubectl -n das exec "$(DAS_MONGO_POD)" -- sh -lc 'ls -1 "$(DASMAPS_DIR_REMOTE)"/*.js'
+	@kubectl -n das exec "$(DAS_MONGO_POD)" -- sh -lc 'export PATH=/data:$$PATH; das_js_import "$(DASMAPS_DIR_REMOTE)"'
+
+
+run_maps_cache_clean:
+	@echo ">>> Cleaning DAS query/result caches after map import..."
+	@kubectl -n das exec $(DAS_MONGO_POD) -- bash -lc 'export PATH=/data:$$PATH; \
+	  mongo --quiet --host localhost --port 8230 das --eval "db.cache.remove({}); db.merge.remove({})" \
+	'
 
 run_maps_backup:
 	[[ -h $(DASMAPS_BACKUP_LINK) ]] && rm $(DASMAPS_BACKUP_LINK) || true
