@@ -97,6 +97,7 @@ dataset : [
                  {"name":"Parents", "query":"parent dataset=%s"},
                  {"name":"Children", "query":"child dataset=%s"},
                  {"name":"Sites", "query":"site dataset=%s"},
+                 {"name":"Origin sites", "query":"origin_site dataset=%s"},
                  {"name":"Physics Groups", "query":"group dataset=%s"},
                 ],
          "description": "is a name of CMS dataset which represented as a path \
@@ -276,7 +277,7 @@ site : [
          "link":[
                  {"name":"Datasets", "query":"dataset site=%s"},
                 ],
-         "description": "is CMS site name used by Phedex and SiteDB systems",
+         "description": "is CMS current location site name used by Rucio/CRIC systems",
          "examples":[
          "site=T3_US_Cornell",
          ]
@@ -285,7 +286,7 @@ site : [
          "link":[
                  {"name":"Site", "query":"site=%s"},
                 ],
-         "description": "is a name of storage element used by Phedex/SiteDB systems",
+         "description": "is a current location storage element used by site information systems",
          "examples":[
          "site=osg-se.cac.cornell.edu",
          ]
@@ -309,14 +310,9 @@ site : [
         ],
 origin_site : [
         {"das":"origin_site.name", "ui":"Origin site name",
-         "description": "is DBS origin_site_name",
+         "description": "is DBS origin_site_name, i.e. the original block placement site",
          "examples":[
-         "origin_site dataset=/WJets_matchingup_7TeV-madgraph/Summer10-START36_V10_FastSim-v3/DQM",
-         ]
-        },
-        {"das":"origin_site.se", "ui":"Origin storage element",
-         "examples":[
-         "block dataset=/WJets_matchingup_7TeV-madgraph/Summer10-START36_V10_FastSim-v3/DQM origin_site=osg-se.cac.cornell.edu",
+         "origin_site dataset=/QCD_Pt_0to5_TuneZ2_7TeV_pythia6/wteo-qcd_tunez2_pt0to5_pythia_fall10_387-250136cb6ade55a0822a3f1b6b851d5a/USER instance=cms_dbs_ph_analysis_02",
          ]
         },
         {"das":"origin_site.kind", "ui":"Site type"},

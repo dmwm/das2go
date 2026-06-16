@@ -241,7 +241,7 @@ das_map : [
 ]
 ---
 urn: site4dataset
-url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks"
 expire : 900
 params : {
         "detail":"True",
@@ -256,7 +256,7 @@ das_map : [
 ]
 ---
 urn: site4block
-url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks"
 expire : 900
 params : {
         "detail":"True",
@@ -271,7 +271,7 @@ das_map : [
 ]
 ---
 urn: blocks
-url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks/"
+url : "https://cmsweb.cern.ch:8443/dbs/prod/global/DBSReader/blocks"
 expire : 900
 params : {
         "block_name":"optional",
@@ -303,8 +303,8 @@ das_map : [
     {"das_key": "block", "rec_key":"block.name"},
     {"das_key": "dataset", "rec_key":"dataset.name", "api_arg":"dataset",
      "pattern": "/[\\w-]+/[\\w-]+/[A-Z-]+"},
-    {"das_key": "origin_site", "rec_key":"origin_site.se", "api_arg":"origin_site_name",
-     "pattern":"([a-zA-Z0-9-_]+\\.){2}"},
+    {"das_key": "origin_site", "rec_key":"origin_site.name", "api_arg":"origin_site_name",
+     "pattern":"^T[0-3]_"},
 ]
 # NOTE: blocksummaries is a subset of filesummaries output, so we really don't
 # need this API
