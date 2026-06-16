@@ -122,6 +122,14 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 		} else if api == "rules4dataset" || api == "rules4block" || api == "rules4file" {
 			out = append(out, rec)
 		} else if api == "block4dataset" {
+			if rec["name"] != nil {
+				block := rec["name"].(string)
+				if info, ok := rucioBlockReplicaInfo(block, ""); ok {
+					for k, v := range info {
+						rec[k] = v
+					}
+				}
+			}
 			out = append(out, rec)
 		} else if api == "block4dataset_site" {
 			if val, ok := specs["site"]; ok && rec["name"] != nil {
