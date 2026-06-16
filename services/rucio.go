@@ -64,6 +64,19 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 	records := loadRucioData(api, data)
 	specs := dasquery.Spec
 	rmap := make(mongo.DASRecord)
+	if api == "block4block" {
+		if val, ok := specs["block"]; ok {
+			block := fmt.Sprintf("%s", val)
+			if info, ok := rucioBlockReplicaInfoFromRecords(block, "", records); ok {
+				rec := mongo.DASRecord{"name": block}
+				for k, v := range info {
+					rec[k] = v
+				}
+				out = append(out, rec)
+			}
+		}
+		return out
+	}
 	for _, rec := range records {
 		if api == "rses" {
 			if val, ok := specs["site"]; ok {
@@ -166,11 +179,15 @@ func rucioBlockReplicaInfo(block, site string) (mongo.DASRecord, bool) {
 	if resp.Error != nil {
 		return nil, false
 	}
+	return rucioBlockReplicaInfoFromRecords(block, site, loadRucioData("block4dataset_site", resp.Data))
+}
+
+func rucioBlockReplicaInfoFromRecords(block, site string, records []mongo.DASRecord) (mongo.DASRecord, bool) {
 	info := make(mongo.DASRecord)
 	states := make(mongo.DASRecord)
 	rses := make(mongo.DASRecord)
 	var replicas []mongo.DASRecord
-	for _, rec := range loadRucioData("block4dataset_site", resp.Data) {
+	for _, rec := range records {
 		if rec["rse"] == nil {
 			continue
 		}
@@ -201,6 +218,9 @@ func rucioBlockReplicaInfo(block, site string) (mongo.DASRecord, bool) {
 }
 
 func rucioSiteMatch(site, rse string) bool {
+	if site == "" {
+		return true
+	}
 	if strings.Contains(site, "*") {
 		pat := "^" + strings.Replace(regexp.QuoteMeta(site), "\\*", ".*", -1) + "$"
 		matched, _ := regexp.MatchString(pat, rse)
