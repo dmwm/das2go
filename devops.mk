@@ -33,7 +33,7 @@ DASMAPS_BACKUP_DIR_REMOTE = /data/dasmaps-dev.d/backup
 DASMAPS_BACKUP_FILE = dasmaps_db.backup.$(ENV).$(MAKETIME).json
 DASMAPS_BACKUP_LINK = $(DASMAPS_BACKUP_DIR)/latest
 DASMAPS_BACKUP_FILE_LATEST = $(shell readlink -f $(DASMAPS_BACKUP_LINK))
-DASMAPS_STAGE_DIR = $(TMP_DIR)/DASMaps/js
+DASMAPS_STAGE_DIR = $(TMP_DIR)/DASMaps/
 
 
 # Backup variables
@@ -113,6 +113,7 @@ devrevert: confirm_deploy run_dev_revert
 mapsbackup: confirm_deploy run_maps_backup
 
 mapspush: confirm_deploy setup_dastools \
+	run_maps_fetch \
 	run_maps_generate \
 	run_maps_push \
 	run_maps_cache_clean
@@ -177,13 +178,6 @@ run_dev_push:
 	@echo ">>> Pushing locally built executable for $(EXECUTABLE) to pod $(DAS_SERVER_DEV_POD)..."
 	@kubectl -n das cp ./das2go  $(DAS_SERVER_DEV_POD):/data/das2go -c dev
 
-	# @kubectl -n das cp ./js $(DAS_SERVER_DEV_POD):/data/js -c dev
-	# @kubectl -n das cp ./css $(DAS_SERVER_DEV_POD):/data/css -c dev
-	# @kubectl -n das cp ./images $(DAS_SERVER_DEV_POD):/data/images -c dev
-	# @kubectl -n das cp ./templates $(DAS_SERVER_DEV_POD):/data/templates -c dev
-	# @kubectl -n das cp ./examples $(DAS_SERVER_DEV_POD):/data/examples -c dev
-	# @kubectl -n das exec $(DAS_SERVER_DEV_POD) -c dev -- chmod +x /data/das2go
-
 	@kubectl -n das cp ./js        $(DAS_SERVER_DEV_POD):/data/ -c dev
 	@kubectl -n das cp ./css       $(DAS_SERVER_DEV_POD):/data/ -c dev
 	@kubectl -n das cp ./images    $(DAS_SERVER_DEV_POD):/data/ -c dev
@@ -209,24 +203,14 @@ run_dev_revert:
 	@kubectl -n das patch service das-server -p '{"spec":{"selector":{"app":"das-server"}}}'
 
 run_maps_fetch:
-	@rm -rf   $(DASMAPS_STAGE_DIR)
-	@mkdir -p $(DASMAPS_STAGE_DIR)
-	@das_js_fetch https://raw.githubusercontent.com/dmwm/DASMaps/master/js $(DASMAPS_STAGE_DIR)
-
-# run_maps_generate:
-# 	@echo ">>> Generating DAS maps from local source tree..."
-# 	@mkdir -p $(DASMAPS_DIR)
-# 	@rm -f $(DASMAPS_GENERATED_FILE)
-# 	@for map in $(DASMAPS_YAML_ALL); do \
-# 	  echo ">>> parsing $$map"; \
-# 	  $(DASMAPS_PARSER) -input $$map >> $(DASMAPS_GENERATED_FILE); \
-# 	done
-# 	@echo ">>> validating $(DASMAPS_GENERATED_FILE)"
-# 	@$(DASMAPS_VALIDATOR) -dasmaps $(DASMAPS_GENERATED_FILE)
+	# @rm -rf   $(DASMAPS_STAGE_DIR)
+	# @mkdir -p $(DASMAPS_STAGE_DIR)
+	# @das_js_fetch https://raw.githubusercontent.com/dmwm/DASMaps/master/js $(DASMAPS_STAGE_DIR)
+	@das_js_fetch https://raw.githubusercontent.com/dmwm/DASMaps/master/js $(DASMAPS_DIR)
 
 run_maps_generate:
-	@rm -rf $(DASMAPS_DIR)
-	@mkdir -p $(DASMAPS_DIR)
+	# @rm -rf $(DASMAPS_DIR)
+	# @mkdir -p $(DASMAPS_DIR)
 	@cd $(DASMAPS_DIR) && das_create_json_maps $(DAS2GO_SRC)/maps
 
 
