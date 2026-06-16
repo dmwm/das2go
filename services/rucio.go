@@ -114,7 +114,10 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 			if val, ok := specs["site"]; ok && rec["name"] != nil {
 				site := fmt.Sprintf("%s", val)
 				block := rec["name"].(string)
-				if rucioBlockAtSite(block, site) {
+				if info, ok := rucioBlockReplicaInfo(block, site); ok {
+					for k, v := range info {
+						rec[k] = v
+					}
 					out = append(out, rec)
 				}
 			}
@@ -156,22 +159,45 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 	return out
 }
 
-func rucioBlockAtSite(block, site string) bool {
+func rucioBlockReplicaInfo(block, site string) (mongo.DASRecord, bool) {
 	furl := fmt.Sprintf("%s/replicas/cms/%s/datasets?deep=True", RucioUrl(), url.QueryEscape(block))
 	client := utils.HttpClient()
 	resp := utils.FetchResponse(client, furl, "")
 	if resp.Error != nil {
-		return false
+		return nil, false
 	}
+	info := make(mongo.DASRecord)
+	states := make(mongo.DASRecord)
+	rses := make(mongo.DASRecord)
+	var replicas []mongo.DASRecord
 	for _, rec := range loadRucioData("block4dataset_site", resp.Data) {
 		if rec["rse"] == nil {
 			continue
 		}
-		if rucioSiteMatch(site, rec["rse"].(string)) {
-			return true
+		rse := rec["rse"].(string)
+		if !rucioSiteMatch(site, rse) {
+			continue
 		}
+		replica := make(mongo.DASRecord)
+		for k, v := range rec {
+			replica[k] = v
+			if k != "name" && k != "scope" {
+				info[k] = v
+			}
+		}
+		if rec["state"] != nil {
+			states[rse] = rec["state"]
+		}
+		rses[rse] = []interface{}{}
+		replicas = append(replicas, replica)
 	}
-	return false
+	if len(replicas) == 0 {
+		return nil, false
+	}
+	info["states"] = states
+	info["rses"] = rses
+	info["replicas"] = replicas
+	return info, true
 }
 
 func rucioSiteMatch(site, rse string) bool {
