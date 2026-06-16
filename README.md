@@ -8,6 +8,26 @@ das2go
 
 Go implementation of DAS (Data Aggregation System for CMS)
 
+### Site query semantics
+
+DAS uses `site` for current data location information, as reported by
+Rucio/CRIC. Examples:
+
+```
+site dataset=/WJets_matchingup_7TeV-madgraph/Summer10-START36_V10_FastSim-v3/DQM
+block dataset=/AlCaP0/Run2011A-ALCARECOEcalCalEtaCalib-v4/ALCARECO site=T1_US_FNAL*
+file dataset=/Cosmics/Run2010B-TkAlCosmics0T-v1/ALCARECO site=T1_US_FNAL_Buffer
+```
+
+DAS uses `origin_site` for DBS `origin_site_name`, i.e. original block
+placement. The direct DBS `origin_site=` filter is supported at block
+granularity with a dataset constraint:
+
+```
+origin_site dataset=/QCD_Pt_0to5_TuneZ2_7TeV_pythia6/wteo-qcd_tunez2_pt0to5_pythia_fall10_387-250136cb6ade55a0822a3f1b6b851d5a/USER instance=cms_dbs_ph_analysis_02
+block dataset=/WJets_matchingup_7TeV-madgraph/Summer10-START36_V10_FastSim-v3/DQM origin_site=T2_US_Nebraska
+```
+
 ### Installation & Usage
 
 To compile the server you need a Go compiler, then perform the following:
