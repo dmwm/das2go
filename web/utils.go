@@ -487,6 +487,12 @@ func PresentData(path string, dasquery dasql.DASQuery, data []mongo.DASRecord, p
 					log.Printf("WARNING: unsupported type of record %+v, key=%s\n", pmap, key)
 				}
 			}
+			if len(uiRows) == 0 && key == "origin_site" {
+				uiRows = []interface{}{
+					mongo.DASRecord{"das": "origin_site.name", "ui": "Origin site name"},
+					mongo.DASRecord{"das": "origin_site.kind", "ui": "Site type"},
+				}
+			}
 			for idx, elem := range records {
 				if elem == nil {
 					continue
