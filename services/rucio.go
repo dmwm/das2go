@@ -145,12 +145,7 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 		} else if api == "dataset4dataset" {
 			if rec["name"] != nil {
 				if dataset, ok := datasetSpecName(specs["dataset"]); ok {
-					drec := rucioDatasetRecord(rmap, dataset)
-					block := fmt.Sprintf("%s", rec["name"])
-					if info, ok := rucioBlockReplicaInfo(block, ""); ok {
-						mergeRucioDatasetInfo(drec, info)
-					}
-					rmap[dataset] = drec
+					rmap[dataset] = 1
 				}
 			}
 		} else if api == "dataset4dataset_site" {
@@ -192,118 +187,13 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 			}
 		}
 	}
-	if api == "dataset4dataset" {
-		for _, val := range rmap {
-			switch rec := val.(type) {
-			case mongo.DASRecord:
-				out = append(out, rec)
-			case map[string]interface{}:
-				out = append(out, rec)
-			}
-		}
-	} else if api == "dataset4site" || api == "dataset4dataset_site" {
+	if api == "dataset4site" || api == "dataset4dataset" || api == "dataset4dataset_site" {
 		for d := range rmap {
 			rec := mongo.DASRecord{"name": d}
 			out = append(out, rec)
 		}
 	}
 	return out
-}
-
-func rucioDatasetRecord(rmap mongo.DASRecord, dataset string) mongo.DASRecord {
-	if val, ok := rmap[dataset]; ok {
-		if rec, ok := val.(mongo.DASRecord); ok {
-			return rec
-		}
-		if rec, ok := val.(map[string]interface{}); ok {
-			return rec
-		}
-	}
-	return mongo.DASRecord{
-		"name":     dataset,
-		"states":   mongo.DASRecord{},
-		"rses":     mongo.DASRecord{},
-		"replicas": []mongo.DASRecord{},
-	}
-}
-
-func mergeRucioDatasetInfo(dst mongo.DASRecord, info mongo.DASRecord) {
-	for _, key := range []string{"scope", "type"} {
-		if dst[key] == nil && info[key] != nil {
-			dst[key] = info[key]
-		}
-	}
-	for _, key := range []string{"bytes", "available_bytes", "length", "available_length"} {
-		if val, ok := numericValue(info[key]); ok {
-			dst[key] = numericSum(dst[key]) + val
-		}
-	}
-	if bytes, ok := dst["bytes"]; ok {
-		dst["size"] = bytes
-	}
-	mergeRecordMap(dst, info, "states")
-	mergeRecordMap(dst, info, "rses")
-	appendReplicas(dst, info)
-}
-
-func mergeRecordMap(dst mongo.DASRecord, src mongo.DASRecord, key string) {
-	dmap, ok := dst[key].(mongo.DASRecord)
-	if !ok {
-		dmap = mongo.DASRecord{}
-		dst[key] = dmap
-	}
-	switch smap := src[key].(type) {
-	case mongo.DASRecord:
-		for k, v := range smap {
-			dmap[k] = v
-		}
-	case map[string]interface{}:
-		for k, v := range smap {
-			dmap[k] = v
-		}
-	}
-}
-
-func appendReplicas(dst mongo.DASRecord, src mongo.DASRecord) {
-	var replicas []mongo.DASRecord
-	if val, ok := dst["replicas"].([]mongo.DASRecord); ok {
-		replicas = val
-	}
-	switch vals := src["replicas"].(type) {
-	case []mongo.DASRecord:
-		replicas = append(replicas, vals...)
-	case []interface{}:
-		for _, val := range vals {
-			if rec, ok := val.(mongo.DASRecord); ok {
-				replicas = append(replicas, rec)
-			} else if rec, ok := val.(map[string]interface{}); ok {
-				replicas = append(replicas, rec)
-			}
-		}
-	}
-	dst["replicas"] = replicas
-}
-
-func numericSum(value interface{}) float64 {
-	val, _ := numericValue(value)
-	return val
-}
-
-func numericValue(value interface{}) (float64, bool) {
-	switch val := value.(type) {
-	case float64:
-		return val, true
-	case float32:
-		return float64(val), true
-	case int:
-		return float64(val), true
-	case int64:
-		return float64(val), true
-	case json.Number:
-		num, err := val.Float64()
-		return num, err == nil
-	}
-	return 0, false
 }
 
 func datasetSpecName(value interface{}) (string, bool) {
