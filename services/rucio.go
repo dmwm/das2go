@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/url"
 	"regexp"
+	"sort"
 	"strings"
 
 	"github.com/dmwm/das2go/dasql"
@@ -237,6 +238,7 @@ func rucioDatasetReplicaInfo(dataset, site string, records []mongo.DASRecord) (m
 	if bytes := rec["bytes"]; bytes != nil {
 		rec["size"] = bytes
 	}
+	normalizeRucioDatasetInfo(rec)
 	return rec, true
 }
 
@@ -307,6 +309,33 @@ func rucioNumericValue(value interface{}) (float64, bool) {
 		return num, err == nil
 	}
 	return 0, false
+}
+
+func normalizeRucioDatasetInfo(rec mongo.DASRecord) {
+	if states, ok := rec["states"].(mongo.DASRecord); ok {
+		var names []string
+		for name := range states {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		var records []mongo.DASRecord
+		for _, name := range names {
+			records = append(records, mongo.DASRecord{"name": name, "state": states[name]})
+		}
+		rec["states"] = records
+	}
+	if rses, ok := rec["rses"].(mongo.DASRecord); ok {
+		var names []string
+		for name := range rses {
+			names = append(names, name)
+		}
+		sort.Strings(names)
+		var records []mongo.DASRecord
+		for _, name := range names {
+			records = append(records, mongo.DASRecord{"name": name})
+		}
+		rec["rses"] = records
+	}
 }
 
 func rucioBlockReplicaInfo(block, site string) (mongo.DASRecord, bool) {
