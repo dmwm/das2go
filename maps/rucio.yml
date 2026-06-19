@@ -48,6 +48,16 @@ das_map : [
 ]
 
 ---
+urn : dataset4dataset
+url : "http://cms-rucio.cern.ch/dids/cms/"
+expire : 3600
+params : {"dataset":"required"}
+lookup : dataset
+das_map : [
+        {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
+]
+
+---
 urn : dataset4dataset_site
 url : "http://cms-rucio.cern.ch/dids/cms/"
 expire : 3600
@@ -148,6 +158,16 @@ lookup : file
 das_map : [
         {"das_key":"dataset", "rec_key":"dataset.name", "api_arg":"dataset"},
         {"das_key":"site", "rec_key":"site.name", "api_arg":"site", "pattern":"^T[0-3]_"},
+        {"das_key":"file", "rec_key":"file.name", "pattern":"^T[0-3]_"},
+]
+---
+urn : file4block
+url : "http://cms-rucio.cern.ch/replicas/cms"
+expire : 3600
+params : {"block":"required"}
+lookup : file
+das_map : [
+        {"das_key":"block", "rec_key":"block.name", "api_arg":"block"},
         {"das_key":"file", "rec_key":"file.name", "pattern":"^T[0-3]_"},
 ]
 ---
