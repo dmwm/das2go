@@ -77,6 +77,18 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 		}
 		return out
 	}
+	if api == "dataset4dataset" {
+		if dataset, ok := datasetSpecName(specs["dataset"]); ok {
+			if info, ok := rucioBlockReplicaInfo(dataset, ""); ok {
+				rec := mongo.DASRecord{"name": dataset}
+				for k, v := range info {
+					rec[k] = v
+				}
+				out = append(out, rec)
+			}
+		}
+		return out
+	}
 	for _, rec := range records {
 		if api == "rses" {
 			if val, ok := specs["site"]; ok {
@@ -142,12 +154,6 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 					out = append(out, rec)
 				}
 			}
-		} else if api == "dataset4dataset" {
-			if rec["name"] != nil {
-				if dataset, ok := datasetSpecName(specs["dataset"]); ok {
-					rmap[dataset] = 1
-				}
-			}
 		} else if api == "dataset4dataset_site" {
 			if val, ok := specs["site"]; ok && rec["name"] != nil {
 				site := fmt.Sprintf("%s", val)
@@ -187,7 +193,7 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 			}
 		}
 	}
-	if api == "dataset4site" || api == "dataset4dataset" || api == "dataset4dataset_site" {
+	if api == "dataset4site" || api == "dataset4dataset_site" {
 		for d := range rmap {
 			rec := mongo.DASRecord{"name": d}
 			out = append(out, rec)
