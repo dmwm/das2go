@@ -77,13 +77,15 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 		}
 		return out
 	}
-	if api == "dataset4dataset" {
+	if api == "dataset4dataset" || api == "dataset4dataset_site" {
+		site := ""
+		if api == "dataset4dataset_site" {
+			if val, ok := specs["site"]; ok {
+				site = fmt.Sprintf("%s", val)
+			}
+		}
 		if dataset, ok := datasetSpecName(specs["dataset"]); ok {
-			if info, ok := rucioBlockReplicaInfo(dataset, ""); ok {
-				rec := mongo.DASRecord{"name": dataset}
-				for k, v := range info {
-					rec[k] = v
-				}
+			if rec, ok := rucioDatasetReplicaInfo(dataset, site, records); ok {
 				out = append(out, rec)
 			}
 		}
@@ -154,16 +156,6 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 					out = append(out, rec)
 				}
 			}
-		} else if api == "dataset4dataset_site" {
-			if val, ok := specs["site"]; ok && rec["name"] != nil {
-				site := fmt.Sprintf("%s", val)
-				block := rec["name"].(string)
-				if _, ok := rucioBlockReplicaInfo(block, site); ok {
-					if dataset, ok := datasetSpecName(specs["dataset"]); ok {
-						rmap[dataset] = 1
-					}
-				}
-			}
 		} else if api == "full_record" {
 			out = append(out, rec)
 		} else if api == "file4dataset_site" || api == "file4block_site" {
@@ -193,7 +185,7 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 			}
 		}
 	}
-	if api == "dataset4site" || api == "dataset4dataset_site" {
+	if api == "dataset4site" {
 		for d := range rmap {
 			rec := mongo.DASRecord{"name": d}
 			out = append(out, rec)
@@ -217,6 +209,104 @@ func datasetSpecName(value interface{}) (string, bool) {
 		}
 	}
 	return "", false
+}
+
+func rucioDatasetReplicaInfo(dataset, site string, records []mongo.DASRecord) (mongo.DASRecord, bool) {
+	rec := mongo.DASRecord{
+		"name":   dataset,
+		"states": mongo.DASRecord{},
+		"rses":   mongo.DASRecord{},
+	}
+	nblocks := 0
+	for _, row := range records {
+		block, ok := row["name"].(string)
+		if !ok || block == "" {
+			continue
+		}
+		info, ok := rucioBlockReplicaInfo(block, site)
+		if !ok {
+			continue
+		}
+		nblocks += 1
+		mergeRucioDatasetReplicaInfo(rec, info)
+	}
+	if nblocks == 0 {
+		return nil, false
+	}
+	rec["nblocks"] = nblocks
+	if bytes := rec["bytes"]; bytes != nil {
+		rec["size"] = bytes
+	}
+	return rec, true
+}
+
+func mergeRucioDatasetReplicaInfo(dst mongo.DASRecord, src mongo.DASRecord) {
+	for _, key := range []string{"scope", "type"} {
+		if dst[key] == nil && src[key] != nil {
+			dst[key] = src[key]
+		}
+	}
+	for _, key := range []string{"bytes", "available_bytes", "length", "available_length"} {
+		if val, ok := rucioNumericValue(src[key]); ok {
+			cur, _ := rucioNumericValue(dst[key])
+			dst[key] = cur + val
+		}
+	}
+	mergeRucioRecordMap(dst, src, "states")
+	mergeRucioRSEs(dst, src)
+}
+
+func mergeRucioRecordMap(dst mongo.DASRecord, src mongo.DASRecord, key string) {
+	dmap, ok := dst[key].(mongo.DASRecord)
+	if !ok {
+		dmap = mongo.DASRecord{}
+		dst[key] = dmap
+	}
+	switch smap := src[key].(type) {
+	case mongo.DASRecord:
+		for k, v := range smap {
+			dmap[k] = v
+		}
+	case map[string]interface{}:
+		for k, v := range smap {
+			dmap[k] = v
+		}
+	}
+}
+
+func mergeRucioRSEs(dst mongo.DASRecord, src mongo.DASRecord) {
+	dmap, ok := dst["rses"].(mongo.DASRecord)
+	if !ok {
+		dmap = mongo.DASRecord{}
+		dst["rses"] = dmap
+	}
+	switch smap := src["rses"].(type) {
+	case mongo.DASRecord:
+		for rse := range smap {
+			dmap[rse] = []interface{}{}
+		}
+	case map[string]interface{}:
+		for rse := range smap {
+			dmap[rse] = []interface{}{}
+		}
+	}
+}
+
+func rucioNumericValue(value interface{}) (float64, bool) {
+	switch val := value.(type) {
+	case float64:
+		return val, true
+	case float32:
+		return float64(val), true
+	case int:
+		return float64(val), true
+	case int64:
+		return float64(val), true
+	case json.Number:
+		num, err := val.Float64()
+		return num, err == nil
+	}
+	return 0, false
 }
 
 func rucioBlockReplicaInfo(block, site string) (mongo.DASRecord, bool) {
