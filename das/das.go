@@ -648,7 +648,7 @@ func ProcessLogic(dasquery dasql.DASQuery, maps []mongo.DASRecord, selectedServi
 					arr := strings.Split(furl, "/rses/")
 					furl = fmt.Sprintf("%s/rses/", arr[0])
 				}
-				if urn == "block4dataset" || urn == "block4dataset_site" || urn == "dataset4dataset_site" {
+				if urn == "block4dataset" || urn == "block4dataset_site" || urn == "dataset4dataset" || urn == "dataset4dataset_site" {
 					furl = fmt.Sprintf("%s/dids", furl)
 					if strings.Contains(furl, "#") {
 						furl = strings.Replace(furl, "#", "%23", -1)
