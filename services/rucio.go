@@ -144,8 +144,8 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 			}
 		} else if api == "dataset4dataset" {
 			if rec["name"] != nil {
-				if dataset, ok := specs["dataset"]; ok {
-					rmap[fmt.Sprintf("%s", dataset)] = 1
+				if dataset, ok := datasetSpecName(specs["dataset"]); ok {
+					rmap[dataset] = 1
 				}
 			}
 		} else if api == "dataset4dataset_site" {
@@ -153,8 +153,8 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 				site := fmt.Sprintf("%s", val)
 				block := rec["name"].(string)
 				if _, ok := rucioBlockReplicaInfo(block, site); ok {
-					if dataset, ok := specs["dataset"]; ok {
-						rmap[fmt.Sprintf("%s", dataset)] = 1
+					if dataset, ok := datasetSpecName(specs["dataset"]); ok {
+						rmap[dataset] = 1
 					}
 				}
 			}
@@ -194,6 +194,23 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 		}
 	}
 	return out
+}
+
+func datasetSpecName(value interface{}) (string, bool) {
+	switch v := value.(type) {
+	case string:
+		return v, v != ""
+	case []string:
+		if len(v) == 1 {
+			return v[0], v[0] != ""
+		}
+	case []interface{}:
+		if len(v) == 1 {
+			name, ok := v[0].(string)
+			return name, ok && name != ""
+		}
+	}
+	return "", false
 }
 
 func rucioBlockReplicaInfo(block, site string) (mongo.DASRecord, bool) {
