@@ -1,3 +1,6 @@
+### **v04.07.42rc1 to v04.07.42:**
+
+
 ### **04.07.41 to v04.07.42rc1:**
   - Revert broken Rucio dataset information normalization (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
   - Normalize Rucio Dataset info (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
