@@ -156,7 +156,7 @@ dataset dataset=/*/*RelVal*/* release=CMSSW_4_2_0
 
 <tr class="odd">
 <td colspan="2" style="">
-<b>Find site information for a given dataset/block/file/run</b>
+<b>Find current location site information for a given dataset/block/file/run</b>
 </td>
 </tr>
 <tr>
@@ -177,14 +177,18 @@ To perform such query you need to break it apart:<br/>
 dataset dataset=/Cosmics/*/* run=149011
 <br/>
 <em style="color:blue">
-2. Find site information
+2. Find current location site information
 </em>
 <br/>
 site dataset=/Cosmics/Run2010B-PromptReco-v2/DQM
+<br/>
+Find DBS origin-site information
+<br/>
+origin_site dataset=/QCD_Pt_0to5_TuneZ2_7TeV_pythia6/wteo-qcd_tunez2_pt0to5_pythia_fall10_387-250136cb6ade55a0822a3f1b6b851d5a/USER instance=cms_dbs_ph_analysis_02
 <br/><br/>
 <em style="color:blue">
 In DAS you need to break query apart and work with pieces:
-dataset knows about block/files, block knows about site, file knows about runs, etc.
+dataset knows about block/files, block knows about current location site, DBS block origin is exposed through origin_site, file knows about runs, etc.
 This approach scales better and allow faster query look-up.
 </em>
 </td>
@@ -247,7 +251,7 @@ N/A
 </td>
 <td>
 <em style="color:blue">
-Site information
+Current location site information
 </em><br/>
 site=T1_CH_CERN
 <br/>

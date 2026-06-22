@@ -648,11 +648,14 @@ func ProcessLogic(dasquery dasql.DASQuery, maps []mongo.DASRecord, selectedServi
 					arr := strings.Split(furl, "/rses/")
 					furl = fmt.Sprintf("%s/rses/", arr[0])
 				}
-				if urn == "block4dataset" {
+				if urn == "block4dataset" || urn == "block4dataset_site" || urn == "dataset4dataset" || urn == "dataset4dataset_site" {
 					furl = fmt.Sprintf("%s/dids", furl)
 					if strings.Contains(furl, "#") {
 						furl = strings.Replace(furl, "#", "%23", -1)
 					}
+				}
+				if urn == "block4block" {
+					furl = fmt.Sprintf("%s/datasets?deep=True", furl)
 				}
 				if urn == "rules4dataset" || urn == "rules4block" || urn == "rules4file" {
 					// adjust rest URL
@@ -868,9 +871,9 @@ func PostProcessing(dasquery dasql.DASQuery, data []mongo.DASRecord) []mongo.DAS
 	// defer function profiler
 	defer utils.MeasureTime("das/PostProcessing")()
 
-	// site4dataset use case
+	// origin_site4dataset use case
 	fields := dasquery.Fields
-	if utils.InList("site", fields) {
+	if utils.InList("origin_site", fields) {
 		var out []mongo.DASRecord
 		for _, r := range data {
 			var das mongo.DASRecord
@@ -892,7 +895,7 @@ func PostProcessing(dasquery dasql.DASQuery, data []mongo.DASRecord) []mongo.DAS
 			orig := false // original placement
 			if len(srvs) == 1 {
 				var recs []mongo.DASRecord
-				switch v := r["site"].(type) {
+				switch v := r["origin_site"].(type) {
 				case []interface{}:
 					for _, v := range v {
 						recs = append(recs, v.(mongo.DASRecord))

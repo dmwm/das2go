@@ -3,11 +3,14 @@ block dataset=/ElectronHad/Run2011A-05Aug2011-v1/AOD
 block=/EG/Run2010A-Dec4ReReco_v1/AOD#f15ed71e-6491-4f73-a0e3-ac4248a6367d
 block file=/store/data/Run2010B/ZeroBias/RAW-RECO/v2/000/145/820/784478E3-52C2-DF11-A0CC-0018F3D0969A.root
 
-# find blocks for a given block/dataset and site name
+# find blocks for a given block/dataset and current location site name
 block block=/Cosmics/Run2010B-TkAlCosmics0T* site=T1_DE_KIT*
 block dataset=/AlCaP0/Run2011A-ALCARECOEcalCalEtaCalib-v4/ALCARECO site=T1_US_FNAL*
 
-# find blocks for a give site/SE
+# find blocks for a given dataset and DBS origin site storage element
+block dataset=/WJets_matchingup_7TeV-madgraph/Summer10-START36_V10_FastSim-v3/DQM origin_site=T2_US_Nebraska
+
+# find blocks for a given current location site/SE
 block site=T3_US_Cornell
 block site=osg-se.cac.cornell.edu
 
