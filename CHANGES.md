@@ -1,3 +1,31 @@
+### **04.07.41 to v04.07.42rc1:**
+  - Revert broken Rucio dataset information normalization (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Normalize Rucio Dataset info (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Second attempt to enrich dataset level infromation from Rucio. (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Enrich dataset level infromation from rucion instead of local aggregation. (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Revert broken dataset level aggregatiosn. (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Enrich dataset level information fetched by Rucio && implement block level aggregations per dataset (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Normalize dataset list output from Rucio (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Add dataset4dataset map for Rucio bakcend (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Add file4block map for rucio backend (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Add queries with dataset level lookup granularity and site= filters (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Add renderer fall back mechanism for origin_site (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Fix dbs backend site list rendering (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Updating templates and examples (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Enrich the block level infromation fetch from rucio backend reagrdless of the filter applied (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Add block4block api and map for rucio backend (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Add rucioBlockReplicaInfo in place of rucioBlockAtSite and get more information per block at site (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Fix omitted cleanup steps for mapspush target due to missing clean_*.js files (Todor Ivanov) [#81](https://github.com/dmwm/das2go/pull/81)
+  - Fix origin_site map for dbs (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Add README_DEVOPS.md (Todor Ivanov) [#79](https://github.com/dmwm/das2go/pull/79)
+  - Fix mapspush target (Todor Ivanov) [#79](https://github.com/dmwm/das2go/pull/79)
+  - Automating devops procedures through devops.mk file (Todor Ivanov) [#79](https://github.com/dmwm/das2go/pull/79)
+  - Add site= filtering for Rucio backend and block lookup key (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Change the DBS filter origin_site to has meaning only on block level granularity (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Add origin_site= filter for the DBS backend (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+  - Change site lookup key for DBS backend to origin_site (Todor Ivanov) [#77](https://github.com/dmwm/das2go/pull/77)
+
+
 ### **04.07.41rc1 to 04.07.41:**
 
 
