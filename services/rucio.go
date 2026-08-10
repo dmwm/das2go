@@ -91,6 +91,15 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 		}
 		return out
 	}
+	if api == "file4dataset" || api == "file4dataset_site" {
+		site := ""
+		if api == "file4dataset_site" {
+			if val, ok := specs["site"]; ok {
+				site = fmt.Sprintf("%s", val)
+			}
+		}
+		return rucioFilesForDataset(site, records)
+	}
 	for _, rec := range records {
 		if api == "rses" {
 			if val, ok := specs["site"]; ok {
@@ -158,14 +167,14 @@ func RucioUnmarshal(dasquery dasql.DASQuery, api string, data []byte) []mongo.DA
 			}
 		} else if api == "full_record" {
 			out = append(out, rec)
-		} else if api == "file4dataset_site" || api == "file4block_site" {
+		} else if api == "file4block_site" {
 			if val, ok := specs["site"]; ok {
 				site := fmt.Sprintf("%s", val)
 				if rec["states"] != nil {
 					states := rec["states"].(map[string]interface{})
 					var sites []string
-					for k, _ := range states {
-						sites = append(sites, k)
+					for rse := range states {
+						sites = append(sites, rse)
 					}
 					if utils.InList(site, sites) {
 						out = append(out, rec)
@@ -307,6 +316,118 @@ func rucioNumericValue(value interface{}) (float64, bool) {
 		return num, err == nil
 	}
 	return 0, false
+}
+
+// rucioFilesForDataset resolves the block DIDs returned for a CMS dataset
+// container. A complete block can use its compact replica summary plus its DID
+// contents; a partial block needs the file-level replica response so that only
+// files actually available at the requested site are returned.
+func rucioFilesForDataset(site string, blocks []mongo.DASRecord) []mongo.DASRecord {
+	var out []mongo.DASRecord
+	seenBlocks := make(map[string]bool)
+	seenFiles := make(map[string]bool)
+	for _, row := range blocks {
+		block, ok := row["name"].(string)
+		if !ok || block == "" || seenBlocks[block] {
+			continue
+		}
+		seenBlocks[block] = true
+
+		summaryURL := fmt.Sprintf("%s/replicas/cms/%s/datasets?deep=True", RucioUrl(), url.QueryEscape(block))
+		summary, err := fetchRucioRecords("file4dataset", summaryURL)
+		if err != nil {
+			out = append(out, rucioErrorRecord(err))
+			continue
+		}
+		relevant, complete := rucioBlockCompleteness(site, summary)
+		if !relevant {
+			continue
+		}
+
+		api := "file4dataset"
+		filesURL := rucioDIDContentsURL(block)
+		filterBySite := false
+		if !complete {
+			filesURL = fmt.Sprintf("%s/replicas/cms/%s", RucioUrl(), url.QueryEscape(block))
+			filterBySite = site != ""
+			api = "file4dataset_partial"
+		}
+		files, err := fetchRucioRecords(api, filesURL)
+		if err != nil {
+			out = append(out, rucioErrorRecord(err))
+			continue
+		}
+		for _, rec := range files {
+			if filterBySite && !rucioFileAvailableAtSite(rec, site) {
+				continue
+			}
+			name, ok := rec["name"].(string)
+			if !ok || name == "" {
+				out = append(out, rec)
+				continue
+			}
+			if !seenFiles[name] {
+				seenFiles[name] = true
+				out = append(out, rec)
+			}
+		}
+	}
+	return out
+}
+
+func fetchRucioRecords(api, furl string) ([]mongo.DASRecord, error) {
+	resp := utils.FetchResponse(utils.HttpClient(), furl, "")
+	if resp.Error != nil {
+		return nil, fmt.Errorf("Rucio request failed, api=%s, url=%s, error=%v", api, furl, resp.Error)
+	}
+	return loadRucioData(api, resp.Data), nil
+}
+
+func rucioDIDContentsURL(name string) string {
+	name = strings.Replace(name, "#", "%23", -1)
+	if strings.HasPrefix(name, "/") {
+		return fmt.Sprintf("%s/dids/cms%s/dids", RucioUrl(), name)
+	}
+	return fmt.Sprintf("%s/dids/cms/%s/dids", RucioUrl(), name)
+}
+
+func rucioErrorRecord(err error) mongo.DASRecord {
+	return mongo.DASErrorRecord(err.Error(), utils.RucioErrorName, utils.RucioError)
+}
+
+func rucioBlockCompleteness(site string, records []mongo.DASRecord) (bool, bool) {
+	relevant := false
+	for _, rec := range records {
+		rse, ok := rec["rse"].(string)
+		if !ok || !rucioSiteMatch(site, rse) {
+			continue
+		}
+		relevant = true
+		length, lengthOK := rucioNumericValue(rec["length"])
+		available, availableOK := rucioNumericValue(rec["available_length"])
+		if lengthOK && availableOK && available == length {
+			return true, true
+		}
+	}
+	return relevant, false
+}
+
+func rucioFileAvailableAtSite(rec mongo.DASRecord, site string) bool {
+	match := func(states map[string]interface{}) bool {
+		for rse, state := range states {
+			if rucioSiteMatch(site, rse) && strings.EqualFold(fmt.Sprintf("%v", state), "AVAILABLE") {
+				return true
+			}
+		}
+		return false
+	}
+	switch states := rec["states"].(type) {
+	case mongo.DASRecord:
+		return match(map[string]interface{}(states))
+	case map[string]interface{}:
+		return match(states)
+	}
+	return false
 }
 
 func rucioBlockReplicaInfo(block, site string) (mongo.DASRecord, bool) {

@@ -30,3 +30,4 @@ das2go_linux
 das2go_monitor
 setup.sh
 tmp/
+.codex/

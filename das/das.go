@@ -506,6 +506,7 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 			urn := ""
 			for _, dmap := range maps {
 				surl := dasmaps.GetString(dmap, "url")
+				dmapURN := dasmaps.GetString(dmap, "urn")
 				// TMP fix, until we fix Phedex data to use JSON
 				if strings.Contains(surl, "phedex") {
 					surl = strings.Replace(surl, "xml", "json", -1)
@@ -516,8 +517,12 @@ func processURLs(dasquery dasql.DASQuery, urls map[string]string, maps []mongo.D
 				if stm == "dbs3" {
 					surl = fixDBSinstance(dasquery.Instance, surl)
 				}
-				if strings.Split(r.Url, "?")[0] == surl || strings.HasPrefix(r.Url, surl) || r.Url == surl {
-					urn = dasmaps.GetString(dmap, "urn")
+				matched := strings.Split(r.Url, "?")[0] == surl || strings.HasPrefix(r.Url, surl) || r.Url == surl
+				if stm == "rucio" && (dmapURN == "file4dataset" || dmapURN == "file4dataset_site") {
+					matched = matched || r.Url == rucioDatasetDIDsURL(dasquery.Spec["dataset"], dmap)
+				}
+				if matched {
+					urn = dmapURN
 					system = dasmaps.GetString(dmap, "system")
 					expire = dasmaps.GetInt(dmap, "expire")
 				}
@@ -629,15 +634,13 @@ func ProcessLogic(dasquery dasql.DASQuery, maps []mongo.DASRecord, selectedServi
 		} else if system == "reqmgr" || system == "mcm" || system == "rucio" {
 			if system == "rucio" {
 				urn, _ := dmap["urn"].(string)
-				site, ok := dasquery.Spec["site"]
-				if ok && urn == "file4dataset_site" {
-					// remove site from site since it should not go to REST URL
-					delete(dasquery.Spec, "site")
-				}
-				furl = FormRESTUrl(dasquery, dmap)
-				if ok && urn == "file4dataset_site" { // put back site condition into dasquery spec
-					dasquery.Spec["site"] = site
-					furl += "?deep=True"
+				if urn == "file4dataset" || urn == "file4dataset_site" {
+					// A CMS dataset is a Rucio container. Start both file query
+					// variants by resolving its child blocks (Rucio datasets); the
+					// Rucio unmarshaller applies the optional site constraint later.
+					furl = rucioDatasetDIDsURL(dasquery.Spec["dataset"], dmap)
+				} else {
+					furl = FormRESTUrl(dasquery, dmap)
 				}
 				if urn == "block4dataset_size" {
 					// add datasets after url which will return CMS blocks (Rucio datasets)
@@ -699,6 +702,41 @@ func ProcessLogic(dasquery dasql.DASQuery, maps []mongo.DASRecord, selectedServi
 		}
 	}
 	return srvs, pkeys, urls, localApis
+}
+
+func rucioDatasetDIDsURL(value interface{}, dasmap mongo.DASRecord) string {
+	dataset := ""
+	switch val := value.(type) {
+	case string:
+		dataset = val
+	case []string:
+		if len(val) == 1 {
+			dataset = val[0]
+		}
+	case []interface{}:
+		if len(val) == 1 {
+			dataset, _ = val[0].(string)
+		}
+	}
+	if dataset == "" {
+		return ""
+	}
+	base, ok := dasmap["url"].(string)
+	if !ok {
+		return ""
+	}
+	if idx := strings.Index(base, "/replicas/"); idx >= 0 {
+		base = base[:idx]
+	} else if idx := strings.Index(base, "/dids/"); idx >= 0 {
+		base = base[:idx]
+	} else {
+		base = strings.TrimSuffix(base, "/")
+	}
+	dataset = strings.Replace(dataset, "#", "%23", -1)
+	if strings.HasPrefix(dataset, "/") {
+		return fmt.Sprintf("%s/dids/cms%s/dids", base, dataset)
+	}
+	return fmt.Sprintf("%s/dids/cms/%s/dids", base, dataset)
 }
 
 // Process takes care of processing given DAS query
