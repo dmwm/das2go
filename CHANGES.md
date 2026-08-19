@@ -1,3 +1,6 @@
+### **v04.07.43rc2 to v04.07.43:**
+
+
 ### **v04.07.43rc1 to v04.07.43rc2:**
   - Adding checks for config repository origin (Todor Ivanov) [#92](https://github.com/dmwm/das2go/pull/92)
   - Redirect config branch back to upstream (Todor Ivanov) [#92](https://github.com/dmwm/das2go/pull/92)
