@@ -1,3 +1,16 @@
+### **v04.07.43rc1 to v04.07.43rc2:**
+  - Adding checks for config repository origin (Todor Ivanov) [#92](https://github.com/dmwm/das2go/pull/92)
+  - Redirect config branch back to upstream (Todor Ivanov) [#92](https://github.com/dmwm/das2go/pull/92)
+  - Switch the config branch (Todor Ivanov) [#92](https://github.com/dmwm/das2go/pull/92)
+  - Fix for false assumption that DAS_HPA_SERVERS would alwasy be availiable (Todor Ivanov) [#92](https://github.com/dmwm/das2go/pull/92)
+  - Fix the narrow K8 context allowed for devops targets (Todor Ivanov) [#92](https://github.com/dmwm/das2go/pull/92)
+  - Allign DAS devops.mk with DBS devops.mk (Todor Ivanov) [#92](https://github.com/dmwm/das2go/pull/92)
+  - Redirecting config repo back to upstream (Todor Ivanov) [#90](https://github.com/dmwm/das2go/pull/90)
+  - Add documentation (Todor Ivanov) [#90](https://github.com/dmwm/das2go/pull/90)
+  - Temporary redirecting config repo to my clone (Todor Ivanov) [#90](https://github.com/dmwm/das2go/pull/90)
+  - Adding manual image related operations to Makefile (Todor Ivanov) [#90](https://github.com/dmwm/das2go/pull/90)
+
+
 ### **v4.7.42 to v04.07.43rc1:**
   - Add url escapes for rucio paths (Todor Ivanov) [#87](https://github.com/dmwm/das2go/pull/87)
 
